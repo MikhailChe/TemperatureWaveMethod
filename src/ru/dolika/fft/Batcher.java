@@ -165,20 +165,15 @@ public class Batcher implements Callable<String> {
 				int freqIndex = 100;
 
 				StringBuilder sb = new StringBuilder();
-
 				DoubleFFT_1D fft = new DoubleFFT_1D(col1.length);
 				{
-					FFTdata = Arrays.copyOf(col1, col1.length * 2);
-					fft.realForwardFull(FFTdata);
+					FFTdata = Arrays.copyOf(col1, col1.length);
+					fft.realForward(FFTdata);
 					modulatorAngle = FFT.getArgument(FFTdata, freqIndex);
-					// „астота сигнала от модул€тора в два раза меньше, значит и
-					// сдвиг фаз в два раза меньше
-					// modulatorAngle *= 2;
 				}
 				{
-					FFTdata = Arrays.copyOf(col2, col2.length * 2);
-					fft.realForwardFull(FFTdata);
-					// –адианы
+					FFTdata = Arrays.copyOf(col2, col2.length);
+					fft.realForward(FFTdata);
 					signalAngle = FFT.getArgument(FFTdata, freqIndex);
 				}
 				while (modulatorAngle < 0) {

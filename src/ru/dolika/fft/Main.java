@@ -121,20 +121,6 @@ public class Main {
 					DrawingPlane.isWavelet = !DrawingPlane.isWavelet;
 					main.repaint();
 					main2.repaint();
-				} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-					if (DrawingPlane.RCamountHP > 10) {
-						DrawingPlane.RCamountHP--;
-						DrawingPlane.RCamountLP--;
-						System.out.println(DrawingPlane.RCamountHP);
-					}
-					main.repaint();
-					main2.repaint();
-				} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-					DrawingPlane.RCamountHP++;
-					DrawingPlane.RCamountLP++;
-					System.out.println(DrawingPlane.RCamountHP);
-					main.repaint();
-					main2.repaint();
 				} else if (e.getKeyCode() == KeyEvent.VK_S) {
 					loadData(main, ereader, arrayIndex);
 				} else if (e.getKeyCode() == KeyEvent.VK_N) {

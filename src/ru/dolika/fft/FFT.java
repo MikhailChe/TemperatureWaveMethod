@@ -20,9 +20,7 @@ public class FFT {
 	}
 
 	public static double getArgument(double[] input, int index) {
-		//double angle = Math.atan2(input[index * 2 + 1], input[index * 2]);
-		double angle = Math.atan2(input[index], input[index * 2]);
-		return angle;
+		return Math.atan2(input[index * 2 + 1], input[index * 2]);
 	}
 
 	public static double getAbs(double[] input, int index) {
@@ -58,35 +56,27 @@ public class FFT {
 		}
 		return output;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	public static int[] discreteHaarWaveletTransform(int[] input) {
-	    // This function assumes that input.length=2^n, n>1
-	    int[] output = new int[input.length];
-	 
-	    for (int length = input.length >> 1; ; length >>= 1) {
-	        // length = input.length / 2^n, WITH n INCREASING to log(input.length) / log(2)
-	        for (int i = 0; i < length; ++i) {
-	            int sum = input[i * 2] + input[i * 2 + 1];
-	            int difference = input[i * 2] - input[i * 2 + 1];
-	            output[i] = sum;
-	            output[length + i] = difference;
-	        }
-	        if (length == 1) {
-	            return output;
-	        }
-	 
-	        //Swap arrays to do next iteration
-	        System.arraycopy(output, 0, input, 0, length << 1);
-	    }
+		// This function assumes that input.length=2^n, n>1
+		int[] output = new int[input.length];
+
+		for (int length = input.length >> 1;; length >>= 1) {
+			// length = input.length / 2^n, WITH n INCREASING to
+			// log(input.length) / log(2)
+			for (int i = 0; i < length; ++i) {
+				int sum = input[i * 2] + input[i * 2 + 1];
+				int difference = input[i * 2] - input[i * 2 + 1];
+				output[i] = sum;
+				output[length + i] = difference;
+			}
+			if (length == 1) {
+				return output;
+			}
+
+			// Swap arrays to do next iteration
+			System.arraycopy(output, 0, input, 0, length << 1);
+		}
 	}
-	
 
 }

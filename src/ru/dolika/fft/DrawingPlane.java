@@ -70,16 +70,6 @@ public class DrawingPlane extends JComponent {
 			return;
 		if (array.length == 0)
 			return;
-		/*
-		 * double mean = 0; for (int i = 0; i < array.length; i++) { mean +=
-		 * array[i]; } mean /= array.length;
-		 * 
-		 * double sigma = 0; double sigmaSumm = 0; for (int i = 0; i <
-		 * array.length; i++) { sigmaSumm += (array[i] - mean) * (array[i] -
-		 * mean); } sigma = Math.sqrt(sigmaSumm / array.length);
-		 * 
-		 * min = mean - 3 * sigma; max = mean + 3 * sigma;
-		 */
 
 		min = Double.MAX_VALUE;
 		max = Double.MIN_VALUE;
@@ -96,10 +86,6 @@ public class DrawingPlane extends JComponent {
 	static double expFreq;
 	private double min = Double.MAX_VALUE;
 	private double max = Double.MIN_VALUE;
-	static double RCamountLP = 159;
-	static double RCamountHP = 159;
-	private double dT = 1;
-	private final double filterNgrade = 15;
 	public static boolean shouldFilter = false;
 	public static boolean shouldFFT = false;
 	public static boolean isWavelet = false;
@@ -132,23 +118,26 @@ public class DrawingPlane extends JComponent {
 		}
 
 		if (shouldFilter) {
-			// dT = 1 / (1000 * expFreq);
-			// RCamountLP = 1 / (2 * Math.PI * (expFreq * 10));
-			// RCamountHP = 1 / (2 * Math.PI * (expFreq / 10));
-			for (int i = 0; i < filterNgrade; i++) {
+			DoubleFFT_1D filter = new DoubleFFT_1D(dataCopy.length);
+			filter.realForward(dataCopy);
+			int filterFreqIndex = 100;
+			for (int i = 0; i < dataCopy.length; i++) {
+				if ((i / 2) % filterFreqIndex != 0 && i > 2) {
+					dataCopy[i] = dataCopy[i] * 0.01;
+				} else {
+					if (i > 3 * filterFreqIndex) {
+						double harmonic = ((double)i / (double)filterFreqIndex);
+						if (harmonic >= 1) {
+							dataCopy[i] = dataCopy[i] / harmonic;
+						}
+					}
+				}
 
-				Filter.inverse(Filter.lowPass(Filter.inverse(Filter.lowPass(
-						dataCopy, dT, RCamountLP)), dT, RCamountLP));
-
-				// Filter.inverse(Filter.highPass(Filter.inverse(Filter.highPass(
-				// dataCopy, dT, RCamountHP)), dT, RCamountHP));
 			}
-			graphData = Arrays.copyOfRange(dataCopy, minim, maxim);
-			findExtreme(graphData);
-		} else {
-			graphData = Arrays.copyOfRange(dataCopy, minim, maxim);
-			findExtreme(graphData);
+			filter.realInverse(dataCopy, true);
 		}
+		graphData = Arrays.copyOfRange(dataCopy, minim, maxim);
+		findExtreme(graphData);
 
 		double[] FFTdata = null;
 		if (shouldFFT) {
@@ -167,13 +156,14 @@ public class DrawingPlane extends JComponent {
 						wvd.length / 4096 / 128 + 8, wvd.length);
 
 			} else {
-				FFTdata = Arrays.copyOf(dataCopy, dataCopy.length * 2);
+				FFTdata = Arrays.copyOf(dataCopy, dataCopy.length);
 
-				DoubleFFT_1D fft = new DoubleFFT_1D(dataCopy.length);
-				fft.realForwardFull(FFTdata);
-				graphData = FFT.normalizeArray(FFT.getAbs(FFTdata));
+				DoubleFFT_1D fft = new DoubleFFT_1D(FFTdata.length);
+				fft.realForward(FFTdata);
+				graphData = FFT.getAbs(FFTdata);
+				graphData[0] = 0;
 			}
-			findExtreme(Arrays.copyOfRange(graphData, 1, graphData.length));
+			findExtreme(graphData);
 		}
 
 		g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
@@ -247,11 +237,14 @@ public class DrawingPlane extends JComponent {
 			}
 		}
 		if (shouldFFT && !isWavelet) {
-			int maxIndex = FFT
-					.getIndex(expFreq, 1000 * expFreq, dataLength * 2);
-
+			int maxIndex = 1;
+			for (int i = maxIndex + 1; i < FFTdata.length / 2; i++) {
+				if (FFT.getAbs(FFTdata, i) > FFT.getAbs(FFTdata, maxIndex)) {
+					maxIndex = i;
+				}
+			}
 			double frequency = FFT.getFreqency(maxIndex, 1000 * expFreq,
-					dataLength * 2);
+					FFTdata.length);
 			double angle = Math.toDegrees(FFT.getArgument(FFTdata, maxIndex));
 
 			g.setColor(Color.black);
@@ -261,13 +254,10 @@ public class DrawingPlane extends JComponent {
 			g.drawString("Сдвиг фаз: " + angle, BORDER, g.getFontMetrics()
 					.getHeight() * 2 + BORDER);
 			g.drawString("Амплитуда:\t"
-					+ ((int) FFT.getAbs(FFTdata, maxIndex) / dataLength),
+					+ ((int) FFT.getAbs(FFTdata, maxIndex) / FFTdata.length),
 					BORDER, g.getFontMetrics().getHeight() * 3 + BORDER);
 			System.out.format("%.2f; %+.4f >> %.4f\r\n", frequency, angle, max);
 
 		}
 	}
-	/*
-	 * FORMULA!!!!!! ANGLE = ((X0+360)*2)%360 - Xi - 90;
-	 */
 }
