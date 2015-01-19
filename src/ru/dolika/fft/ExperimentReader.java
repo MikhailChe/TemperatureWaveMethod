@@ -14,7 +14,6 @@ public class ExperimentReader {
 		List<String> strings = null;
 
 		strings = Files.readAllLines(filepath);
-
 		if (strings == null) {
 			System.err.println("couldn't load file content or file is empty");
 			return;

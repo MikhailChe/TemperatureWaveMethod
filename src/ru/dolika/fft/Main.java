@@ -6,14 +6,12 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Vector;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-
-import org.jtransforms.fft.DoubleFFT_1D;
 
 public class Main {
 
@@ -64,26 +62,6 @@ public class Main {
 
 		loadData(main, ereader, arrayIndex);
 		loadData(main2, ereader, (arrayIndex + 1) % colNum);
-		if (colNum > 1) {
-			// Making calculations
-			double[] col1 = ereader.getDataColumn(0);
-			double[] col2 = ereader.getDataColumn(1);
-			double[] FFTdata = Arrays.copyOf(col1, col1.length * 2);
-			DoubleFFT_1D fft = new DoubleFFT_1D(col1.length);
-			fft.realForwardFull(FFTdata);
-			int index1 = FFT.getIndex(22.05, 44100, col1.length);
-			int index2 = FFT.getIndex(44.1, 44100, col1.length);
-
-			double angle1 = Math.toDegrees(FFT.getArgument(FFTdata, index1));
-
-			FFTdata = Arrays.copyOf(col2, col2.length * 2);
-			fft.realForwardFull(FFTdata);
-
-			double angle2 = Math.toDegrees(FFT.getArgument(FFTdata, index2));
-
-			double targetAngle = ((((angle1 + 360) * 2) % 360) - angle2 - 90);
-			System.out.println("Target Angle: " + targetAngle);
-		}
 		main.addMouseWheelListener(new MouseWheelListener() {
 
 			@Override
@@ -139,10 +117,53 @@ public class Main {
 			DrawingPlane main = (DrawingPlane) obj;
 			if (index < 0)
 				return;
-			main.data = ereader.getDataColumn(index);
+			double[] pulses = ereader.getDataColumn(0);
+			double pMinVal = Integer.MAX_VALUE;
+			double pMaxVal = Integer.MIN_VALUE;
+			for (int i = 0; i < pulses.length; i++) {
+				if (pulses[i] > pMaxVal) {
+					pMaxVal = pulses[i];
+				}
+				if (pulses[i] < pMinVal) {
+					pMinVal = pulses[i];
+				}
+			}
+			Vector<Integer> indicies = new Vector<Integer>();
+			boolean trigger = false;
+			for (int i = 0; i < pulses.length; i++) {
+				if (pulses[i] > pMinVal + (pMaxVal - pMinVal) * 0.5) {
+					if (!trigger) {
+						trigger = true;
+						indicies.add(i);
+					}
+				} else {
+					if (trigger) {
+						trigger = false;
+					}
+				}
+			}
+			int minDistance = Integer.MAX_VALUE;
+			for (int i = 0; i < indicies.size() - 1; i++) {
+				int distance = indicies.get(i + 1) - indicies.get(i);
+				if (distance < minDistance) {
+					minDistance = distance;
+				}
+			}
+			if (minDistance % 2 == 1) {
+				minDistance--;
+			}
+			indicies.remove(indicies.size() - 1);
+			double data[] = ereader.getDataColumn(index);
+			double dataS[] = new double[minDistance];
+			for (int i = 0; i < indicies.size(); i++) {
+				int curIndex = indicies.get(i);
+				for (int j = 0; j < dataS.length; j++) {
+					dataS[j] = data[j + curIndex];
+				}
+			}
+			main.data = dataS;
 			DrawingPlane.expFreq = ereader.getExperimentFrequency();
 			main.repaint();
 		}
 	}
-
 }

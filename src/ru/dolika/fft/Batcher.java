@@ -71,6 +71,7 @@ public class Batcher implements Callable<String> {
 			prefs.put(LAST_FOLDER, folder.toString());
 		}
 		frame.dispose();
+		System.exit(0);
 	}
 
 	public static void compute(File folder) {
@@ -87,13 +88,11 @@ public class Batcher implements Callable<String> {
 		});
 		if (files.length <= 0)
 			return;
-		// System.out.println("Нашел " + files.length + " файлов");
 		BufferedWriter bw;
 		File resultFile;
 		try {
 			resultFile = new File(folder, "результат.txt");
 			if (resultFile.exists()) {
-				// System.out.println("Deleting " + resultFile.toString());
 				Files.delete(resultFile.toPath());
 			}
 			bw = Files.newBufferedWriter(resultFile.toPath(),
@@ -115,7 +114,9 @@ public class Batcher implements Callable<String> {
 		for (Future<String> future : set) {
 
 			try {
+
 				String answer = future.get();
+
 				bw.write(String.format("%s%n", answer, i));
 				i++;
 			} catch (InterruptedException | ExecutionException | IOException e) {
@@ -123,9 +124,7 @@ public class Batcher implements Callable<String> {
 			}
 		}
 		pool.shutdown();
-
 		try {
-
 			bw.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -139,40 +138,96 @@ public class Batcher implements Callable<String> {
 	}
 
 	File file;
-	boolean finished = false;
 	public String result;
 
 	public Batcher(File filename) {
 		file = filename;
 	}
 
-	final double[] SHIFT = new double[] { 0 };
+	final double[] SHIFT = new double[] { 0, 71.45293, 72.00104, 72.9386,
+			72.51942, 72.5301, 72.82515, 72.67496, 72.75336, 73.49862,
+			72.10436, 73.10743, 72.87512, 73.61398, 72.13576, 73.46983,
+			73.22098, 73.36099, 73.64398, 73.61175, 73.46766, 73.88014,
+			73.65994, 74.27192, 73.91359, 74.72526, 74.27997, 73.96622,
+			74.72533, 74.60557, 75.35061 };
 
 	public String call() {
 
 		try {
 			ExperimentReader reader = new ExperimentReader(file.toPath());
-			// System.out.print('.');
 			int numCol = reader.getColumnCount();
 			if (numCol > 1) {
 				// Making calculations
 				double[] col1 = reader.getDataColumn(0);
 				double[] col2 = reader.getDataColumn(1);
-				double[] FFTdata;
+				double[] col1S, col2S, FFTdata;
 				double signalAngle;
 				double modulatorAngle;
 				double freqency = reader.getExperimentFrequency();
-				int freqIndex = 100;
+				int freqIndex = 2;
+				{
+					Vector<Integer> indicies = new Vector<Integer>();
+					double min = Integer.MAX_VALUE;
+					double max = Integer.MIN_VALUE;
+					for (int i = 0; i < col1.length; i++) {
+						if (col1[i] < min) {
+							min = col1[i];
+						}
+						if (col1[i] > max) {
+							max = col1[i];
+						}
+					}
+					boolean trigger = false;
+					for (int i = 0; i < col1.length; i++) {
+						if (col1[i] > min + (max - min) * 0.5) {
+							if (!trigger) {
+								indicies.add(i);
+								trigger = true;
+							}
+						} else {
+							if (trigger) {
+								trigger = false;
+							}
+						}
+					}
+					int leastSpace = Integer.MAX_VALUE;
+					for (int i = 0; i < indicies.size() - 1; i++) {
+						int space = indicies.get(i + 1) - indicies.get(i);
+						if (space < leastSpace) {
+							leastSpace = space;
+						}
+					}
+					if (leastSpace % 2 == 1) {
+						leastSpace--;
+					}
+					if (leastSpace <= 0) {
+						System.err.println("LeastSpace computation error");
+						System.exit(200);
+					}
+					indicies.remove(indicies.size() - 1);
+					col1S = new double[leastSpace];
+					col2S = new double[leastSpace];
+					Arrays.fill(col2S, 0);
+					Arrays.fill(col1S, 0);
+					for (int j = 0; j < indicies.size(); j++) {
+						int impIndex = indicies.get(j);
+						for (int i = 0; i < col2S.length; i++) {
+							col1S[i] += col1[i + impIndex];
+							col2S[i] += col2[i + impIndex];
+						}
+					}
+				}
 
 				StringBuilder sb = new StringBuilder();
-				DoubleFFT_1D fft = new DoubleFFT_1D(col1.length);
+				DoubleFFT_1D fft = new DoubleFFT_1D(col1S.length);
 				{
-					FFTdata = Arrays.copyOf(col1, col1.length);
+					FFTdata = col1S;
 					fft.realForward(FFTdata);
+
 					modulatorAngle = FFT.getArgument(FFTdata, freqIndex);
 				}
 				{
-					FFTdata = Arrays.copyOf(col2, col2.length);
+					FFTdata = col2S;
 					fft.realForward(FFTdata);
 					signalAngle = FFT.getArgument(FFTdata, freqIndex);
 				}
@@ -200,13 +255,13 @@ public class Batcher implements Callable<String> {
 
 				double omega = 2 * Math.PI * freqency;
 				double currentShift = getCurrentShift(freqency);
-				double adjustAngle = targetAngle - Math.toRadians(currentShift);
-				double editedAngle = adjustAngle - (Math.PI / 4.0);
+				double adjustAngle = targetAngle + Math.toRadians(currentShift);
+				double editedAngle = adjustAngle - Math.PI;
 
 				while (editedAngle < 0)
 					editedAngle += Math.PI * 2;
 
-				while (editedAngle >= 1.999 * Math.PI)
+				while (editedAngle > 2 * Math.PI)
 					editedAngle -= Math.PI * 2;
 
 				double kappa = Math.sqrt(2) * (editedAngle);
@@ -217,7 +272,6 @@ public class Batcher implements Callable<String> {
 						kappa, A, Math.toDegrees(targetAngle),
 						Math.toDegrees(adjustAngle),
 						Math.toDegrees(editedAngle)));
-				finished = true;
 				return sb.toString();
 			}
 		} catch (IOException e) {

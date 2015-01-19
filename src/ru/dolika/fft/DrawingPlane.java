@@ -120,17 +120,10 @@ public class DrawingPlane extends JComponent {
 		if (shouldFilter) {
 			DoubleFFT_1D filter = new DoubleFFT_1D(dataCopy.length);
 			filter.realForward(dataCopy);
-			int filterFreqIndex = 100;
+			int filterFreqIndex = 2;
 			for (int i = 0; i < dataCopy.length; i++) {
-				if ((i / 2) % filterFreqIndex != 0 && i > 2) {
-					dataCopy[i] = dataCopy[i] * 0.01;
-				} else {
-					if (i > 3 * filterFreqIndex) {
-						double harmonic = ((double)i / (double)filterFreqIndex);
-						if (harmonic >= 1) {
-							dataCopy[i] = dataCopy[i] / harmonic;
-						}
-					}
+				if (i / 2 != filterFreqIndex) {
+					dataCopy[i] = 0;
 				}
 
 			}
