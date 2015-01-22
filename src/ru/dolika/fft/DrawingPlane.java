@@ -124,12 +124,9 @@ public class DrawingPlane extends JComponent {
 					RenderingHints.VALUE_RENDER_QUALITY);
 			g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
 					RenderingHints.VALUE_STROKE_PURE);
-
 		}
-
 		if (data == null)
 			return;
-
 		double[] dataCopy = Arrays.copyOf(data, data.length);
 		double[] FFTdata = Arrays.copyOf(data, data.length * 2);
 
@@ -144,9 +141,7 @@ public class DrawingPlane extends JComponent {
 				}
 			}
 			dataCopy = Arrays.copyOf(FFTdata, FFTdata.length);
-
 			fourier.complexInverse(dataCopy, true);
-
 			dataCopy = FFT.getReal(dataCopy);
 		}
 		int maxim = (int) (dataCopy.length * x2perc + 0.5);

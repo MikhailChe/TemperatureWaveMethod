@@ -182,6 +182,7 @@ public class Main {
 				return;
 			main.data = SignalAdder.getOnePeriod(ereader.getDataColumn(0),
 					ereader.getDataColumn(index));
+			// main.data = ereader.getDataColumn(index);
 			DrawingPlane.fftIndex = 1;
 			DrawingPlane.expFreq = ereader.getExperimentFrequency();
 			main.repaint();

@@ -144,12 +144,22 @@ public class Batcher implements Callable<String> {
 		file = filename;
 	}
 
-	final double[] SHIFT = new double[] { 0, 70.36466, 71.04693, 71.11227,
-			70.98285, 70.97921, 70.66293, 70.54109, 70.98263, 70.68364,
-			70.97483, 71.70552, 71.54723, 71.08575, 71.58139, 70.16974,
-			70.96322, 71.23151, 70.56831, 71.52837, 70.91919, 71.56299,
-			70.0144, 69.42134, 69.76846, 71.01805, 69.14904, 72.17975,
-			71.68626, 71.86222, 72.68305 };
+	double[] oldAdjustAD = new double[] { 0, 157.92366, 202.35604, 219.76022,
+			227.49335, 232.46174, 235.95052, 237.89532, 240.84918, 240.88662,
+			243.05881 };
+	double[] newAdjustWithShld = new double[] { 0, 70.36014, 71.38645,
+			70.84705, 72.06953, 72.13395, 71.54485, 71.64011, 72.71662,
+			71.9964, 74.04955, 75.48641, 74.7094, 74.34681, 75.87396, 74.45393,
+			74.59327, 75.85669, 75.20807, 77.03656, 76.87302, 77.95942,
+			76.56962, 76.47844, 78.47918, 79.40677, 78.0511, 82.36202,
+			81.95725, 83.30791, 82.55963 };
+	double[] newAdjustWoShld = new double[] { 0, 70.92, 70.92, 71.28, 71.28,
+			70.92, 70.69509, 70.47667, 71.1, 70.74, 70.92, 71.82, 71.4702,
+			70.92, 71.4899, 70.2, 71.1, 71.09557, 70.38, 71.64, 70.776, 71.46,
+			70.13042, 69.40577, 69.66, 70.92, 69.03794, 72.18, 71.47712, 71.82,
+			72.72 };
+
+	final double[] SHIFT = oldAdjustAD;
 
 	public String call() {
 
@@ -171,17 +181,8 @@ public class Batcher implements Callable<String> {
 					fft.realForwardFull(FFTdata);
 					signalAngle = FFT.getArgument(FFTdata, freqIndex);
 				}
-
 				double targetAngle = -signalAngle;
-				while (targetAngle > Math.PI * 2) {
-					targetAngle -= Math.PI * 2;
-				}
-				while (targetAngle < 0) {
-					targetAngle += Math.PI * 2;
-				}
-
 				final double l = (2.02) / 1000.0;
-
 				double omega = 2 * Math.PI * freqency;
 				double currentShift = getCurrentShift(freqency);
 				double adjustAngle = targetAngle - Math.toRadians(currentShift);
