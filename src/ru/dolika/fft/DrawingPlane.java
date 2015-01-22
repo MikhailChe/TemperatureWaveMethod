@@ -89,6 +89,9 @@ public class DrawingPlane extends JComponent {
 	public static boolean shouldFilter = false;
 	public static boolean shouldFFT = false;
 	public static boolean isWavelet = false;
+	public static int maxHarmony = 1;
+	public static boolean shouldShowIndicies = false;
+	public static int fftIndex = 100;
 
 	static double x1perc = 0;
 	static double x2perc = 1;
@@ -100,14 +103,52 @@ public class DrawingPlane extends JComponent {
 		draw((Graphics2D) g);
 	}
 
+	boolean firstDraw = true;
+
 	public void draw(Graphics2D g) {
+		if (firstDraw) {
+			firstDraw = false;
+			g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+					RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+					RenderingHints.VALUE_ANTIALIAS_ON);
+			g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
+					RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_DITHERING,
+					RenderingHints.VALUE_DITHER_DISABLE);
+			g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
+					RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+					RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING,
+					RenderingHints.VALUE_RENDER_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+					RenderingHints.VALUE_STROKE_PURE);
+
+		}
 
 		if (data == null)
 			return;
 
 		double[] dataCopy = Arrays.copyOf(data, data.length);
-		double[] graphData;
+		double[] FFTdata = Arrays.copyOf(data, data.length * 2);
 
+		DoubleFFT_1D fourier = new DoubleFFT_1D(dataCopy.length);
+		fourier.realForwardFull(FFTdata);
+
+		if (shouldFilter) {
+			for (int i = 0; i < FFTdata.length; i++) {
+				if ((i < 2) || (i / 2 > (maxHarmony))
+						|| (i / 2 % fftIndex != 0)) {
+					FFTdata[i] = 0;
+				}
+			}
+			dataCopy = Arrays.copyOf(FFTdata, FFTdata.length);
+
+			fourier.complexInverse(dataCopy, true);
+
+			dataCopy = FFT.getReal(dataCopy);
+		}
 		int maxim = (int) (dataCopy.length * x2perc + 0.5);
 		if (maxim >= dataCopy.length) {
 			maxim = dataCopy.length - 1;
@@ -116,23 +157,9 @@ public class DrawingPlane extends JComponent {
 		if (minim < 0) {
 			minim = 0;
 		}
-
-		if (shouldFilter) {
-			DoubleFFT_1D filter = new DoubleFFT_1D(dataCopy.length);
-			filter.realForward(dataCopy);
-			int filterFreqIndex = 2;
-			for (int i = 0; i < dataCopy.length; i++) {
-				if (i / 2 != filterFreqIndex) {
-					dataCopy[i] = 0;
-				}
-
-			}
-			filter.realInverse(dataCopy, true);
-		}
-		graphData = Arrays.copyOfRange(dataCopy, minim, maxim);
+		double[] graphData = Arrays.copyOfRange(dataCopy, minim, maxim);
 		findExtreme(graphData);
 
-		double[] FFTdata = null;
 		if (shouldFFT) {
 			if (isWavelet) {
 				int[] wavelet = new int[dataCopy.length];
@@ -149,32 +176,11 @@ public class DrawingPlane extends JComponent {
 						wvd.length / 4096 / 128 + 8, wvd.length);
 
 			} else {
-				FFTdata = Arrays.copyOf(dataCopy, dataCopy.length);
-
-				DoubleFFT_1D fft = new DoubleFFT_1D(FFTdata.length);
-				fft.realForward(FFTdata);
 				graphData = FFT.getAbs(FFTdata);
 				graphData[0] = 0;
 			}
 			findExtreme(graphData);
 		}
-
-		g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-				RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
-		g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
-				RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-		g.setRenderingHint(RenderingHints.KEY_DITHERING,
-				RenderingHints.VALUE_DITHER_DISABLE);
-		g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-				RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-				RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-		g.setRenderingHint(RenderingHints.KEY_RENDERING,
-				RenderingHints.VALUE_RENDER_QUALITY);
-		g.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-				RenderingHints.VALUE_STROKE_PURE);
 
 		int width = getWidth();
 		int height = getHeight();
@@ -208,7 +214,6 @@ public class DrawingPlane extends JComponent {
 
 				double curData = graphData[i];
 
-				g.setColor(new Color(0, 128, 0));
 				int y1 = (int) map(prevData, min, max, height - BORDER - 1,
 						BORDER);
 				int y2 = (int) map(curData, min, max, height - BORDER - 1,
@@ -217,6 +222,9 @@ public class DrawingPlane extends JComponent {
 						- BORDER - 1);
 				int x2 = (int) map(i, 0, dataLength - 1, BORDER, width - BORDER
 						- 1);
+
+				int zy = (int) map(0, min, max, height - BORDER - 1, BORDER);
+
 				prevData = curData;
 				if (shouldFFT && !isWavelet) {
 					if (i <= 1)
@@ -226,31 +234,33 @@ public class DrawingPlane extends JComponent {
 					x2 = (int) map(Math.log(i) / maxLog, 0, 1, BORDER, width
 							- BORDER - 1);
 				}
+				g.setColor(new Color(0, 128, 0));
 				g.drawLine(x1, y1, x2, y2);
+				g.setColor(new Color(0, 128, 128, 128));
+				g.drawLine(x1, zy, x2, zy);
+				if (shouldShowIndicies) {
+					g.setColor(Color.RED);
+					g.drawOval(x1 - 1, y1 - 1, 2, 2);
+					g.setColor(Color.BLUE);
+					g.drawString("" + ((i - 1) + minim), x1, y1);
+				}
+
 			}
 		}
 		if (shouldFFT && !isWavelet) {
-			int maxIndex = 1;
-			for (int i = maxIndex + 1; i < FFTdata.length / 2; i++) {
-				if (FFT.getAbs(FFTdata, i) > FFT.getAbs(FFTdata, maxIndex)) {
-					maxIndex = i;
-				}
-			}
-			double frequency = FFT.getFreqency(maxIndex, 1000 * expFreq,
-					FFTdata.length);
-			double angle = Math.toDegrees(FFT.getArgument(FFTdata, maxIndex));
+			double frequency = FFT.getFreqency(fftIndex, 1000 * expFreq,
+					data.length);
+			double angle = Math.toDegrees(FFT.getArgument(FFTdata, fftIndex));
 
 			g.setColor(Color.black);
 			g.setFont(g.getFont().deriveFont(20f));
 			g.drawString("Наибольшая амплитуда на частоте: " + frequency + "; "
-					+ maxIndex, BORDER, g.getFontMetrics().getHeight() + BORDER);
+					+ fftIndex, BORDER, g.getFontMetrics().getHeight() + BORDER);
 			g.drawString("Сдвиг фаз: " + angle, BORDER, g.getFontMetrics()
 					.getHeight() * 2 + BORDER);
 			g.drawString("Амплитуда:\t"
-					+ ((int) FFT.getAbs(FFTdata, maxIndex) / FFTdata.length),
+					+ ((int) FFT.getAbs(FFTdata, fftIndex) / FFTdata.length),
 					BORDER, g.getFontMetrics().getHeight() * 3 + BORDER);
-			System.out.format("%.2f; %+.4f >> %.4f\r\n", frequency, angle, max);
-
 		}
 	}
 }

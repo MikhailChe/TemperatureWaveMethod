@@ -6,12 +6,16 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.io.IOException;
-import java.util.Vector;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class Main {
 
@@ -25,10 +29,29 @@ public class Main {
 		JFrame frame = new JFrame("Drawer");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		DrawingPlane main = new DrawingPlane();
-		DrawingPlane main2 = new DrawingPlane();
-		frame.getContentPane().setLayout(new GridLayout(2, 1));
+		frame.getContentPane().setLayout(new GridLayout(1, 1));
 		frame.getContentPane().add(main);
-		frame.getContentPane().add(main2);
+
+		JMenuBar bar = new JMenuBar();
+
+		// Settings Menu, S - Mnemonics
+		JMenu settingsMenu = new JMenu("Settings");
+		settingsMenu.setMnemonic(KeyEvent.VK_S);
+		bar.add(settingsMenu);
+
+		// Settings -> showIndicies, I - Mnemonic
+		JCheckBoxMenuItem showIndiciesMenuItem = new JCheckBoxMenuItem(
+				"Show Indicies", DrawingPlane.shouldShowIndicies);
+		showIndiciesMenuItem.setMnemonic(KeyEvent.VK_I);
+		settingsMenu.add(showIndiciesMenuItem);
+
+		// Settings -> filter, I - Mnemonic
+		JCheckBoxMenuItem shouldFilterMenuItem = new JCheckBoxMenuItem(
+				"Should Filter", DrawingPlane.shouldFilter);
+		shouldFilterMenuItem.setMnemonic(KeyEvent.VK_F);
+		settingsMenu.add(shouldFilterMenuItem);
+
+		frame.setJMenuBar(bar);
 		frame.pack();
 		frame.setVisible(true);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -61,9 +84,42 @@ public class Main {
 				colNum));
 
 		loadData(main, ereader, arrayIndex);
-		loadData(main2, ereader, (arrayIndex + 1) % colNum);
-		main.addMouseWheelListener(new MouseWheelListener() {
+		showIndiciesMenuItem.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
 
+				Object o = e.getSource();
+				if (o instanceof JCheckBoxMenuItem) {
+					JCheckBoxMenuItem i = (JCheckBoxMenuItem) o;
+					if (i.isSelected()) {
+						DrawingPlane.shouldShowIndicies = true;
+					} else {
+						DrawingPlane.shouldShowIndicies = false;
+					}
+					main.repaint();
+
+				}
+
+			}
+		});
+		shouldFilterMenuItem.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+
+				Object o = e.getSource();
+				if (o instanceof JCheckBoxMenuItem) {
+					JCheckBoxMenuItem i = (JCheckBoxMenuItem) o;
+					if (i.isSelected()) {
+						DrawingPlane.shouldFilter = true;
+					} else {
+						DrawingPlane.shouldFilter = false;
+					}
+					main.repaint();
+				}
+			}
+		});
+
+		main.addMouseWheelListener(new MouseWheelListener() {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent arg0) {
 
@@ -73,7 +129,6 @@ public class Main {
 					main.zoomOut(arg0.getX(), arg0.getY());
 				}
 				main.repaint();
-				main2.repaint();
 			}
 		});
 		main.addKeyListener(new KeyAdapter() {
@@ -90,19 +145,27 @@ public class Main {
 				} else if (e.getKeyCode() == KeyEvent.VK_F) {
 					DrawingPlane.shouldFilter = !DrawingPlane.shouldFilter;
 					main.repaint();
-					main2.repaint();
 				} else if (e.getKeyCode() == KeyEvent.VK_Q) {
 					DrawingPlane.shouldFFT = !DrawingPlane.shouldFFT;
 					main.repaint();
-					main2.repaint();
 				} else if (e.getKeyCode() == KeyEvent.VK_W) {
 					DrawingPlane.isWavelet = !DrawingPlane.isWavelet;
 					main.repaint();
-					main2.repaint();
 				} else if (e.getKeyCode() == KeyEvent.VK_S) {
 					loadData(main, ereader, arrayIndex);
 				} else if (e.getKeyCode() == KeyEvent.VK_N) {
 					loadData(main, ereader, arrayIndex);
+				} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+					if (DrawingPlane.maxHarmony > 1) {
+						DrawingPlane.maxHarmony--;
+					}
+					main.repaint();
+				} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+					if (DrawingPlane.maxHarmony < 301) {
+						DrawingPlane.maxHarmony++;
+					}
+					main.repaint();
+
 				}
 
 			}
@@ -117,51 +180,9 @@ public class Main {
 			DrawingPlane main = (DrawingPlane) obj;
 			if (index < 0)
 				return;
-			double[] pulses = ereader.getDataColumn(0);
-			double pMinVal = Integer.MAX_VALUE;
-			double pMaxVal = Integer.MIN_VALUE;
-			for (int i = 0; i < pulses.length; i++) {
-				if (pulses[i] > pMaxVal) {
-					pMaxVal = pulses[i];
-				}
-				if (pulses[i] < pMinVal) {
-					pMinVal = pulses[i];
-				}
-			}
-			Vector<Integer> indicies = new Vector<Integer>();
-			boolean trigger = false;
-			for (int i = 0; i < pulses.length; i++) {
-				if (pulses[i] > pMinVal + (pMaxVal - pMinVal) * 0.5) {
-					if (!trigger) {
-						trigger = true;
-						indicies.add(i);
-					}
-				} else {
-					if (trigger) {
-						trigger = false;
-					}
-				}
-			}
-			int minDistance = Integer.MAX_VALUE;
-			for (int i = 0; i < indicies.size() - 1; i++) {
-				int distance = indicies.get(i + 1) - indicies.get(i);
-				if (distance < minDistance) {
-					minDistance = distance;
-				}
-			}
-			if (minDistance % 2 == 1) {
-				minDistance--;
-			}
-			indicies.remove(indicies.size() - 1);
-			double data[] = ereader.getDataColumn(index);
-			double dataS[] = new double[minDistance];
-			for (int i = 0; i < indicies.size(); i++) {
-				int curIndex = indicies.get(i);
-				for (int j = 0; j < dataS.length; j++) {
-					dataS[j] = data[j + curIndex];
-				}
-			}
-			main.data = dataS;
+			main.data = SignalAdder.getOnePeriod(ereader.getDataColumn(0),
+					ereader.getDataColumn(index));
+			DrawingPlane.fftIndex = 1;
 			DrawingPlane.expFreq = ereader.getExperimentFrequency();
 			main.repaint();
 		}

@@ -144,12 +144,12 @@ public class Batcher implements Callable<String> {
 		file = filename;
 	}
 
-	final double[] SHIFT = new double[] { 0, 71.45293, 72.00104, 72.9386,
-			72.51942, 72.5301, 72.82515, 72.67496, 72.75336, 73.49862,
-			72.10436, 73.10743, 72.87512, 73.61398, 72.13576, 73.46983,
-			73.22098, 73.36099, 73.64398, 73.61175, 73.46766, 73.88014,
-			73.65994, 74.27192, 73.91359, 74.72526, 74.27997, 73.96622,
-			74.72533, 74.60557, 75.35061 };
+	final double[] SHIFT = new double[] { 0, 70.36466, 71.04693, 71.11227,
+			70.98285, 70.97921, 70.66293, 70.54109, 70.98263, 70.68364,
+			70.97483, 71.70552, 71.54723, 71.08575, 71.58139, 70.16974,
+			70.96322, 71.23151, 70.56831, 71.52837, 70.91919, 71.56299,
+			70.0144, 69.42134, 69.76846, 71.01805, 69.14904, 72.17975,
+			71.68626, 71.86222, 72.68305 };
 
 	public String call() {
 
@@ -160,90 +160,19 @@ public class Batcher implements Callable<String> {
 				// Making calculations
 				double[] col1 = reader.getDataColumn(0);
 				double[] col2 = reader.getDataColumn(1);
-				double[] col1S, col2S, FFTdata;
+				double[] col2S, FFTdata;
 				double signalAngle;
-				double modulatorAngle;
 				double freqency = reader.getExperimentFrequency();
-				int freqIndex = 2;
+				int freqIndex = 1;
+				col2S = SignalAdder.getOnePeriod(col1, col2);
+				DoubleFFT_1D fft = new DoubleFFT_1D(col2S.length);
 				{
-					Vector<Integer> indicies = new Vector<Integer>();
-					double min = Integer.MAX_VALUE;
-					double max = Integer.MIN_VALUE;
-					for (int i = 0; i < col1.length; i++) {
-						if (col1[i] < min) {
-							min = col1[i];
-						}
-						if (col1[i] > max) {
-							max = col1[i];
-						}
-					}
-					boolean trigger = false;
-					for (int i = 0; i < col1.length; i++) {
-						if (col1[i] > min + (max - min) * 0.5) {
-							if (!trigger) {
-								indicies.add(i);
-								trigger = true;
-							}
-						} else {
-							if (trigger) {
-								trigger = false;
-							}
-						}
-					}
-					int leastSpace = Integer.MAX_VALUE;
-					for (int i = 0; i < indicies.size() - 1; i++) {
-						int space = indicies.get(i + 1) - indicies.get(i);
-						if (space < leastSpace) {
-							leastSpace = space;
-						}
-					}
-					if (leastSpace % 2 == 1) {
-						leastSpace--;
-					}
-					if (leastSpace <= 0) {
-						System.err.println("LeastSpace computation error");
-						System.exit(200);
-					}
-					indicies.remove(indicies.size() - 1);
-					col1S = new double[leastSpace];
-					col2S = new double[leastSpace];
-					Arrays.fill(col2S, 0);
-					Arrays.fill(col1S, 0);
-					for (int j = 0; j < indicies.size(); j++) {
-						int impIndex = indicies.get(j);
-						for (int i = 0; i < col2S.length; i++) {
-							col1S[i] += col1[i + impIndex];
-							col2S[i] += col2[i + impIndex];
-						}
-					}
-				}
-
-				StringBuilder sb = new StringBuilder();
-				DoubleFFT_1D fft = new DoubleFFT_1D(col1S.length);
-				{
-					FFTdata = col1S;
-					fft.realForward(FFTdata);
-
-					modulatorAngle = FFT.getArgument(FFTdata, freqIndex);
-				}
-				{
-					FFTdata = col2S;
-					fft.realForward(FFTdata);
+					FFTdata = Arrays.copyOf(col2S, col2S.length * 2);
+					fft.realForwardFull(FFTdata);
 					signalAngle = FFT.getArgument(FFTdata, freqIndex);
 				}
-				while (modulatorAngle < 0) {
-					modulatorAngle += Math.PI * 2;
-				}
-				while (modulatorAngle > Math.PI * 2) {
-					modulatorAngle -= Math.PI * 2;
-				}
-				while (signalAngle < 0) {
-					signalAngle += Math.PI * 2;
-				}
-				while (signalAngle > Math.PI * 2) {
-					signalAngle -= Math.PI * 2;
-				}
-				double targetAngle = modulatorAngle - signalAngle;
+
+				double targetAngle = -signalAngle;
 				while (targetAngle > Math.PI * 2) {
 					targetAngle -= Math.PI * 2;
 				}
@@ -255,8 +184,8 @@ public class Batcher implements Callable<String> {
 
 				double omega = 2 * Math.PI * freqency;
 				double currentShift = getCurrentShift(freqency);
-				double adjustAngle = targetAngle + Math.toRadians(currentShift);
-				double editedAngle = adjustAngle - Math.PI;
+				double adjustAngle = targetAngle - Math.toRadians(currentShift);
+				double editedAngle = adjustAngle - Math.PI / 4;
 
 				while (editedAngle < 0)
 					editedAngle += Math.PI * 2;
@@ -267,9 +196,12 @@ public class Batcher implements Callable<String> {
 				double kappa = Math.sqrt(2) * (editedAngle);
 
 				double A = (omega * l * l) / (kappa * kappa);
+
+				StringBuilder sb = new StringBuilder();
 				sb.append(String.format(
-						"%,5.1f\t%,.5f\t%e\t%,.5f\t%,.5f\t%,.5f", freqency,
-						kappa, A, Math.toDegrees(targetAngle),
+						"%,5.1f\t%,.5f\t%e\t%,.5f\t%,.5f\t%,.5f\t%,.5f",
+						freqency, kappa, A, Math.toDegrees(signalAngle),
+						Math.toDegrees(targetAngle),
 						Math.toDegrees(adjustAngle),
 						Math.toDegrees(editedAngle)));
 				return sb.toString();
