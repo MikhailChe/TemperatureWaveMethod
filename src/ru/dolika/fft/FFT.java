@@ -2,6 +2,20 @@ package ru.dolika.fft;
 
 public class FFT {
 
+	public static double[] getFourierForIndex(double[] realData, int index) {
+		double real = 0, imag = 0;
+
+		int N = realData.length;
+		double twoPiIndex = 2 * Math.PI * index;
+		for (int i = 0; i < realData.length; i++) {
+
+			real += Math.cos((twoPiIndex * i) / N) * realData[i];
+			imag -= Math.sin((twoPiIndex * i) / N) * realData[i];
+		}
+
+		return new double[] { real, imag };
+	}
+
 	public static double[] getReal(double[] array) {
 		double[] real = new double[array.length / 2];
 		for (int i = 0; i < real.length; i++) {

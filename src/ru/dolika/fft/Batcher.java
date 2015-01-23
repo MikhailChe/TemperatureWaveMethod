@@ -6,7 +6,6 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Vector;
 import java.util.concurrent.Callable;
@@ -20,8 +19,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-
-import org.jtransforms.fft.DoubleFFT_1D;
 
 public class Batcher implements Callable<String> {
 	static final String LAST_FOLDER = "experiment_storage_lastdirectory";
@@ -170,17 +167,22 @@ public class Batcher implements Callable<String> {
 				// Making calculations
 				double[] col1 = reader.getDataColumn(0);
 				double[] col2 = reader.getDataColumn(1);
-				double[] col2S, FFTdata;
+				double[] col2S;
 				double signalAngle;
 				double freqency = reader.getExperimentFrequency();
 				int freqIndex = 1;
 				col2S = SignalAdder.getOnePeriod(col1, col2);
-				DoubleFFT_1D fft = new DoubleFFT_1D(col2S.length);
-				{
-					FFTdata = Arrays.copyOf(col2S, col2S.length * 2);
-					fft.realForwardFull(FFTdata);
-					signalAngle = FFT.getArgument(FFTdata, freqIndex);
-				}
+
+				/*
+				 * double[] FFTdata; DoubleFFT_1D fft = new
+				 * DoubleFFT_1D(col2S.length); { FFTdata = Arrays.copyOf(col2S,
+				 * col2S.length * 2); fft.realForwardFull(FFTdata); signalAngle
+				 * = FFT.getArgument(FFTdata, freqIndex); }
+				 */
+				long time = System.currentTimeMillis();
+				signalAngle = FFT.getArgument(
+						FFT.getFourierForIndex(col2S, freqIndex), 0);
+				System.out.println(System.currentTimeMillis() - time);
 				double targetAngle = -signalAngle;
 				final double l = (2.02) / 1000.0;
 				double omega = 2 * Math.PI * freqency;
@@ -205,6 +207,7 @@ public class Batcher implements Callable<String> {
 						Math.toDegrees(targetAngle),
 						Math.toDegrees(adjustAngle),
 						Math.toDegrees(editedAngle)));
+
 				return sb.toString();
 			}
 		} catch (IOException e) {
