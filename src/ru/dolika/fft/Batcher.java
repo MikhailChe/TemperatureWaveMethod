@@ -64,7 +64,9 @@ public class Batcher implements Callable<String> {
 		if (fileChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
 			frame.dispose();
 			File folder = fileChooser.getSelectedFile();
+			long time = System.currentTimeMillis();
 			compute(folder);
+			System.out.println((System.currentTimeMillis() - time));
 			prefs.put(LAST_FOLDER, folder.toString());
 		}
 		frame.dispose();
@@ -179,10 +181,8 @@ public class Batcher implements Callable<String> {
 				 * col2S.length * 2); fft.realForwardFull(FFTdata); signalAngle
 				 * = FFT.getArgument(FFTdata, freqIndex); }
 				 */
-				long time = System.currentTimeMillis();
 				signalAngle = FFT.getArgument(
 						FFT.getFourierForIndex(col2S, freqIndex), 0);
-				System.out.println(System.currentTimeMillis() - time);
 				double targetAngle = -signalAngle;
 				final double l = (2.02) / 1000.0;
 				double omega = 2 * Math.PI * freqency;
