@@ -106,7 +106,7 @@ public class DrawingPlane extends JComponent {
 	boolean firstDraw = true;
 
 	public void draw(Graphics2D g) {
-		if (firstDraw) {
+		if (true) {
 			firstDraw = false;
 			g.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
 					RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
@@ -196,8 +196,9 @@ public class DrawingPlane extends JComponent {
 			g.setStroke(new BasicStroke(2f));
 		} else {
 			float val = (float) (2.0 * width / graphData.length);
-			if (val < 0.25)
-				val = 0.25f;
+			if (val < 0.005) {
+				val = 0.005f;
+			}
 			g.setStroke(new BasicStroke(val));
 		}
 		{
@@ -205,6 +206,9 @@ public class DrawingPlane extends JComponent {
 			if (dataLength > 0)
 				prevData = graphData[0];
 			double maxLog = Math.log(dataLength - 1);
+			int zy = (int) map(0, min, max, height - BORDER - 1, BORDER);
+			g.setColor(new Color(0, 128, 128, 128));
+			g.drawLine(BORDER, zy, width - BORDER - 1, zy);
 			for (int i = 1; i < dataLength; i++) {
 
 				double curData = graphData[i];
@@ -218,8 +222,6 @@ public class DrawingPlane extends JComponent {
 				int x2 = (int) map(i, 0, dataLength - 1, BORDER, width - BORDER
 						- 1);
 
-				int zy = (int) map(0, min, max, height - BORDER - 1, BORDER);
-
 				prevData = curData;
 				if (shouldFFT && !isWavelet) {
 					if (i <= 1)
@@ -231,8 +233,7 @@ public class DrawingPlane extends JComponent {
 				}
 				g.setColor(new Color(0, 128, 0));
 				g.drawLine(x1, y1, x2, y2);
-				g.setColor(new Color(0, 128, 128, 128));
-				g.drawLine(x1, zy, x2, zy);
+
 				if (shouldShowIndicies) {
 					g.setColor(Color.RED);
 					g.drawOval(x1 - 1, y1 - 1, 2, 2);

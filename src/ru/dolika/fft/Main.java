@@ -180,9 +180,9 @@ public class Main {
 			DrawingPlane main = (DrawingPlane) obj;
 			if (index < 0)
 				return;
-			main.data = SignalAdder.getOnePeriod(ereader.getDataColumn(0),
-					ereader.getDataColumn(index));
-			// main.data = ereader.getDataColumn(index);
+			// main.data = SignalAdder.getOnePeriod(ereader.getDataColumn(0),
+			// ereader.getDataColumn(index));
+			main.data = ereader.getDataColumn(index);
 			DrawingPlane.fftIndex = 1;
 			DrawingPlane.expFreq = ereader.getExperimentFrequency();
 			main.repaint();

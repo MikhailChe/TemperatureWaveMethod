@@ -143,9 +143,9 @@ public class Batcher implements Callable<String> {
 		file = filename;
 	}
 
-	double[] oldAdjustAD = new double[] { 0, 157.92366, 202.35604, 219.76022,
-			227.49335, 232.46174, 235.95052, 237.89532, 240.84918, 240.88662,
-			243.05881 };
+	double[] oldAdjustAD = new double[] { 0, -22.07634, 22.35604, 39.76022,
+			47.49335, 52.46174, 55.95052, 57.89532, 60.84918, 60.88662,
+			63.05881 };
 	double[] newAdjustWithShld = new double[] { 0, 70.36014, 71.38645,
 			70.84705, 72.06953, 72.13395, 71.54485, 71.64011, 72.71662,
 			71.9964, 74.04955, 75.48641, 74.7094, 74.34681, 75.87396, 74.45393,
@@ -181,8 +181,9 @@ public class Batcher implements Callable<String> {
 				 * col2S.length * 2); fft.realForwardFull(FFTdata); signalAngle
 				 * = FFT.getArgument(FFTdata, freqIndex); }
 				 */
-				signalAngle = FFT.getArgument(
-						FFT.getFourierForIndex(col2S, freqIndex), 0);
+				double[] fourierForIndex = FFT.getFourierForIndex(col2S,
+						freqIndex);
+				signalAngle = FFT.getArgument(fourierForIndex, 0);
 				double targetAngle = -signalAngle;
 				final double l = (2.02) / 1000.0;
 				double omega = 2 * Math.PI * freqency;
@@ -203,9 +204,9 @@ public class Batcher implements Callable<String> {
 				StringBuilder sb = new StringBuilder();
 				sb.append(String.format(
 						"%,5.1f\t%,.5f\t%e\t%,.5f\t%,.5f\t%,.5f\t%,.5f",
-						freqency, kappa, A, Math.toDegrees(signalAngle),
+						freqency, kappa, A, FFT.getAbs(fourierForIndex, 0),
+						Math.toDegrees(signalAngle),
 						Math.toDegrees(targetAngle),
-						Math.toDegrees(adjustAngle),
 						Math.toDegrees(editedAngle)));
 
 				return sb.toString();
