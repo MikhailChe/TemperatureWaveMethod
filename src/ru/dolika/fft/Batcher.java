@@ -13,6 +13,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFileChooser;
@@ -48,7 +49,7 @@ public class Batcher implements Callable<String> {
 		frame.setVisible(true);
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
+		fileChooser.setMultiSelectionEnabled(true);
 		{
 			String lastFolder = prefs.get(LAST_FOLDER, null);
 			if (lastFolder != null) {
@@ -63,11 +64,29 @@ public class Batcher implements Callable<String> {
 
 		if (fileChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
 			frame.dispose();
-			File folder = fileChooser.getSelectedFile();
+			File[] folders = fileChooser.getSelectedFiles();
 			long time = System.currentTimeMillis();
-			compute(folder);
+			ExecutorService epool = Executors.newFixedThreadPool(2);
+
+			for (int i = 0; i < folders.length; i++) {
+				File folder = folders[i];
+				epool.execute(new Runnable() {
+					public void run() {
+						compute(folder);
+						System.out.println(folder);
+					}
+				});
+			}
+			epool.shutdown();
+			try {
+				epool.awaitTermination(1, TimeUnit.DAYS);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			System.out.println((System.currentTimeMillis() - time));
-			prefs.put(LAST_FOLDER, folder.toString());
+			if (folders.length > 0) {
+				prefs.put(LAST_FOLDER, folders[folders.length - 1].toString());
+			}
 		}
 		frame.dispose();
 		System.exit(0);
@@ -101,8 +120,7 @@ public class Batcher implements Callable<String> {
 			e.printStackTrace();
 			return;
 		}
-		ExecutorService pool = Executors.newFixedThreadPool(Runtime
-				.getRuntime().availableProcessors());
+		ExecutorService pool = Executors.newFixedThreadPool(2);
 		Vector<Future<String>> set = new Vector<Future<String>>();
 		for (File f : files) {
 			Callable<String> callable = new Batcher(f);
@@ -111,11 +129,8 @@ public class Batcher implements Callable<String> {
 		}
 		int i = 0;
 		for (Future<String> future : set) {
-
 			try {
-
 				String answer = future.get();
-
 				bw.write(String.format("%s%n", answer, i));
 				i++;
 			} catch (InterruptedException | ExecutionException | IOException e) {
@@ -123,6 +138,7 @@ public class Batcher implements Callable<String> {
 			}
 		}
 		pool.shutdown();
+
 		try {
 			bw.close();
 		} catch (IOException e) {
@@ -143,22 +159,20 @@ public class Batcher implements Callable<String> {
 		file = filename;
 	}
 
-	double[] oldAdjustAD = new double[] { 0, -22.07634, 22.35604, 39.76022,
-			47.49335, 52.46174, 55.95052, 57.89532, 60.84918, 60.88662,
-			63.05881 };
-	double[] newAdjustWithShld = new double[] { 0, 70.36014, 71.38645,
-			70.84705, 72.06953, 72.13395, 71.54485, 71.64011, 72.71662,
-			71.9964, 74.04955, 75.48641, 74.7094, 74.34681, 75.87396, 74.45393,
-			74.59327, 75.85669, 75.20807, 77.03656, 76.87302, 77.95942,
-			76.56962, 76.47844, 78.47918, 79.40677, 78.0511, 82.36202,
-			81.95725, 83.30791, 82.55963 };
-	double[] newAdjustWoShld = new double[] { 0, 70.92, 70.92, 71.28, 71.28,
-			70.92, 70.69509, 70.47667, 71.1, 70.74, 70.92, 71.82, 71.4702,
-			70.92, 71.4899, 70.2, 71.1, 71.09557, 70.38, 71.64, 70.776, 71.46,
-			70.13042, 69.40577, 69.66, 70.92, 69.03794, 72.18, 71.47712, 71.82,
-			72.72 };
+	double[] oldAdjust = new double[] { 0, -30.28125, 22.45054, 42.31053,
+			52.66231, 57.94369, 61.25883, 63.19492, 65.91531, 66.59776,
+			67.54032, 68.92635, 69.68961, 69.81704, 71.40068, 70.82494,
+			72.1481, 72.75135, 72.83383, 74.10869, 73.81043, 74.90718,
+			73.45702, 72.85313, 74.73567, 75.30558, 74.34102, 77.86631,
+			77.71087, 78.22714, 79.71899 };
+	double[] newAdjust = new double[] { 0, 75.18617, 75.71124, 76.25895,
+			76.12594, 76.31025, 75.96452, 76.08309, 76.43141, 76.50549,
+			76.72915, 77.74432, 77.32127, 77.24342, 76.88853, 76.40208,
+			77.10222, 77.0721, 76.88899, 77.56667, 78.07193, 77.74368,
+			76.24314, 76.58774, 76.23381, 78.21338, 76.15771, 79.31749,
+			78.52636, 78.72754, 79.91789 };
 
-	final double[] SHIFT = oldAdjustAD;
+	final double[] SHIFT = newAdjust;
 
 	public String call() {
 
@@ -168,7 +182,7 @@ public class Batcher implements Callable<String> {
 			if (numCol > 1) {
 				// Making calculations
 				double[] col1 = reader.getDataColumn(0);
-				double[] col2 = reader.getDataColumn(1);
+				double[] col2 = reader.getDataColumn(4);
 				double[] col2S;
 				double signalAngle;
 				double freqency = reader.getExperimentFrequency();
@@ -185,7 +199,7 @@ public class Batcher implements Callable<String> {
 						freqIndex);
 				signalAngle = FFT.getArgument(fourierForIndex, 0);
 				double targetAngle = -signalAngle;
-				final double l = (2.02) / 1000.0;
+				final double l = (0.935) / 1000.0;
 				double omega = 2 * Math.PI * freqency;
 				double currentShift = getCurrentShift(freqency);
 				double adjustAngle = targetAngle - Math.toRadians(currentShift);
@@ -202,13 +216,12 @@ public class Batcher implements Callable<String> {
 				double A = (omega * l * l) / (kappa * kappa);
 
 				StringBuilder sb = new StringBuilder();
-				sb.append(String.format(
-						"%,5.1f\t%,.5f\t%e\t%,.5f\t%,.5f\t%,.5f\t%,.5f",
-						freqency, kappa, A, FFT.getAbs(fourierForIndex, 0),
-						Math.toDegrees(signalAngle),
+				sb.append(String.format(Locale.forLanguageTag("RU"),
+						"%4.1f\t%.2f\t%e\t%.0f\t%.5f\t%.5f\t%.5f", freqency,
+						kappa, A, FFT.getAbs(fourierForIndex, 0),
 						Math.toDegrees(targetAngle),
+						Math.toDegrees(adjustAngle),
 						Math.toDegrees(editedAngle)));
-
 				return sb.toString();
 			}
 		} catch (IOException e) {
