@@ -5,14 +5,12 @@ public class FFT {
 	public static double[] getFourierForIndex(double[] realData, int index) {
 		double real = 0, imag = 0;
 
-		int N = realData.length;
-		double twoPiIndex = 2 * Math.PI * index;
+		double N = realData.length;
+		double twoPiIndexDivN = (2 * Math.PI * index) / N;
 		for (int i = 0; i < realData.length; i++) {
-
-			real += Math.cos((twoPiIndex * i) / N) * realData[i];
-			imag -= Math.sin((twoPiIndex * i) / N) * realData[i];
+			real += Math.cos((twoPiIndexDivN * i)) * realData[i];
+			imag -= Math.sin((twoPiIndexDivN * i)) * realData[i];
 		}
-
 		return new double[] { real, imag };
 	}
 

@@ -6,9 +6,17 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.Arrays;
 
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 
 import org.jtransforms.fft.DoubleFFT_1D;
 
@@ -17,10 +25,216 @@ public class DrawingPlane extends JComponent {
 	 * 
 	 */
 	private static final long serialVersionUID = 3432370326222944519L;
+	final int BORDER = 5;
+	public double data[];
+	public int channelNumber = 0;
+	public int peakShiftSamples = 0;
+	static double expFreq;
+	private double min = Double.MAX_VALUE;
+	private double max = Double.MIN_VALUE;
+	public static boolean shouldFilter = false;
+	public static boolean shouldAFC = false;
+	public static boolean isWavelet = false;
+	public static int maxHarmony = 1;
+	public static boolean shouldShowIndicies = false;
+	public static int fftIndex = 100;
+
+	static double x1perc = 0;
+	static double x2perc = 1;
+	final static double ZOOM_AMOUNT = 1.25;
+
+	boolean calculateSelection = false;
+	int selectionMinIndex = 0;
+	int selectionMaxIndex = 0;
+
+	int colNum;
+
+	ExperimentReader thisEreader = null;
 
 	public DrawingPlane() {
 		setPreferredSize(new Dimension(640, 480));
 		setFocusable(true);
+		DrawinPlaneListener listener = new DrawinPlaneListener();
+		addMouseMotionListener(listener);
+		addMouseListener(listener);
+		addMouseWheelListener(listener);
+		addKeyListener(listener);
+	}
+
+	public void loadData(ExperimentReader ereader, int channel, boolean full) {
+		if (ereader != null) {
+			thisEreader = ereader;
+		} else {
+			return;
+		}
+		if (channel < 0)
+			return;
+		if (full) {
+			this.data = ereader.getDataColumn(channel);
+		} else {
+			this.data = ereader.getOnePeriod()[channel];
+		}
+		colNum = ereader.getColumnCount();
+		this.channelNumber = channel;
+		DrawingPlane.fftIndex = 1;
+		DrawingPlane.expFreq = ereader.getExperimentFrequency();
+		double[] peaks = ereader.getDataColumn(0);
+		for (int i = 0; i < Math.min(3000, peaks.length); i++) {
+			if (peaks[i] > 5000) {
+				this.peakShiftSamples = i;
+				break;
+			}
+		}
+
+		this.repaint();
+	}
+
+	private class DrawinPlaneListener implements MouseListener,
+			MouseMotionListener, MouseWheelListener, KeyListener {
+
+		boolean selectionStarted = true;
+		int selectionStartIndex = -1;
+		int selectionStopIndex = -1;
+		private int arrayIndex = 0;
+
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			if (SwingUtilities.isLeftMouseButton(e)) {
+				if (selectionStarted) {
+					double periodLength = thisEreader.getOnePeriodLength();
+					selectionStopIndex = getXindexAt(e.getX());
+					double diff = selectionStopIndex - selectionStartIndex;
+					diff -= diff % periodLength;
+					selectionStopIndex = (int) (selectionStartIndex + diff);
+					if (selectionStartIndex < selectionStopIndex) {
+						selectionMinIndex = selectionStartIndex;
+						selectionMaxIndex = selectionStopIndex;
+					} else {
+						selectionMinIndex = selectionStopIndex;
+						selectionMaxIndex = selectionStartIndex;
+					}
+					repaint();
+				}
+			}
+		}
+
+		@Override
+		public void mouseMoved(MouseEvent e) {
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mouseExited(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
+			if (SwingUtilities.isLeftMouseButton(e)) {
+				selectionStarted = true;
+				selectionStartIndex = getXindexAt(e.getX());
+				selectionMinIndex = selectionMaxIndex = selectionStartIndex;
+				repaint();
+			}
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			if (SwingUtilities.isLeftMouseButton(e)) {
+				if (selectionStarted) {
+					selectionStopIndex = getXindexAt(e.getX());
+					if (selectionStartIndex < selectionStopIndex) {
+						selectionMinIndex = selectionStartIndex;
+						selectionMaxIndex = selectionStopIndex;
+					} else {
+						selectionMinIndex = selectionStopIndex;
+						selectionMaxIndex = selectionStartIndex;
+					}
+					selectionStarted = false;
+					repaint();
+				}
+			}
+		}
+
+		@Override
+		public void mouseWheelMoved(MouseWheelEvent e) {
+			if (e.getWheelRotation() > 0) {
+				zoomIn(e.getX(), e.getY());
+			} else {
+				zoomOut(e.getX(), e.getY());
+			}
+			repaint();
+		}
+
+		@Override
+		public void keyReleased(KeyEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void keyTyped(KeyEvent e) {
+			// TODO Auto-generated method stub
+
+		}
+
+		boolean displayFullArray = true;
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_UP) {
+				if (arrayIndex < colNum - 1)
+					arrayIndex++;
+				loadData(thisEreader, arrayIndex, displayFullArray);
+			} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+				if (arrayIndex != 0)
+					arrayIndex--;
+				loadData(thisEreader, arrayIndex, displayFullArray);
+			} else if (e.getKeyCode() == KeyEvent.VK_F) {
+				DrawingPlane.shouldFilter = !DrawingPlane.shouldFilter;
+				repaint();
+			} else if (e.getKeyCode() == KeyEvent.VK_Q) {
+				DrawingPlane.shouldAFC = !DrawingPlane.shouldAFC;
+				repaint();
+			} else if (e.getKeyCode() == KeyEvent.VK_W) {
+				DrawingPlane.isWavelet = !DrawingPlane.isWavelet;
+				repaint();
+			} else if (e.getKeyCode() == KeyEvent.VK_S) {
+				displayFullArray = false;
+				loadData(thisEreader, arrayIndex, displayFullArray);
+			} else if (e.getKeyCode() == KeyEvent.VK_N) {
+				displayFullArray = true;
+				loadData(thisEreader, arrayIndex, displayFullArray);
+			} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+				if (DrawingPlane.maxHarmony > 1) {
+					DrawingPlane.maxHarmony--;
+				}
+				repaint();
+			} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+				if (DrawingPlane.maxHarmony < 301) {
+					DrawingPlane.maxHarmony++;
+				}
+				repaint();
+			}
+		}
+
+	}
+
+	public int getXindexAt(int xpoint) {
+		return (int) map(xpoint, 0, getWidth(), getZoomMinimIndex(),
+				getZoomMaximIndex());
+
+	}
+
+	public int getXpointAtIndex(int index) {
+		return (int) map(index, getZoomMinimIndex(), getZoomMaximIndex(),
+				BORDER, getWidth() - BORDER);
 	}
 
 	public void zoomIn(int x, int y) {
@@ -82,20 +296,22 @@ public class DrawingPlane extends JComponent {
 
 	}
 
-	double data[];
-	static double expFreq;
-	private double min = Double.MAX_VALUE;
-	private double max = Double.MIN_VALUE;
-	public static boolean shouldFilter = false;
-	public static boolean shouldFFT = false;
-	public static boolean isWavelet = false;
-	public static int maxHarmony = 1;
-	public static boolean shouldShowIndicies = false;
-	public static int fftIndex = 100;
+	public int getZoomMinimIndex() {
+		int minim = (int) (data.length * x1perc);
+		if (minim < 0) {
+			minim = 0;
+		}
+		return minim;
+	}
 
-	static double x1perc = 0;
-	static double x2perc = 1;
-	final static double ZOOM_AMOUNT = 1.25;
+	public int getZoomMaximIndex() {
+		int minim = (int) (data.length * x2perc);
+		if (minim < 0) {
+			minim = 0;
+		}
+		return minim;
+
+	}
 
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -127,35 +343,32 @@ public class DrawingPlane extends JComponent {
 		}
 		if (data == null)
 			return;
-		double[] dataCopy = Arrays.copyOf(data, data.length);
-		double[] FFTdata = Arrays.copyOf(data, data.length * 2);
+		double[] dataCopy = null;
+		double[] FFTdata = null;
 
-		DoubleFFT_1D fourier = new DoubleFFT_1D(dataCopy.length);
-		fourier.realForwardFull(FFTdata);
-
-		if (shouldFilter) {
-			for (int i = 0; i < FFTdata.length; i++) {
-				if ((i < 2) || (i / 2 > (maxHarmony))
-						|| (i / 2 % fftIndex != 0)) {
-					FFTdata[i] = 0;
+		if (shouldFilter || shouldAFC) {
+			FFTdata = Arrays.copyOf(data, data.length * 2);
+			DoubleFFT_1D fourier = new DoubleFFT_1D(data.length);
+			fourier.realForwardFull(FFTdata);
+			if (shouldFilter) {
+				for (int i = 0; i < FFTdata.length; i++) {
+					if ((i < 2) || (i / 2 > (maxHarmony))
+							|| (i / 2 % fftIndex != 0)) {
+						FFTdata[i] = 0;
+					}
 				}
+				dataCopy = Arrays.copyOf(FFTdata, FFTdata.length);
+				fourier.complexInverse(dataCopy, true);
+				dataCopy = FFT.getAbs(dataCopy);
 			}
-			dataCopy = Arrays.copyOf(FFTdata, FFTdata.length);
-			fourier.complexInverse(dataCopy, true);
-			dataCopy = FFT.getReal(dataCopy);
+		} else {
+			dataCopy = data;
 		}
-		int maxim = (int) (dataCopy.length * x2perc + 0.5);
-		if (maxim >= dataCopy.length) {
-			maxim = dataCopy.length - 1;
-		}
-		int minim = (int) (dataCopy.length * x1perc);
-		if (minim < 0) {
-			minim = 0;
-		}
-		double[] graphData = Arrays.copyOfRange(dataCopy, minim, maxim);
-		findExtreme(graphData);
+		int maxim = getZoomMaximIndex();
+		int minim = getZoomMinimIndex();
+		double[] graphData = null;
 
-		if (shouldFFT) {
+		if (shouldAFC) {
 			if (isWavelet) {
 				int[] wavelet = new int[dataCopy.length];
 				for (int i = 0; i < dataCopy.length; i++) {
@@ -174,9 +387,10 @@ public class DrawingPlane extends JComponent {
 				graphData = FFT.getAbs(FFTdata);
 				graphData[0] = 0;
 			}
-			findExtreme(graphData);
+		} else {
+			graphData = Arrays.copyOfRange(dataCopy, minim, maxim);
 		}
-
+		findExtreme(graphData);
 		int width = getWidth();
 		int height = getHeight();
 
@@ -189,7 +403,6 @@ public class DrawingPlane extends JComponent {
 			g.drawLine(width - 2, 0, width - 2, height);
 		}
 
-		final int BORDER = 5;
 		int dataLength = graphData.length;
 
 		if (graphData.length < width) {
@@ -209,8 +422,8 @@ public class DrawingPlane extends JComponent {
 			int zy = (int) map(0, min, max, height - BORDER - 1, BORDER);
 			g.setColor(new Color(0, 128, 128, 128));
 			g.drawLine(BORDER, zy, width - BORDER - 1, zy);
-			for (int i = 1; i < dataLength; i++) {
 
+			for (int i = 1; i < dataLength; i++) {
 				double curData = graphData[i];
 
 				int y1 = (int) map(prevData, min, max, height - BORDER - 1,
@@ -223,7 +436,7 @@ public class DrawingPlane extends JComponent {
 						- 1);
 
 				prevData = curData;
-				if (shouldFFT && !isWavelet) {
+				if (shouldAFC && !isWavelet) {
 					if (i <= 1)
 						continue;
 					x1 = (int) map(Math.log(i - 1) / maxLog, 0, 1, BORDER,
@@ -234,16 +447,15 @@ public class DrawingPlane extends JComponent {
 				g.setColor(new Color(0, 128, 0));
 				g.drawLine(x1, y1, x2, y2);
 
-				if (shouldShowIndicies) {
+				if (shouldShowIndicies && dataLength < getWidth() / 2) {
 					g.setColor(Color.RED);
 					g.drawOval(x1 - 1, y1 - 1, 2, 2);
 					g.setColor(Color.BLUE);
 					g.drawString("" + ((i - 1) + minim), x1, y1);
 				}
-
 			}
 		}
-		if (shouldFFT && !isWavelet) {
+		if (shouldAFC && !isWavelet) {
 			double frequency = FFT.getFreqency(fftIndex, 1000 * expFreq,
 					data.length);
 			double angle = Math.toDegrees(FFT.getArgument(FFTdata, fftIndex));
@@ -257,6 +469,62 @@ public class DrawingPlane extends JComponent {
 			g.drawString("Амплитуда:\t"
 					+ ((int) FFT.getAbs(FFTdata, fftIndex) / FFTdata.length),
 					BORDER, g.getFontMetrics().getHeight() * 3 + BORDER);
+		} else {
+			if (selectionMaxIndex != selectionMinIndex) {
+				int minCoordX = getXpointAtIndex(selectionMinIndex);
+				int maxCoordX = getXpointAtIndex(selectionMaxIndex);
+				g.setColor(new Color(0, 0, 255, 64));
+				g.fillRect(minCoordX, BORDER, maxCoordX - minCoordX,
+						getHeight() - BORDER * 2);
+
+				double[] partFFTdata = Arrays.copyOfRange(data,
+						selectionMinIndex, selectionMaxIndex);
+
+				// 1 period = 1000 samples;
+				// 2*PI*x/1000 = currentOmega (w)
+				double FFTfreq = 1.0 / 1000.0;
+				double[] partFFTout = FFT.getFourierForIndex(partFFTdata,
+						(int) (FFTfreq * partFFTdata.length));
+				double argument = FFT.getArgument(partFFTout, 0);
+				double amplitude = FFT.getAbs(partFFTout, 0)
+						/ partFFTdata.length;
+				double zeroShift = 2.0
+						* Math.PI
+						* (((selectionMinIndex % 1000) - peakShiftSamples) / 1000.0);
+				while (zeroShift <= Math.PI) {
+					zeroShift += 2.0 * Math.PI;
+				}
+				while (zeroShift >= Math.PI) {
+					zeroShift -= 2.0 * Math.PI;
+				}
+				double targetAngle = -(argument - zeroShift);
+				double currentShift = Batcher.getCurrentShift(channelNumber,
+						expFreq);
+				double adjustAngle = targetAngle - Math.toRadians(currentShift);
+				double editedAngle = adjustAngle - Math.PI / 4;
+				while (editedAngle < 0) {
+					editedAngle += Math.PI * 2;
+				}
+				while (editedAngle > 2 * Math.PI) {
+					editedAngle -= Math.PI * 2;
+				}
+				double omega = 2 * Math.PI * expFreq;
+				double kappaSquared = 2 * (editedAngle * editedAngle);
+				double A = (omega * Batcher.sampleLength * Batcher.sampleLength)
+						/ kappaSquared;
+				g.setColor(Color.black);
+				g.setFont(g.getFont().deriveFont(20f));
+				int fontMetricHeight = g.getFontMetrics().getHeight();
+				g.drawString("Температуропроводность: " + A, BORDER,
+						fontMetricHeight + BORDER);
+				g.drawString("Сдвиг фаз:\t" + Math.toDegrees(editedAngle),
+						BORDER, fontMetricHeight * 2 + BORDER);
+				g.drawString("нуль-сдвиг:\t" + zeroShift, BORDER,
+						fontMetricHeight * 3 + BORDER);
+				g.drawString("Амплитуда:\t" + amplitude, BORDER,
+						fontMetricHeight * 4 + BORDER);
+
+			}
 		}
 	}
 }

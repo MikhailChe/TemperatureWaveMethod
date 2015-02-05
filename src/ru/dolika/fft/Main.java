@@ -1,11 +1,11 @@
 package ru.dolika.fft;
 
 import java.awt.GridLayout;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.util.prefs.Preferences;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -18,6 +18,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 public class Main {
+	static final String LAST_FILE = "experiment_storage_lastfile";
+	static Preferences prefs = Preferences.userNodeForPackage(Main.class);
 
 	public static void main(String[] args) {
 		try {
@@ -56,34 +58,49 @@ public class Main {
 		frame.setVisible(true);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-		JFileChooser chooser = new JFileChooser(Main.class
-				.getProtectionDomain().getCodeSource().getLocation().getPath());
-		chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
-		int chooserVal = chooser.showOpenDialog(frame);
 		ExperimentReader ereader;
 
-		if (chooserVal == JFileChooser.APPROVE_OPTION) {
-			try {
-				ereader = new ExperimentReader(chooser.getSelectedFile()
-						.toPath());
-			} catch (IOException e) {
-				e.printStackTrace();
+		Path selectedFile = null;
+		if (args.length == 0) {
+			JFileChooser chooser = new JFileChooser(Main.class
+					.getProtectionDomain().getCodeSource().getLocation()
+					.getPath());
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			{
+				String lastFile = prefs.get(LAST_FILE, null);
+				if (lastFile != null) {
+					try {
+						File f = new File(new File(lastFile).getCanonicalPath());
+						chooser.setSelectedFile(f);
+					} catch (Exception e) {
+
+					}
+				}
+			}
+
+			int chooserVal = chooser.showOpenDialog(frame);
+
+			if (chooserVal == JFileChooser.APPROVE_OPTION) {
+				prefs.put(LAST_FILE, chooser.getSelectedFile().toString());
+				selectedFile = chooser.getSelectedFile().toPath();
+			} else {
 				System.exit(0);
 				return;
 			}
 		} else {
+
+			selectedFile = new File(args[0]).toPath();
+		}
+		try {
+			ereader = new ExperimentReader(selectedFile);
+		} catch (IOException e) {
+			e.printStackTrace();
 			System.exit(0);
 			return;
 		}
-		frame.setTitle(chooser.getSelectedFile().toString() + ", частота: "
+		frame.setTitle(selectedFile.toString() + ", частота: "
 				+ ereader.getExperimentFrequency());
-
-		int colNum = ereader.getColumnCount();
-		System.out.println(String.format("There are %d number of data columns",
-				colNum));
-
-		loadData(main, ereader, arrayIndex);
+		main.loadData(ereader, 0, true);
 		showIndiciesMenuItem.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
@@ -118,74 +135,5 @@ public class Main {
 				}
 			}
 		});
-
-		main.addMouseWheelListener(new MouseWheelListener() {
-			@Override
-			public void mouseWheelMoved(MouseWheelEvent arg0) {
-
-				if (arg0.getWheelRotation() > 0) {
-					main.zoomIn(arg0.getX(), arg0.getY());
-				} else {
-					main.zoomOut(arg0.getX(), arg0.getY());
-				}
-				main.repaint();
-			}
-		});
-		main.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_UP) {
-					if (arrayIndex < colNum - 1)
-						arrayIndex++;
-					loadData(main, ereader, arrayIndex);
-				} else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-					if (arrayIndex != 0)
-						arrayIndex--;
-					loadData(main, ereader, arrayIndex);
-				} else if (e.getKeyCode() == KeyEvent.VK_F) {
-					DrawingPlane.shouldFilter = !DrawingPlane.shouldFilter;
-					main.repaint();
-				} else if (e.getKeyCode() == KeyEvent.VK_Q) {
-					DrawingPlane.shouldFFT = !DrawingPlane.shouldFFT;
-					main.repaint();
-				} else if (e.getKeyCode() == KeyEvent.VK_W) {
-					DrawingPlane.isWavelet = !DrawingPlane.isWavelet;
-					main.repaint();
-				} else if (e.getKeyCode() == KeyEvent.VK_S) {
-					loadData(main, ereader, arrayIndex);
-				} else if (e.getKeyCode() == KeyEvent.VK_N) {
-					loadData(main, ereader, arrayIndex);
-				} else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-					if (DrawingPlane.maxHarmony > 1) {
-						DrawingPlane.maxHarmony--;
-					}
-					main.repaint();
-				} else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-					if (DrawingPlane.maxHarmony < 301) {
-						DrawingPlane.maxHarmony++;
-					}
-					main.repaint();
-
-				}
-
-			}
-		});
-
-	}
-
-	private static int arrayIndex = 0;
-
-	private static void loadData(Object obj, ExperimentReader ereader, int index) {
-		if (obj instanceof DrawingPlane) {
-			DrawingPlane main = (DrawingPlane) obj;
-			if (index < 0)
-				return;
-			//main.data = SignalAdder.getOnePeriod(ereader.getDataColumn(0),
-			//		ereader.getDataColumn(index));
-			 main.data = ereader.getDataColumn(index);
-			DrawingPlane.fftIndex = 1;
-			DrawingPlane.expFreq = ereader.getExperimentFrequency();
-			main.repaint();
-		}
 	}
 }
