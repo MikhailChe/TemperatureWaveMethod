@@ -72,6 +72,6 @@ public class BatcherLaunch {
 		}
 		frame.setVisible(false);
 		frame.dispose();
-		System.out.println(Profiler.getInstance());
+		//System.out.println(Profiler.getInstance());
 	}
 }
