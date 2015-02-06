@@ -29,12 +29,10 @@ public class DrawingPlane extends JComponent {
 	public double data[];
 	public int channelNumber = 0;
 	public int peakShiftSamples = 0;
-	static double expFreq;
 	private double min = Double.MAX_VALUE;
 	private double max = Double.MIN_VALUE;
 	public static boolean shouldFilter = false;
 	public static boolean shouldAFC = false;
-	public static boolean isWavelet = false;
 	public static int maxHarmony = 1;
 	public static boolean shouldShowIndicies = false;
 	public static int fftIndex = 100;
@@ -77,7 +75,6 @@ public class DrawingPlane extends JComponent {
 		colNum = ereader.getColumnCount();
 		this.channelNumber = channel;
 		DrawingPlane.fftIndex = 1;
-		DrawingPlane.expFreq = ereader.getExperimentFrequency();
 		double[] peaks = ereader.getDataColumn(0);
 		for (int i = 0; i < Math.min(3000, peaks.length); i++) {
 			if (peaks[i] > 5000) {
@@ -97,22 +94,26 @@ public class DrawingPlane extends JComponent {
 		int selectionStopIndex = -1;
 		private int arrayIndex = 0;
 
+		private void setSelectionMaxMin(double Xcoord) {
+			double periodLength = thisEreader.getOnePeriodLength() / 2.0;
+			selectionStopIndex = getXindexAt((int) Xcoord);
+			double diff = selectionStopIndex - selectionStartIndex;
+			diff -= diff % periodLength;
+			selectionStopIndex = (int) (selectionStartIndex + diff);
+			if (selectionStartIndex < selectionStopIndex) {
+				selectionMinIndex = selectionStartIndex;
+				selectionMaxIndex = selectionStopIndex;
+			} else {
+				selectionMinIndex = selectionStopIndex;
+				selectionMaxIndex = selectionStartIndex;
+			}
+		}
+
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			if (SwingUtilities.isLeftMouseButton(e)) {
 				if (selectionStarted) {
-					double periodLength = thisEreader.getOnePeriodLength();
-					selectionStopIndex = getXindexAt(e.getX());
-					double diff = selectionStopIndex - selectionStartIndex;
-					diff -= diff % periodLength;
-					selectionStopIndex = (int) (selectionStartIndex + diff);
-					if (selectionStartIndex < selectionStopIndex) {
-						selectionMinIndex = selectionStartIndex;
-						selectionMaxIndex = selectionStopIndex;
-					} else {
-						selectionMinIndex = selectionStopIndex;
-						selectionMaxIndex = selectionStartIndex;
-					}
+					setSelectionMaxMin(e.getX());
 					repaint();
 				}
 			}
@@ -148,15 +149,7 @@ public class DrawingPlane extends JComponent {
 		public void mouseReleased(MouseEvent e) {
 			if (SwingUtilities.isLeftMouseButton(e)) {
 				if (selectionStarted) {
-					selectionStopIndex = getXindexAt(e.getX());
-					if (selectionStartIndex < selectionStopIndex) {
-						selectionMinIndex = selectionStartIndex;
-						selectionMaxIndex = selectionStopIndex;
-					} else {
-						selectionMinIndex = selectionStopIndex;
-						selectionMaxIndex = selectionStartIndex;
-					}
-					selectionStarted = false;
+					setSelectionMaxMin(e.getX());
 					repaint();
 				}
 			}
@@ -174,14 +167,10 @@ public class DrawingPlane extends JComponent {
 
 		@Override
 		public void keyReleased(KeyEvent e) {
-			// TODO Auto-generated method stub
-
 		}
 
 		@Override
 		public void keyTyped(KeyEvent e) {
-			// TODO Auto-generated method stub
-
 		}
 
 		boolean displayFullArray = true;
@@ -201,9 +190,6 @@ public class DrawingPlane extends JComponent {
 				repaint();
 			} else if (e.getKeyCode() == KeyEvent.VK_Q) {
 				DrawingPlane.shouldAFC = !DrawingPlane.shouldAFC;
-				repaint();
-			} else if (e.getKeyCode() == KeyEvent.VK_W) {
-				DrawingPlane.isWavelet = !DrawingPlane.isWavelet;
 				repaint();
 			} else if (e.getKeyCode() == KeyEvent.VK_S) {
 				displayFullArray = false;
@@ -350,6 +336,7 @@ public class DrawingPlane extends JComponent {
 			FFTdata = Arrays.copyOf(data, data.length * 2);
 			DoubleFFT_1D fourier = new DoubleFFT_1D(data.length);
 			fourier.realForwardFull(FFTdata);
+			System.out.println("makeinf fourier");
 			if (shouldFilter) {
 				for (int i = 0; i < FFTdata.length; i++) {
 					if ((i < 2) || (i / 2 > (maxHarmony))
@@ -369,27 +356,16 @@ public class DrawingPlane extends JComponent {
 		double[] graphData = null;
 
 		if (shouldAFC) {
-			if (isWavelet) {
-				int[] wavelet = new int[dataCopy.length];
-				for (int i = 0; i < dataCopy.length; i++) {
-					wavelet[i] = (int) dataCopy[i];
-				}
-				wavelet = FFT.discreteHaarWaveletTransform(wavelet);
-				double[] wvd = new double[wavelet.length];
-				for (int i = 0; i < wvd.length; i++) {
-					wvd[i] = wavelet[i];
-				}
+			if (FFTdata == null)
+				return;
+			System.out.println("FFTdata OK");
 
-				graphData = Arrays.copyOfRange(wvd,
-						wvd.length / 4096 / 128 + 8, wvd.length);
-
-			} else {
-				graphData = FFT.getAbs(FFTdata);
-				graphData[0] = 0;
-			}
+			graphData = FFT.getAbs(FFTdata);
+			graphData[0] = 0;
 		} else {
 			graphData = Arrays.copyOfRange(dataCopy, minim, maxim);
 		}
+
 		findExtreme(graphData);
 		int width = getWidth();
 		int height = getHeight();
@@ -398,7 +374,7 @@ public class DrawingPlane extends JComponent {
 			g.setColor(Color.red);
 			g.drawLine(1, 0, 1, height);
 		}
-		if (maxim == dataCopy.length - 1) {
+		if (maxim == data.length - 1) {
 			g.setColor(Color.red);
 			g.drawLine(width - 2, 0, width - 2, height);
 		}
@@ -436,7 +412,7 @@ public class DrawingPlane extends JComponent {
 						- 1);
 
 				prevData = curData;
-				if (shouldAFC && !isWavelet) {
+				if (shouldAFC) {
 					if (i <= 1)
 						continue;
 					x1 = (int) map(Math.log(i - 1) / maxLog, 0, 1, BORDER,
@@ -455,9 +431,9 @@ public class DrawingPlane extends JComponent {
 				}
 			}
 		}
-		if (shouldAFC && !isWavelet) {
-			double frequency = FFT.getFreqency(fftIndex, 1000 * expFreq,
-					data.length);
+		if (shouldAFC) {
+			double frequency = FFT.getFreqency(fftIndex,
+					1000 * thisEreader.getExperimentFrequency(), data.length);
 			double angle = Math.toDegrees(FFT.getArgument(FFTdata, fftIndex));
 
 			g.setColor(Color.black);
@@ -499,7 +475,7 @@ public class DrawingPlane extends JComponent {
 				}
 				double targetAngle = -(argument - zeroShift);
 				double currentShift = Batcher.getCurrentShift(channelNumber,
-						expFreq);
+						thisEreader.getExperimentFrequency());
 				double adjustAngle = targetAngle - Math.toRadians(currentShift);
 				double editedAngle = adjustAngle - Math.PI / 4;
 				while (editedAngle < 0) {
@@ -508,7 +484,8 @@ public class DrawingPlane extends JComponent {
 				while (editedAngle > 2 * Math.PI) {
 					editedAngle -= Math.PI * 2;
 				}
-				double omega = 2 * Math.PI * expFreq;
+				double omega = 2 * Math.PI
+						* thisEreader.getExperimentFrequency();
 				double kappaSquared = 2 * (editedAngle * editedAngle);
 				double A = (omega * Batcher.sampleLength * Batcher.sampleLength)
 						/ kappaSquared;
