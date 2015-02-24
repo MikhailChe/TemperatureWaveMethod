@@ -14,6 +14,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.swing.JOptionPane;
+
 public class Batcher implements Callable<String> {
 
 	File file;
@@ -51,6 +53,9 @@ public class Batcher implements Callable<String> {
 						Files.delete(resultFile.toPath());
 					} catch (java.nio.file.FileSystemException e) {
 						exception = true;
+						JOptionPane.showMessageDialog(null,
+								resultFile.toString(), "Close the file!!!",
+								JOptionPane.ERROR_MESSAGE);
 						System.err.println("Please, close the file: "
 								+ resultFile.toString());
 						try {
@@ -77,9 +82,11 @@ public class Batcher implements Callable<String> {
 			set.add(future);
 		}
 		try {
-			bw.write(String
-					.format("%1$s\t%2$s\t%3$s\t%4$s\t%5$s\t%2$s\t%3$s\t%4$s\t%5$s\t%2$s\t%3$s\t%4$s\t%5$s%n",
-							"f", "K", "A", "Umax", "phi"));
+			bw.write("f\t");
+			for (int i = 0; i < 4; i++) {
+				bw.write("K\tA\tUmax\tphiTarget\tphiAdjust\tphiEdited\t");
+			}
+			bw.write("\r\n");
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -120,9 +127,18 @@ public class Batcher implements Callable<String> {
 			76.40208, 77.10222, 77.0721, 76.88899, 77.56667, 78.07193,
 			77.74368, 76.24314, 76.58774, 76.23381, 78.21338, 76.15771,
 			79.31749, 78.52636, 78.72754, 79.91789 };
+	final static double[] newAdjustnewFilter = new double[] { 0, 71.02, 71.97,
+			72.03, 72.22, 72.06, 72.4, 72.62, 72.38, 72.84, 73.32, 73.31,
+			73.16, 73.43, 73.71, 73.96, 73.89, 74.07, 73.67, 74.23, 74.29,
+			74.53, 74.64, 75.11, 75.22, 75.27, 75.93, 75.75, 76.62, 76.89,
+			76.77 };
+	final static double[] newAdjustnewFilterShld = new double[] { 0, 69.68,
+			70.36, 70.13, 70.67, 71.11, 71.21, 72.75, 70.8, 72.3, 71.99, 74.06,
+			72.73, 71.27, 73.26, 71.75, 73, 72.93, 74.72, 73.79, 73.46, 72.72,
+			73.22, 74.48, 73.05, 74.38, 73.35, 74.25, 72.08, 77.03, 78.83 };
 
-	final static double[][] SHIFTS = { null, oldAdjust, newAdjust, null,
-			newAdjust };
+	final static double[][] SHIFTS = { null, newAdjustnewFilterShld,
+			newAdjustnewFilterShld, null, null };
 	final static double sampleLength = (0.935) / 1000.0;
 
 	public String call() {
@@ -143,17 +159,15 @@ public class Batcher implements Callable<String> {
 			final int FREQ_INDEX = 2;
 
 			StringBuilder sb = new StringBuilder();
-			sb.append(String.format(Locale.getDefault(), "%4.1f",
-					EXPERIMENT_FREQUENCY));
-
 			double[][] singlePeriod = reader.getOnePeriod();
+
+			sb.append(String.format(Locale.getDefault(), "%4.1f\t",
+					EXPERIMENT_FREQUENCY));
 			for (int currentChannel = 1; currentChannel < Math.min(numCol,
 					SHIFTS.length); currentChannel++) {
 				if (SHIFTS[currentChannel] == null)
 					continue;
-				// Making calculations
 				double[] col2S = singlePeriod[currentChannel];
-
 				double[] fourierForIndex = FFT.getFourierForIndex(col2S,
 						FREQ_INDEX);
 				double signalAngle = FFT.getArgument(fourierForIndex, 0);
@@ -174,10 +188,14 @@ public class Batcher implements Callable<String> {
 
 				double A = (omega * sampleLength * sampleLength)
 						/ (kappa * kappa);
+
 				sb.append(String.format(Locale.getDefault(),
-						"\t%.1f\t%.2e\t%.0f\t%.0f", kappa, A,
+						"%.3f\t%.2e\t%.0f\t%.2f\t%.2f\t%.2f\t", kappa, A,
 						FFT.getAbs(fourierForIndex, 0) / 1000,
+						Math.toDegrees(targetAngle),
+						Math.toDegrees(adjustAngle),
 						Math.toDegrees(editedAngle)));
+
 			}
 
 			Profiler.getInstance().stopProfiler();

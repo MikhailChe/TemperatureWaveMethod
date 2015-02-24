@@ -15,6 +15,7 @@ public class ExperimentReader {
 	private double onePeriodLength;
 	private double[] maxValues;
 	private double[] minValues;
+	private Vector<Integer> indicies = new Vector<Integer>(100);
 
 	public ExperimentReader(Path filepath) throws IOException {
 		Profiler.getInstance().startProfiler();
@@ -103,7 +104,6 @@ public class ExperimentReader {
 			return onePeriodData;
 		}
 		double[] refsignal = getDataColumn(0);
-		Vector<Integer> indicies = new Vector<Integer>(100);
 		boolean trigger = false;
 		double threshold = 5000;
 		int leastSpace = Integer.MAX_VALUE;
@@ -150,7 +150,21 @@ public class ExperimentReader {
 				}
 			}
 		}
-		indicies.clear();
 		return onePeriodData;
 	}
+
+	public int[] getPulseIndicies() {
+		if (onePeriodData == null) {
+			getOnePeriod();
+		}
+		Integer[] inds = (Integer[]) indicies.toArray(new Integer[indicies
+				.size()]);
+		int[] outinds = new int[inds.length];
+		int i = 0;
+		for (int value : inds) {
+			outinds[i++] = value;
+		}
+		return outinds;
+	}
+
 }
