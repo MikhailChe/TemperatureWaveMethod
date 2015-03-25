@@ -1,4 +1,4 @@
-package ru.dolika.fft;
+package ru.dolika.experimentAnalyzer;
 
 import java.util.Arrays;
 

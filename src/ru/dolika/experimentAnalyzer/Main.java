@@ -1,4 +1,4 @@
-package ru.dolika.fft;
+package ru.dolika.experimentAnalyzer;
 
 import java.awt.GridLayout;
 import java.awt.event.KeyEvent;

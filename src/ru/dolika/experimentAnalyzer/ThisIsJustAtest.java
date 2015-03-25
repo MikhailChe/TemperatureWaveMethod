@@ -1,4 +1,4 @@
-package ru.dolika.fft;
+package ru.dolika.experimentAnalyzer;
 
 import java.io.IOException;
 import java.util.Vector;
@@ -14,7 +14,7 @@ public class ThisIsJustAtest {
 		try {
 			ExperimentReader ereader = new ExperimentReader(chooser
 					.getSelectedFile().toPath());
-			double[][] data = ereader.getData();
+			double[][] data = ereader.getInitialData();
 			double[] reference = data[0];
 			Vector<Integer> indicies = new Vector<Integer>(100);
 			{
@@ -36,7 +36,7 @@ public class ThisIsJustAtest {
 				int startIndex = indicies.get(i);
 				int stopIndex = indicies.get(i + 1);
 				for (int j = startIndex; j < stopIndex; j++) {
-					
+
 				}
 			}
 		} catch (IOException e) {

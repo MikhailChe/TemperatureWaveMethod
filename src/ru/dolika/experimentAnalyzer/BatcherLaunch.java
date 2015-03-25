@@ -1,9 +1,12 @@
-package ru.dolika.fft;
+package ru.dolika.experimentAnalyzer;
 
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.io.File;
 import java.util.Locale;
 import java.util.prefs.Preferences;
 
+import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.ProgressMonitor;
@@ -36,6 +39,9 @@ public class BatcherLaunch {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		fileChooser.setMultiSelectionEnabled(true);
+		fileChooser.setPreferredSize(new Dimension(800, 600));
+		Action details = fileChooser.getActionMap().get("viewTypeDetails");
+		details.actionPerformed(null);
 
 		{
 			String lastFolder = prefs.get(LAST_FOLDER, null);
@@ -57,6 +63,7 @@ public class BatcherLaunch {
 			pm.setMillisToDecideToPopup(0);
 			int progress = 0;
 			pm.setProgress(progress++);
+
 			for (File f : folders) {
 				pm.setNote(f.getName());
 				Batcher.compute(f);
@@ -70,8 +77,10 @@ public class BatcherLaunch {
 				prefs.put(LAST_FOLDER, folders[folders.length - 1].toString());
 			}
 		}
+		Toolkit.getDefaultToolkit().beep();
 		frame.setVisible(false);
 		frame.dispose();
-		//System.out.println(Profiler.getInstance());
+		System.out.println(Profiler.getInstance().toString());
+
 	}
 }

@@ -1,4 +1,4 @@
-package ru.dolika.fft;
+package ru.dolika.experimentAnalyzer;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -68,9 +68,9 @@ public class DrawingPlane extends JComponent {
 		if (channel < 0)
 			return;
 		if (full) {
-			this.data = ereader.getDataColumn(channel);
+			this.data = ereader.getCroppedData()[channel];
 		} else {
-			this.data = ereader.getOnePeriod()[channel];
+			this.data = ereader.getOnePeriodSumm()[channel];
 		}
 		colNum = ereader.getColumnCount();
 		this.channelNumber = channel;
@@ -335,18 +335,23 @@ public class DrawingPlane extends JComponent {
 		if (shouldFilter || shouldAFC) {
 			FFTdata = Arrays.copyOf(data, data.length * 2);
 			DoubleFFT_1D fourier = new DoubleFFT_1D(data.length);
-			fourier.realForwardFull(FFTdata);
+			fourier.realForward(FFTdata);
 			System.out.println("makeinf fourier");
 			if (shouldFilter) {
+				int periods = thisEreader.getCroppedDataPeriodsCount();
 				for (int i = 0; i < FFTdata.length; i++) {
-					if ((i < 2) || (i / 2 > (maxHarmony))
-							|| (i / 2 % fftIndex != 0)) {
+					int nearPeriod = ((int) (i / 2)) % periods;
+
+					if (!(nearPeriod == 0)) {
 						FFTdata[i] = 0;
+					} else if ((int) (i / 2) == 0) {
+
 					}
 				}
 				dataCopy = Arrays.copyOf(FFTdata, FFTdata.length);
 				fourier.complexInverse(dataCopy, true);
 				dataCopy = FFT.getAbs(dataCopy);
+				findExtreme(dataCopy);
 			}
 		} else {
 			dataCopy = data;
@@ -361,6 +366,7 @@ public class DrawingPlane extends JComponent {
 			System.out.println("FFTdata OK");
 
 			graphData = FFT.getAbs(FFTdata);
+
 			graphData[0] = 0;
 		} else {
 			graphData = Arrays.copyOfRange(dataCopy, minim, maxim);
@@ -487,8 +493,8 @@ public class DrawingPlane extends JComponent {
 				double omega = 2 * Math.PI
 						* thisEreader.getExperimentFrequency();
 				double kappaSquared = 2 * (editedAngle * editedAngle);
-				double A = (omega * Batcher.sampleLength * Batcher.sampleLength)
-						/ kappaSquared;
+				double A = (omega * Batcher.getSampleLength(channelNumber) * Batcher
+						.getSampleLength(channelNumber)) / kappaSquared;
 				g.setColor(Color.black);
 				g.setFont(g.getFont().deriveFont(20f));
 				int fontMetricHeight = g.getFontMetrics().getHeight();

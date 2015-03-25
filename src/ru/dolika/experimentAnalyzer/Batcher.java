@@ -1,8 +1,9 @@
-package ru.dolika.fft;
+package ru.dolika.experimentAnalyzer;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -15,6 +16,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
+
+import ru.dolika.experimentAnalyzer.zeroCrossing.ZeroCrossingFactory;
+import ru.dolika.experimentAnalyzer.zeroCrossing.ZeroCrossingFactory.ZeroCrossing;
 
 public class Batcher implements Callable<String> {
 
@@ -25,9 +30,7 @@ public class Batcher implements Callable<String> {
 		file = filename;
 	}
 
-	// @onreturn Profiler.getInstance().stopProfiler();
 	public static void compute(File folder) {
-		// Profiler.getInstance().startProfiler();
 		if (!folder.isDirectory())
 			return;
 		if (!folder.exists())
@@ -76,6 +79,9 @@ public class Batcher implements Callable<String> {
 		ExecutorService pool = Executors.newFixedThreadPool(Runtime
 				.getRuntime().availableProcessors() * 2);
 		Vector<Future<String>> set = new Vector<Future<String>>();
+		ProgressMonitor pm = new ProgressMonitor(null,
+				"Папка обрабатывается слишком долго", "", 0, 1);
+		pm.setMaximum(files.length);
 		for (File f : files) {
 			Callable<String> callable = new Batcher(f);
 			Future<String> future = pool.submit(callable);
@@ -90,14 +96,17 @@ public class Batcher implements Callable<String> {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		int currentProgress = 0;
 		for (Future<String> future : set) {
 			try {
 				String answer = future.get();
+				pm.setProgress(++currentProgress);
 				bw.write(String.format("%s%n", answer));
 			} catch (InterruptedException | ExecutionException | IOException e) {
 				e.printStackTrace();
 			}
 		}
+		pm.close();
 		pool.shutdown();
 
 		try {
@@ -106,44 +115,45 @@ public class Batcher implements Callable<String> {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		// Profiler.getInstance().stopProfiler();
-		/*
-		 * if (Desktop.isDesktopSupported()) { try {
-		 * Desktop.getDesktop().open(resultFile);
-		 * 
-		 * } catch (IOException e) { e.printStackTrace(); } }
-		 */
 	}
 
-	final static double[] oldAdjust = new double[] { 0, -30.28125, 22.45054,
-			42.31053, 52.66231, 57.94369, 61.25883, 63.19492, 65.91531,
-			66.59776, 67.54032, 68.92635, 69.68961, 69.81704, 71.40068,
-			70.82494, 72.1481, 72.75135, 72.83383, 74.10869, 73.81043,
-			74.90718, 73.45702, 72.85313, 74.73567, 75.30558, 74.34102,
-			77.86631, 77.71087, 78.22714, 79.71899 };
-	final static double[] newAdjust = new double[] { 0, 75.18617, 75.71124,
-			76.25895, 76.12594, 76.31025, 75.96452, 76.08309, 76.43141,
-			76.50549, 76.72915, 77.74432, 77.32127, 77.24342, 76.88853,
-			76.40208, 77.10222, 77.0721, 76.88899, 77.56667, 78.07193,
-			77.74368, 76.24314, 76.58774, 76.23381, 78.21338, 76.15771,
-			79.31749, 78.52636, 78.72754, 79.91789 };
-	final static double[] newAdjustnewFilter = new double[] { 0, 71.02, 71.97,
-			72.03, 72.22, 72.06, 72.4, 72.62, 72.38, 72.84, 73.32, 73.31,
-			73.16, 73.43, 73.71, 73.96, 73.89, 74.07, 73.67, 74.23, 74.29,
-			74.53, 74.64, 75.11, 75.22, 75.27, 75.93, 75.75, 76.62, 76.89,
-			76.77 };
-	final static double[] newAdjustnewFilterShld = new double[] { 0, 69.68,
-			70.36, 70.13, 70.67, 71.11, 71.21, 72.75, 70.8, 72.3, 71.99, 74.06,
-			72.73, 71.27, 73.26, 71.75, 73, 72.93, 74.72, 73.79, 73.46, 72.72,
-			73.22, 74.48, 73.05, 74.38, 73.35, 74.25, 72.08, 77.03, 78.83 };
+	final static double[] oldAdjust06032015 = new double[] { 0, 350.04, 35.84,
+			53.26, 62.35, 67.59, 71.38, 74.06, 76.14, 77.75, 79.06, 80.04,
+			80.93, 81.87, 82.62, 83.13, 83.81, 84.38, 85.13, 85.53, 86.16,
+			86.73, 87.08, 87.62, 87.95, 88.53, 88.95, 89.42, 89.95, 90.41 };
+	final static double[] oldAdjust = new double[] { 0, 39.72, 39.72, 55.8,
+			64.49, 69.81, 73.28, 76.5, 78.2, 79.69, 81.32, 82.44, 82.93, 83.77,
+			84.41, 85.26, 86.2, 86.84, 87.67, 88.01, 87.98, 88.12 };
 
-	final static double[][] SHIFTS = { null, newAdjustnewFilterShld,
-			newAdjustnewFilterShld, null, null };
-	final static double sampleLength = (0.935) / 1000.0;
+	final static double[] newAdjustCrossZero = new double[] { 0, 87.48, 87.48,
+			87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48,
+			87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48,
+			87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48,
+			87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48,
+			87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, };
+	final static double[] newAdjust = new double[] { 0, 87.58, 88.13, 88.11,
+			88.27, 88.27, 88.55, 88.62, 88.51, 88.62, 88.71, 88.53, 88.69,
+			88.66, 88.59, 88.85, 88.74, 88.71, 88.81, 88.85, 88.88, 88.96,
+			88.93, 88.98, 88.96, 88.91, 89.01, 89.02, 89.13, 89.27 };
+
+	final static double[] newAdjust0to20 = new double[] { 0, 89.90, 89.9,
+			90.03, 90.09333333, 90.19333333, 90.22333333, 90.33666667, 90.37,
+			90.36333333, 90.35333333, 90.34666667, 90.36, 90.33, 90.31333333,
+			90.33, 90.32333333, 90.38333333, 90.37333333, 90.43333333, 90.37,
+			90.27 };
+	final static String adjustment = "";
+
+	final static String[] SHIFTS = { null, "newAmp.txt", "newAmp.txt", null,
+			"oldAdjust.txt" };
+
+	final static double getSampleLength(int index) {
+		return 0.935 / 1000.0;
+	}
 
 	public String call() {
 		Profiler.getInstance().startProfiler();
 		ExperimentReader reader = null;
+		// Set high priority to read the file
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		try {
 			reader = new ExperimentReader(file.toPath());
@@ -151,15 +161,18 @@ public class Batcher implements Callable<String> {
 			e.printStackTrace();
 			return "";
 		}
+		// Set low priority, so that other threads could easily read the file
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 		int numCol = reader.getColumnCount();
 		if (numCol > 1) {
 
 			final double EXPERIMENT_FREQUENCY = reader.getExperimentFrequency();
-			final int FREQ_INDEX = 2;
 
 			StringBuilder sb = new StringBuilder();
-			double[][] singlePeriod = reader.getOnePeriod();
+
+			// double[][] singlePeriodSumm = reader.getOnePeriodSumm();
+			double[][] croppedData = reader.getCroppedData();
+			final int FREQ_INDEX = reader.getCroppedDataPeriodsCount() * 2;
 
 			sb.append(String.format(Locale.getDefault(), "%4.1f\t",
 					EXPERIMENT_FREQUENCY));
@@ -167,7 +180,8 @@ public class Batcher implements Callable<String> {
 					SHIFTS.length); currentChannel++) {
 				if (SHIFTS[currentChannel] == null)
 					continue;
-				double[] col2S = singlePeriod[currentChannel];
+				// double[] col2S = singlePeriodSumm[currentChannel];
+				double[] col2S = croppedData[currentChannel];
 				double[] fourierForIndex = FFT.getFourierForIndex(col2S,
 						FREQ_INDEX);
 				double signalAngle = FFT.getArgument(fourierForIndex, 0);
@@ -176,7 +190,22 @@ public class Batcher implements Callable<String> {
 				double currentShift = getCurrentShift(currentChannel,
 						EXPERIMENT_FREQUENCY);
 				double adjustAngle = targetAngle - Math.toRadians(currentShift);
-				double editedAngle = adjustAngle - Math.PI / 4;
+				double editedAngle = adjustAngle - Math.PI / 4.0;
+
+				while (targetAngle < 0) {
+					targetAngle += Math.PI * 2.0;
+				}
+				while (targetAngle > 2.0 * Math.PI) {
+					targetAngle -= Math.PI * 2.0;
+				}
+
+				double sineTargetAngle = targetAngle - Math.PI / 2;
+				while (sineTargetAngle < Math.PI * 2.0) {
+					sineTargetAngle += Math.PI * 2.0;
+				}
+				while (sineTargetAngle > 0) {
+					sineTargetAngle -= Math.PI * 2.0;
+				}
 
 				while (editedAngle < 0)
 					editedAngle += Math.PI * 2;
@@ -186,18 +215,27 @@ public class Batcher implements Callable<String> {
 
 				double kappa = Math.sqrt(2) * (editedAngle);
 
-				double A = (omega * sampleLength * sampleLength)
+				double A = (omega * getSampleLength(currentChannel) * getSampleLength(currentChannel))
 						/ (kappa * kappa);
 
-				sb.append(String.format(Locale.getDefault(),
-						"%.3f\t%.2e\t%.0f\t%.2f\t%.2f\t%.2f\t", kappa, A,
-						FFT.getAbs(fourierForIndex, 0) / 1000,
-						Math.toDegrees(targetAngle),
-						Math.toDegrees(adjustAngle),
-						Math.toDegrees(editedAngle)));
+				if (SHIFTS[currentChannel] == adjustment) {
+					sb.append(String.format(Locale.getDefault(),
+							"%.0f\t%.2f\t%.2f\t",
+							FFT.getAbs(fourierForIndex, 0) / 1000,
+							Math.toDegrees(targetAngle),
+							Math.toDegrees(sineTargetAngle)));
+				} else {
+					sb.append(String.format(Locale.getDefault(),
+							"%.3f\t%.4e\t%.0f\t%.3f\t%.3f\t%.3f\t", kappa, A,
+							FFT.getAbs(fourierForIndex, 0) / 1000,
+							Math.toDegrees(targetAngle),
+							Math.toDegrees(sineTargetAngle),
+							Math.toDegrees(editedAngle)));
+				}
 
 			}
-
+			reader = null;
+			System.gc();
 			Profiler.getInstance().stopProfiler();
 			return sb.toString();
 		}
@@ -209,27 +247,16 @@ public class Batcher implements Callable<String> {
 		if (channel > SHIFTS.length || channel < 0) {
 			throw new ArrayIndexOutOfBoundsException(channel);
 		}
-		if (SHIFTS[channel] == null) {
+		if (SHIFTS[channel] == null || SHIFTS[channel].length() == 0) {
 			return 0;
 		}
-		double[] SHIFT = SHIFTS[channel];
-		double currentShift = 0;
-		if (frequency == (int) frequency) {
-			int index = (int) frequency;
-			if (index >= SHIFT.length)
-				index = SHIFT.length - 1;
-			currentShift = SHIFT[index];
-		} else {
-			int i1 = (int) frequency;
-			int i2 = (int) (frequency + 0.5);
-			if (i1 >= SHIFT.length)
-				i1 = SHIFT.length - 1;
-			if (i2 >= SHIFT.length)
-				i2 = SHIFT.length - 1;
-			double coeff = frequency - (int) frequency;
-			currentShift = SHIFT[i1] * (1 - coeff) + SHIFT[i2] * (coeff);
+		ZeroCrossing zc;
+		try {
+			zc = ZeroCrossingFactory.forFile(SHIFTS[channel]);
+			return zc.getCurrentShift(frequency);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
 		}
-		return currentShift;
+		return 0;
 	}
-
 }
