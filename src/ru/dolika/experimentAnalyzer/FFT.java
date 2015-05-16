@@ -3,7 +3,6 @@ package ru.dolika.experimentAnalyzer;
 public class FFT {
 
 	public static double[] getFourierForIndex(double[] realData, int index) {
-		Profiler.getInstance().startProfiler();
 		double real = 0, imag = 0;
 
 		double N = realData.length;
@@ -12,7 +11,6 @@ public class FFT {
 			real += Math.cos((twoPiIndexDivN * i)) * realData[i];
 			imag -= Math.sin((twoPiIndexDivN * i)) * realData[i];
 		}
-		Profiler.getInstance().stopProfiler();
 		return new double[] { real, imag };
 	}
 

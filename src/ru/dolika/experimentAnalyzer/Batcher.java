@@ -143,15 +143,13 @@ public class Batcher implements Callable<String> {
 			90.27 };
 	final static String adjustment = "";
 
-	final static String[] SHIFTS = { null, "newAmp.txt", "newAmp.txt", null,
-			"oldAdjust.txt" };
+	final static String[] SHIFTS = { null, "newAmp.txt", "newAmp.txt"};
 
 	final static double getSampleLength(int index) {
 		return 0.935 / 1000.0;
 	}
 
 	public String call() {
-		Profiler.getInstance().startProfiler();
 		ExperimentReader reader = null;
 		// Set high priority to read the file
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
@@ -236,7 +234,6 @@ public class Batcher implements Callable<String> {
 			}
 			reader = null;
 			System.gc();
-			Profiler.getInstance().stopProfiler();
 			return sb.toString();
 		}
 		return "";

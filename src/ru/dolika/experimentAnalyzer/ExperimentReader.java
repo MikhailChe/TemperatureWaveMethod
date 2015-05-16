@@ -23,7 +23,6 @@ public class ExperimentReader {
 	private int leastSpace = Integer.MAX_VALUE;
 
 	public ExperimentReader(Path filepath) throws IOException {
-		Profiler.getInstance().startProfiler();
 		List<String> strings = null;
 
 		strings = Files.readAllLines(filepath);
@@ -75,7 +74,6 @@ public class ExperimentReader {
 			}
 		}
 		strings.clear();
-		Profiler.getInstance().stopProfiler();
 	}
 
 	public double getExperimentFrequency() {
@@ -83,7 +81,6 @@ public class ExperimentReader {
 	}
 
 	public synchronized double[][] getCroppedData() {
-		Profiler.getInstance().startProfiler();
 		if (croppedData == null) {
 			croppedData = new double[initialData.length][];
 			int[] indicies = getPulseIndicies();
@@ -103,7 +100,6 @@ public class ExperimentReader {
 						stopIndex);
 			}
 		}
-		Profiler.getInstance().stopProfiler();
 		return croppedData;
 	}
 
@@ -150,7 +146,7 @@ public class ExperimentReader {
 			int curIndex = indicies.get(pulseArrayIndex);
 			for (int channel = 0; channel < initialData.length; channel++) {
 				for (int summIndex = 0; summIndex < onePeriodData[channel].length; summIndex++) {
-					onePeriodData[channel][summIndex] = initialData[channel][summIndex
+					onePeriodData[channel][summIndex] += initialData[channel][summIndex
 							+ curIndex];
 				}
 			}

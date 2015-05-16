@@ -48,7 +48,9 @@ public class BatcherLaunch {
 			if (lastFolder != null) {
 				try {
 					File dir = new File(new File(lastFolder).getCanonicalPath());
+					fileChooser.setCurrentDirectory(dir);
 					fileChooser.setSelectedFile(dir);
+
 				} catch (Exception e) {
 
 				}
@@ -74,13 +76,12 @@ public class BatcherLaunch {
 			}
 			pm.close();
 			if (folders.length > 0) {
-				prefs.put(LAST_FOLDER, folders[folders.length - 1].toString());
+				prefs.put(LAST_FOLDER,
+						folders[folders.length - 1].getAbsolutePath());
 			}
 		}
 		Toolkit.getDefaultToolkit().beep();
 		frame.setVisible(false);
 		frame.dispose();
-		System.out.println(Profiler.getInstance().toString());
-
 	}
 }
