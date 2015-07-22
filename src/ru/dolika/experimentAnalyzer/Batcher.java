@@ -117,36 +117,14 @@ public class Batcher implements Callable<String> {
 		}
 	}
 
-	final static double[] oldAdjust06032015 = new double[] { 0, 350.04, 35.84,
-			53.26, 62.35, 67.59, 71.38, 74.06, 76.14, 77.75, 79.06, 80.04,
-			80.93, 81.87, 82.62, 83.13, 83.81, 84.38, 85.13, 85.53, 86.16,
-			86.73, 87.08, 87.62, 87.95, 88.53, 88.95, 89.42, 89.95, 90.41 };
-	final static double[] oldAdjust = new double[] { 0, 39.72, 39.72, 55.8,
-			64.49, 69.81, 73.28, 76.5, 78.2, 79.69, 81.32, 82.44, 82.93, 83.77,
-			84.41, 85.26, 86.2, 86.84, 87.67, 88.01, 87.98, 88.12 };
-
-	final static double[] newAdjustCrossZero = new double[] { 0, 87.48, 87.48,
-			87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48,
-			87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48,
-			87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48,
-			87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48,
-			87.48, 87.48, 87.48, 87.48, 87.48, 87.48, 87.48, };
-	final static double[] newAdjust = new double[] { 0, 87.58, 88.13, 88.11,
-			88.27, 88.27, 88.55, 88.62, 88.51, 88.62, 88.71, 88.53, 88.69,
-			88.66, 88.59, 88.85, 88.74, 88.71, 88.81, 88.85, 88.88, 88.96,
-			88.93, 88.98, 88.96, 88.91, 89.01, 89.02, 89.13, 89.27 };
-
-	final static double[] newAdjust0to20 = new double[] { 0, 89.90, 89.9,
-			90.03, 90.09333333, 90.19333333, 90.22333333, 90.33666667, 90.37,
-			90.36333333, 90.35333333, 90.34666667, 90.36, 90.33, 90.31333333,
-			90.33, 90.32333333, 90.38333333, 90.37333333, 90.43333333, 90.37,
-			90.27 };
 	final static String adjustment = "";
 
-	final static String[] SHIFTS = { null, "newAmp.txt", "newAmp.txt"};
+	//final static String[] SHIFTS = { null, "newAmp.txt", "newAmp.txt", "oldAdjust.txt"};
+	//final static String[] SHIFTS = { null, adjustment, adjustment, adjustment};
+	final static String[] SHIFTS = { null, null, null, "08072015oldAdjust.txt"};
 
 	final static double getSampleLength(int index) {
-		return 0.935 / 1000.0;
+		return 1.38 / 1000.0;
 	}
 
 	public String call() {

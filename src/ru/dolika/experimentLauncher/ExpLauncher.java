@@ -35,7 +35,6 @@ public class ExpLauncher extends JFrame {
 		@Override
 		public void actionPerformed(ActionEvent evt) {
 			new Thread(new Runnable() {
-
 				@Override
 				public void run() {
 					BatcherLaunch.main(null);

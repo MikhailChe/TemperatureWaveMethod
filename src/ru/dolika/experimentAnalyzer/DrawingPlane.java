@@ -36,6 +36,7 @@ public class DrawingPlane extends JComponent {
 	public static int maxHarmony = 1;
 	public static boolean shouldShowIndicies = false;
 	public static int fftIndex = 100;
+	public static boolean shouldShowSineWave = true;
 
 	static double x1perc = 0;
 	static double x2perc = 1;
@@ -331,6 +332,7 @@ public class DrawingPlane extends JComponent {
 			return;
 		double[] dataCopy = null;
 		double[] FFTdata = null;
+		double[] SineWaveData = null;
 
 		if (shouldFilter || shouldAFC) {
 			FFTdata = Arrays.copyOf(data, data.length * 2);
@@ -356,9 +358,32 @@ public class DrawingPlane extends JComponent {
 		} else {
 			dataCopy = data;
 		}
+		double signalAngle = 0;
+		double signalAmplitude = 0;
+		double signalZeroLevel = 0;
+		shouldShowSineWave = true;
+		if (shouldShowSineWave) {
+			SineWaveData = Arrays.copyOf(thisEreader.getCroppedData()[1],
+					thisEreader.getCroppedData()[1].length);
+			final int FREQ_INDEX = thisEreader.getCroppedDataPeriodsCount() * 2;
+			System.out.println("Freq_index = " + FREQ_INDEX);
+			double[] fourierForIndex = FFT.getFourierForIndex(SineWaveData,
+					FREQ_INDEX);
+			signalAngle = FFT.getArgument(fourierForIndex, 0);
+			System.out.println("SignalAngle = " + signalAngle);
+			signalAmplitude = FFT.getAbs(fourierForIndex, 0);
+			signalZeroLevel = FFT.getAbs(fourierForIndex, 0);
+		}
 		int maxim = getZoomMaximIndex();
 		int minim = getZoomMinimIndex();
 		double[] graphData = null;
+		double[] theSineWave = new double[SineWaveData.length];
+		for (int i = 0; i < theSineWave.length; i++) {
+			theSineWave[i] = Math.cos((2.0 * Math.PI * ((double) (i - 1)))
+					* this.thisEreader.getCroppedDataPeriodsCount()
+					/ theSineWave.length + signalAngle)
+					* signalAmplitude;
+		}
 
 		if (shouldAFC) {
 			if (FFTdata == null)
@@ -370,6 +395,7 @@ public class DrawingPlane extends JComponent {
 			graphData[0] = 0;
 		} else {
 			graphData = Arrays.copyOfRange(dataCopy, minim, maxim);
+			theSineWave = Arrays.copyOfRange(theSineWave, minim, maxim);
 		}
 
 		findExtreme(graphData);
@@ -396,6 +422,7 @@ public class DrawingPlane extends JComponent {
 			}
 			g.setStroke(new BasicStroke(val));
 		}
+
 		{
 			double prevData = 0;
 			if (dataLength > 0)
@@ -435,6 +462,14 @@ public class DrawingPlane extends JComponent {
 					g.setColor(Color.BLUE);
 					g.drawString("" + ((i - 1) + minim), x1, y1);
 				}
+
+				g.setColor(new Color(128, 0, 0));
+				y1 = (int) map(theSineWave[i], min, max, height - BORDER - 1,
+						BORDER);
+				y2 = (int) map(theSineWave[i], min, max, height - BORDER - 1,
+						BORDER);
+				g.drawLine(x1, y1, x2, y2);
+
 			}
 		}
 		if (shouldAFC) {
