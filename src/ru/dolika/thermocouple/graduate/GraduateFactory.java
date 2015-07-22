@@ -7,6 +7,25 @@ import java.util.HashMap;
 
 public class GraduateFactory {
 
+	public static void main(String[] args) {
+		Graduate g = null;
+		try {
+			g = GraduateFactory.forFile("VR5-20.txt");
+		} catch (FileNotFoundException e) {
+
+		}
+		if (g == null) {
+			return;
+		}
+		for (int j = 0; j < 2; j++) {
+			for (double i = 0; i < 1.2; i += 0.1) {
+				System.out.println(g.getTemperature(i, 0));
+				System.out.println(g.getTemperature(i, 0));
+			}
+		}
+
+	}
+
 	private static HashMap<String, Graduate> cache = new HashMap<String, Graduate>();
 
 	public synchronized static Graduate forFile(String filename)

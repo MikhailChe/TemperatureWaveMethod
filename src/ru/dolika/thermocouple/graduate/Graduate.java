@@ -10,12 +10,11 @@ import java.util.Scanner;
 import java.util.TreeMap;
 
 public class Graduate {
-	private NavigableMap<Double, Double> shifts;
-
+	private NavigableMap<Double, Double> grads;
 	private HashMap<Double, Double> answerMap;
 
 	protected Graduate() {
-		shifts = Collections
+		grads = Collections
 				.synchronizedNavigableMap(new TreeMap<Double, Double>());
 		answerMap = new HashMap<Double, Double>();
 	}
@@ -28,22 +27,19 @@ public class Graduate {
 			// TODO: implement this thing
 			s = new Scanner(new BufferedInputStream(new FileInputStream(
 					filename)));
+
+			int intKey = 0;
+
 			while (s.hasNext()) {
 
-				double key = 0;
-				if (s.hasNextDouble()) {
-					key = s.nextDouble();
-				} else {
-					key = s.nextInt();
-				}
 				double value = 0;
-
 				if (s.hasNextDouble()) {
 					value = s.nextDouble();
 				} else {
 					value = s.nextInt();
 				}
-				shifts.put(key, value);
+				grads.put(intKey / 10.0, value);
+				intKey += 1;
 			}
 			s.close();
 		} catch (FileNotFoundException e) {
@@ -51,13 +47,63 @@ public class Graduate {
 		}
 	}
 
-	public double getTemperatureKelvin(double zeroTemp) {
-		return 0;
-		// TODO: as
-	}
+	public double getTemperature(double voltage, double zeroTemp) {
 
-	public double getTemperatureCelsius(double zeroTemp) {
-		return getTemperatureKelvin(zeroTemp) - 273.15;
+		if (answerMap.containsKey(voltage)) {
+			Double val = answerMap.get(voltage);
+			if (val != null) {
+				return val + zeroTemp;
+			}
+		}
+		if (grads.containsKey(voltage)) {
+			Double val = grads.get(voltage);
+			answerMap.put(voltage, val);
+			if (val != null) {
+				return answerMap.get(voltage) + zeroTemp;
+			}
+		} else {
+			Double nearestHigherKey = grads.higherKey(voltage);
+			Double nearsetLowerKey = grads.lowerKey(voltage);
+			Double nearestHigherValue = null;
+			Double nearestLowerValue = null;
+			if (nearsetLowerKey == null && nearestHigherKey == null) {
+				throw new NullPointerException();
+			} else if (nearsetLowerKey == null) {
+				nearestHigherValue = grads.get(nearestHigherKey);
+				if (nearestHigherValue == null) {
+					throw new NullPointerException();
+				}
+				answerMap.put(voltage, nearestHigherValue);
+				return nearestHigherValue + zeroTemp;
+			} else if (nearestHigherKey == null) {
+				nearestLowerValue = grads.get(nearsetLowerKey);
+				if (nearestLowerValue == null) {
+					throw new NullPointerException();
+				}
+				answerMap.put(voltage, nearestLowerValue);
+				return nearestLowerValue + zeroTemp;
+			} else {
+				nearestHigherValue = grads.get(nearestHigherKey);
+				nearestLowerValue = grads.get(nearsetLowerKey);
+				if (nearestHigherValue == null || nearestLowerValue == null) {
+					throw new NullPointerException();
+				}
+				double diff = nearestHigherKey - nearsetLowerKey;
+				if (diff == 0) {
+					throw new NullPointerException();
+				}
+				double lowerDiff = voltage - nearsetLowerKey;
+				double higherDiff = nearestHigherKey - voltage;
+				double lowerK = 1 - (lowerDiff / diff);
+				double higherK = 1 - (higherDiff / diff);
+				double value = nearestLowerValue * lowerK + nearestHigherValue
+						* higherK;
+				answerMap.put(voltage, value);
+				return value + zeroTemp;
+			}
+		}
+
+		return 0 + zeroTemp;
 	}
 
 }
