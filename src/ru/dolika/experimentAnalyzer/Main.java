@@ -17,6 +17,8 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import ru.dolika.experimentAnalyzer.drawing.JDrawingTabsPlane;
+
 public class Main {
 	static final String LAST_FILE = "experiment_storage_lastfile";
 	static Preferences prefs = Preferences.userNodeForPackage(Main.class);
@@ -30,7 +32,7 @@ public class Main {
 		}
 		JFrame frame = new JFrame("Drawer");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		DrawingPlane main = new DrawingPlane();
+		JDrawingTabsPlane main = new JDrawingTabsPlane();
 		frame.getContentPane().setLayout(new GridLayout(1, 1));
 		frame.getContentPane().add(main);
 
