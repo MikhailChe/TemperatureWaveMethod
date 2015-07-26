@@ -1,6 +1,9 @@
 package ru.dolika.experimentAnalyzer;
 
+import java.awt.Component;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
@@ -12,56 +15,19 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import ru.dolika.experimentAnalyzer.drawing.JDrawingTabsPlane;
+import ru.dolika.experimentAnalyzer.drawing.JGraphImagePlane;
 
 public class Main {
 	static final String LAST_FILE = "experiment_storage_lastfile";
 	static Preferences prefs = Preferences.userNodeForPackage(Main.class);
 
-	public static void main(String[] args) {
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (ClassNotFoundException | InstantiationException
-				| IllegalAccessException | UnsupportedLookAndFeelException e1) {
-			e1.printStackTrace();
-		}
-		JFrame frame = new JFrame("Drawer");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		JDrawingTabsPlane main = new JDrawingTabsPlane();
-		frame.getContentPane().setLayout(new GridLayout(1, 1));
-		frame.getContentPane().add(main);
-
-		JMenuBar bar = new JMenuBar();
-
-		// Settings Menu, S - Mnemonics
-		JMenu settingsMenu = new JMenu("Settings");
-		settingsMenu.setMnemonic(KeyEvent.VK_S);
-		bar.add(settingsMenu);
-
-		// Settings -> showIndicies, I - Mnemonic
-		JCheckBoxMenuItem showIndiciesMenuItem = new JCheckBoxMenuItem(
-				"Show Indicies", DrawingPlane.shouldShowIndicies);
-		showIndiciesMenuItem.setMnemonic(KeyEvent.VK_I);
-		settingsMenu.add(showIndiciesMenuItem);
-
-		// Settings -> filter, I - Mnemonic
-		JCheckBoxMenuItem shouldFilterMenuItem = new JCheckBoxMenuItem(
-				"Should Filter", DrawingPlane.shouldFilter);
-		shouldFilterMenuItem.setMnemonic(KeyEvent.VK_F);
-		settingsMenu.add(shouldFilterMenuItem);
-
-		frame.setJMenuBar(bar);
-		frame.pack();
-		frame.setVisible(true);
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-
-		ExperimentReader ereader;
-
+	public static Path fileOpen(String[] args, Component parent) {
 		Path selectedFile = null;
 		if (args.length == 0) {
 			JFileChooser chooser = new JFileChooser(Main.class
@@ -80,29 +46,96 @@ public class Main {
 				}
 			}
 
-			int chooserVal = chooser.showOpenDialog(frame);
+			int chooserVal = chooser.showOpenDialog(parent);
 
 			if (chooserVal == JFileChooser.APPROVE_OPTION) {
 				prefs.put(LAST_FILE, chooser.getSelectedFile().toString());
 				selectedFile = chooser.getSelectedFile().toPath();
 			} else {
-				System.exit(0);
-				return;
+				return null;
 			}
 		} else {
-
 			selectedFile = new File(args[0]).toPath();
 		}
+		return selectedFile;
+	}
+
+	public static ExperimentReader getEreader(Path selectedFile) {
+		ExperimentReader ereader;
 		try {
 			ereader = new ExperimentReader(selectedFile);
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.exit(0);
-			return;
+			return null;
 		}
-		frame.setTitle(selectedFile.toString() + ", частота: "
-				+ ereader.getExperimentFrequency());
-		main.loadData(ereader, 0, true);
+		return ereader;
+	}
+
+	public static void main(String[] args) {
+		JFrame frame = new JFrame("Drawer");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		JDrawingTabsPlane main = new JDrawingTabsPlane();
+
+		if (args.length > 0) {
+			Path selectedFile = fileOpen(args, frame);
+			if (selectedFile == null) {
+				System.exit(0);
+			}
+			ExperimentReader ereader = getEreader(selectedFile);
+			if (ereader == null) {
+				System.exit(0);
+			}
+			for (double[] data : ereader.getCroppedData()) {
+				main.addSignalTab(new double[][] { data }, null);
+			}
+		}
+
+		frame.getContentPane().setLayout(new GridLayout(1, 1));
+		frame.getContentPane().add(main);
+
+		JMenuBar bar = new JMenuBar();
+
+		// File menu, F - Mnemonics
+		JMenu fileMenu = new JMenu("File");
+		fileMenu.setMnemonic(KeyEvent.VK_F);
+		bar.add(fileMenu);
+
+		// File -> open, O - mnemonics
+		JMenuItem fileOpenMenuItem = new JMenuItem("Open...", KeyEvent.VK_O);
+		fileMenu.add(fileOpenMenuItem);
+
+		fileOpenMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Path selectedFile = fileOpen(args, frame);
+				if (selectedFile != null) {
+					ExperimentReader ereader = getEreader(selectedFile);
+					if (ereader != null) {
+						for (double[] data : ereader.getCroppedData()) {
+							main.addSignalTab(new double[][] { data }, null);
+						}
+					}
+				}
+
+			}
+		});
+
+		// Settings Menu, S - Mnemonics
+		JMenu settingsMenu = new JMenu("Settings");
+		settingsMenu.setMnemonic(KeyEvent.VK_S);
+		bar.add(settingsMenu);
+
+		// Settings -> showIndicies, I - Mnemonic
+		JCheckBoxMenuItem showIndiciesMenuItem = new JCheckBoxMenuItem(
+				"Show Indicies", JGraphImagePlane.shouldShowIndicies);
+		showIndiciesMenuItem.setMnemonic(KeyEvent.VK_I);
+		settingsMenu.add(showIndiciesMenuItem);
+
+		frame.setJMenuBar(bar);
+		frame.pack();
+		frame.setVisible(true);
+		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
 		showIndiciesMenuItem.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
@@ -111,31 +144,21 @@ public class Main {
 				if (o instanceof JCheckBoxMenuItem) {
 					JCheckBoxMenuItem i = (JCheckBoxMenuItem) o;
 					if (i.isSelected()) {
-						DrawingPlane.shouldShowIndicies = true;
+						JGraphImagePlane.shouldShowIndicies = true;
 					} else {
-						DrawingPlane.shouldShowIndicies = false;
+						JGraphImagePlane.shouldShowIndicies = false;
 					}
-					main.repaint();
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							main.repaint();
+						}
+					});
 
 				}
 
 			}
 		});
-		shouldFilterMenuItem.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
 
-				Object o = e.getSource();
-				if (o instanceof JCheckBoxMenuItem) {
-					JCheckBoxMenuItem i = (JCheckBoxMenuItem) o;
-					if (i.isSelected()) {
-						DrawingPlane.shouldFilter = true;
-					} else {
-						DrawingPlane.shouldFilter = false;
-					}
-					main.repaint();
-				}
-			}
-		});
 	}
 }

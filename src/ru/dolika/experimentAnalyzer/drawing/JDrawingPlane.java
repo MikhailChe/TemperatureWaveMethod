@@ -5,6 +5,7 @@ import javax.swing.JScrollPane;
 public class JDrawingPlane extends JScrollPane {
 
 	private double[][] graphs = new double[8][];
+	JGraphImagePlane graphPlane = null;
 
 	public int addGraph(double[] array) {
 		for (int i = 0; i < graphs.length; i++) {
@@ -23,7 +24,6 @@ public class JDrawingPlane extends JScrollPane {
 	private JDrawingPlane() {
 		super();
 		setVerticalScrollBarPolicy(VERTICAL_SCROLLBAR_NEVER);
-
 	}
 
 	public JDrawingPlane(double[] array) {
