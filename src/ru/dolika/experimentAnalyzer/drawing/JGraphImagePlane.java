@@ -8,16 +8,23 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.util.Arrays;
 
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 
 public class JGraphImagePlane extends JPanel {
 	public static boolean shouldShowIndicies = false;
 
-	private static class ArraysStats {
+	class ArraysStats {
 		public double minValue = Double.MAX_VALUE;
 		public double maxValue = Double.MIN_VALUE;
 		public int maxArraysLength = 0;
@@ -45,14 +52,40 @@ public class JGraphImagePlane extends JPanel {
 		}
 	}
 
+	class ArraySelectionContextMenu extends JPopupMenu {
+		JCheckBoxMenuItem[] items = null;
+
+		public ArraySelectionContextMenu() {
+			items = new JCheckBoxMenuItem[showThisArray.length];
+			for (int i = 0; i < showThisArray.length; i++) {
+				items[i] = new JCheckBoxMenuItem("График " + i);
+				items[i].setSelected(showThisArray[i]);
+				final int b = i;
+				items[i].addActionListener(new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						showThisArray[b] = !showThisArray[b];
+					}
+				});
+				add(items[i]);
+			}
+		}
+	}
+
 	public ArraysStats stats = null;
 	public double[][] arrays;
+	public boolean[] showThisArray;
 
 	public JGraphImagePlane(double[][] arrays) {
 		if (arrays == null) {
 			throw new NullPointerException("Arrays are null");
 		}
+		setBackground(Color.BLACK);
+		setForeground(Color.WHITE);
 		this.arrays = arrays;
+		this.showThisArray = new boolean[arrays.length];
+		Arrays.fill(showThisArray, true);
 		stats = new ArraysStats(arrays);
 		Dimension size = new Dimension(500, 500);
 		setPreferredSize(size);
@@ -60,6 +93,29 @@ public class JGraphImagePlane extends JPanel {
 		setFocusable(true);
 		MyZoomListener listener = new MyZoomListener();
 		addMouseWheelListener(listener);
+		addMouseListener(new PopupClickListener());
+	}
+
+	class PopupClickListener extends MouseAdapter {
+		@Override
+		public void mousePressed(java.awt.event.MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				doPop(e);
+			}
+		}
+
+		@Override
+		public void mouseReleased(java.awt.event.MouseEvent e) {
+			if (e.isPopupTrigger()) {
+				doPop(e);
+			}
+		}
+
+		private void doPop(MouseEvent e) {
+			System.out.println("Click!!!");
+			ArraySelectionContextMenu menu = new ArraySelectionContextMenu();
+			menu.show(e.getComponent(), (int) e.getX(), (int) e.getY());
+		}
 	}
 
 	class MyZoomListener implements MouseWheelListener {
@@ -89,7 +145,6 @@ public class JGraphImagePlane extends JPanel {
 						JGraphImagePlane.this.setPreferredSize(newSize);
 						if (getParent() instanceof JViewport) {
 							JViewport vp = (JViewport) getParent();
-							Rectangle view = vp.getViewRect();
 							vp.setViewPosition(new Point((int) map(
 									vp.getViewPosition().x, 0,
 									oldSize.getWidth(), 0, newSize.getWidth()),
@@ -104,7 +159,7 @@ public class JGraphImagePlane extends JPanel {
 
 	@Override
 	public void paintComponent(Graphics g) {
-		super.paintComponent(g);
+
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
 				RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
@@ -130,9 +185,12 @@ public class JGraphImagePlane extends JPanel {
 		} else {
 			view = new Rectangle(0, 0, getWidth(), getHeight());
 		}
-
+		g2.setColor(getBackground());
+		g2.fillRect(view.x, view.y, view.width, view.height);
 		for (int i = 0; i < arrays.length; i++) {
 			if (arrays[i] == null)
+				continue;
+			if (!showThisArray[i])
 				continue;
 			double[] array = arrays[i];
 			for (int j = 1; j < array.length; j++) {
@@ -178,7 +236,7 @@ public class JGraphImagePlane extends JPanel {
 				if (y1 - g.getFontMetrics().getAscent() < 5) {
 					ny1 += g.getFontMetrics().getHeight();
 				}
-				g.setColor(Color.BLACK);
+				g.setColor(getForeground());
 				g.drawOval(x1 - 1, y1 - 1, 2, 2);
 				g.drawString("" + index1, x1, ny1);
 			}

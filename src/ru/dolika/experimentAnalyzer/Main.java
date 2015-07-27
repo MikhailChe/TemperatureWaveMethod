@@ -71,6 +71,41 @@ public class Main {
 		return ereader;
 	}
 
+	public static void openNewTabs(ExperimentReader reader,
+			JDrawingTabsPlane plane) {
+		if (reader == null) {
+			return;
+		}
+		for (double[] data : reader.getCroppedData()) {
+
+			double[] fft = FFT.getFourierForIndex(data,
+					reader.getCroppedDataPeriodsCount() * 2);
+
+			double angle = FFT.getArgument(fft, 0);
+			double amplitude = FFT.getAbs(fft, 0) / data.length;
+
+			double[] fftZeroFreq = FFT.getFourierForIndex(data, 0);
+			double zeroAmplitudeShift = FFT.getAbs(fftZeroFreq, 0)
+					/ data.length;
+
+			double[] accordingWave = new double[data.length];
+			for (int i = 0; i < data.length; i++) {
+				accordingWave[i] = Math.cos(2.0 * Math.PI
+						* reader.getCroppedDataPeriodsCount() * 2.0
+						* ((double) i / (double) data.length) + angle)
+						* amplitude + zeroAmplitudeShift;
+			}
+
+			double[] zeroCrossageLine = new double[data.length];
+			for (int i = 0; i < zeroCrossageLine.length; i++) {
+				zeroCrossageLine[i] = zeroAmplitudeShift;
+			}
+
+			plane.addSignalTab(new double[][] { data, accordingWave,
+					zeroCrossageLine }, null);
+		}
+	}
+
 	public static void main(String[] args) {
 		JFrame frame = new JFrame("Drawer");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -85,9 +120,7 @@ public class Main {
 			if (ereader == null) {
 				System.exit(0);
 			}
-			for (double[] data : ereader.getCroppedData()) {
-				main.addSignalTab(new double[][] { data }, null);
-			}
+			openNewTabs(ereader, main);
 		}
 
 		frame.getContentPane().setLayout(new GridLayout(1, 1));
@@ -110,11 +143,7 @@ public class Main {
 				Path selectedFile = fileOpen(args, frame);
 				if (selectedFile != null) {
 					ExperimentReader ereader = getEreader(selectedFile);
-					if (ereader != null) {
-						for (double[] data : ereader.getCroppedData()) {
-							main.addSignalTab(new double[][] { data }, null);
-						}
-					}
+					openNewTabs(ereader, main);
 				}
 
 			}
