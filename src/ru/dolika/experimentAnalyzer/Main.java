@@ -82,7 +82,7 @@ public class Main {
 					reader.getCroppedDataPeriodsCount() * 2);
 
 			double angle = FFT.getArgument(fft, 0);
-			double amplitude = FFT.getAbs(fft, 0) / data.length;
+			double amplitude = FFT.getAbs(fft, 0) * 2.0 / data.length;
 
 			double[] fftZeroFreq = FFT.getFourierForIndex(data, 0);
 			double zeroAmplitudeShift = FFT.getAbs(fftZeroFreq, 0)
