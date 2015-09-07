@@ -119,12 +119,14 @@ public class Batcher implements Callable<String> {
 
 	final static String adjustment = "";
 
-	//final static String[] SHIFTS = { null, "newAmp.txt", "newAmp.txt", "oldAdjust.txt"};
-	//final static String[] SHIFTS = { null, adjustment, adjustment, adjustment};
-	final static String[] SHIFTS = { null, null, null, "08072015oldAdjust.txt"};
+	// final static String[] SHIFTS = { null, "newAmp.txt", "newAmp.txt",
+	// "oldAdjust.txt"};
+	// final static String[] SHIFTS = { null, adjustment, adjustment,
+	// adjustment};
+	final static String[] SHIFTS = { null, null, "newAmp24062015.txt", null };
 
 	final static double getSampleLength(int index) {
-		return 1.38 / 1000.0;
+		return 0.895 / 1000.0;
 	}
 
 	public String call() {
