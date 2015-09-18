@@ -117,16 +117,20 @@ public class Batcher implements Callable<String> {
 		}
 	}
 
-	final static String adjustment = "";
+	final static String adjustment = "adjustment";
+	final static String DC_cascade = "DCCASCADE";
 
 	// final static String[] SHIFTS = { null, "newAmp.txt", "newAmp.txt",
 	// "oldAdjust.txt"};
 	// final static String[] SHIFTS = { null, adjustment, adjustment,
 	// adjustment};
-	final static String[] SHIFTS = { null, null, "newAmp24062015.txt", null };
+	final static String[] SHIFTS = { null, DC_cascade, "newAmp20150910.txt",
+			null };
+
+	// final static String[] SHIFTS = { null, adjustment, adjustment, null };
 
 	final static double getSampleLength(int index) {
-		return 0.895 / 1000.0;
+		return 1.641 / 1000.0;
 	}
 
 	public String call() {
@@ -165,8 +169,12 @@ public class Batcher implements Callable<String> {
 				double signalAngle = FFT.getArgument(fourierForIndex, 0);
 				double targetAngle = -signalAngle;
 				double omega = 2 * Math.PI * EXPERIMENT_FREQUENCY;
-				double currentShift = getCurrentShift(currentChannel,
-						EXPERIMENT_FREQUENCY);
+				double currentShift = 0;
+				if (SHIFTS[currentChannel] != DC_cascade
+						&& SHIFTS[currentChannel] != adjustment) {
+					currentShift = getCurrentShift(currentChannel,
+							EXPERIMENT_FREQUENCY);
+				}
 				double adjustAngle = targetAngle - Math.toRadians(currentShift);
 				double editedAngle = adjustAngle - Math.PI / 4.0;
 
@@ -202,6 +210,14 @@ public class Batcher implements Callable<String> {
 							FFT.getAbs(fourierForIndex, 0) / 1000,
 							Math.toDegrees(targetAngle),
 							Math.toDegrees(sineTargetAngle)));
+				} else if (SHIFTS[currentChannel] == DC_cascade) {
+					sb.append(String.format(
+							Locale.getDefault(),
+							"%.3f\t%.4e\t%.0f\t%.3f\t%.3f\t%.3f\t",
+							0f,
+							0f,
+							FFT.getAbs(FFT.getFourierForIndex(col2S, 0), 0) / 1000,
+							0f, 0f, 0f));
 				} else {
 					sb.append(String.format(Locale.getDefault(),
 							"%.3f\t%.4e\t%.0f\t%.3f\t%.3f\t%.3f\t", kappa, A,

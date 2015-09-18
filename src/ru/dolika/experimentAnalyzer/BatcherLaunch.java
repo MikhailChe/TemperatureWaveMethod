@@ -17,6 +17,7 @@ public class BatcherLaunch {
 	static Preferences prefs = Preferences.userNodeForPackage(Batcher.class);
 
 	public static void main(String[] args) {
+
 		Locale.setDefault(new Locale("ru"));
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
