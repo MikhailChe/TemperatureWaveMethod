@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer;
+package ru.dolika.experimentAnalyzer.drawing;
 
 import java.awt.Component;
 import java.awt.GridLayout;
@@ -20,17 +20,17 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import ru.dolika.experimentAnalyzer.drawing.JDrawingTabsPlane;
-import ru.dolika.experimentAnalyzer.drawing.JGraphImagePlane;
+import ru.dolika.experimentAnalyzer.ExperimentReader;
+import ru.dolika.experimentAnalyzer.FFT;
 
-public class Main {
+public class Drawer {
 	static final String LAST_FILE = "experiment_storage_lastfile";
-	static Preferences prefs = Preferences.userNodeForPackage(Main.class);
+	static Preferences prefs = Preferences.userNodeForPackage(Drawer.class);
 
 	public static Path fileOpen(String[] args, Component parent) {
 		Path selectedFile = null;
 		if (args.length == 0) {
-			JFileChooser chooser = new JFileChooser(Main.class
+			JFileChooser chooser = new JFileChooser(Drawer.class
 					.getProtectionDomain().getCodeSource().getLocation()
 					.getPath());
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
