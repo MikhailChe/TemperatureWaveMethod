@@ -8,7 +8,12 @@ public class Temperature {
 	public DCsignalID signalID;
 
 	public Temperature() {
-		// TODO Auto-generated constructor stub
+		value = 0;
+		signalID = null;
 	}
 
+	@Override
+	public String toString() {
+		return value + "";
+	}
 }

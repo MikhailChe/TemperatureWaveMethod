@@ -13,7 +13,9 @@ public class Sample {
 	public ArrayList<Measurement> measurements;
 
 	public Sample() {
-		// TODO Auto-generated constructor stub
+		measurements = new ArrayList<Measurement>();
+		comments = "Default_comment";
+		name = "Default_name";
 	}
 
 }
