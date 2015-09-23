@@ -1,9 +1,15 @@
 package ru.dolika.experiment.measurement;
 
+import java.io.Serializable;
+
 import ru.dolika.experimentAnalyzer.signalID.BaseSignalID;
 
-public class TemperatureConductivity {
+public class TemperatureConductivity implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6849674773117070919L;
 	public BaseSignalID signalID;
 	public double phase;
 	public double amplitude;

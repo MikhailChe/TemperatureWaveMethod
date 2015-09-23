@@ -1,9 +1,17 @@
 package ru.dolika.experiment.measurement;
 
+import java.io.Serializable;
+
 import ru.dolika.experimentAnalyzer.signalID.DCsignalID;
 
-public class Temperature {
+public class Temperature implements Serializable {
 
+	
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4120156102719235528L;
 	public double value;
 	public DCsignalID signalID;
 

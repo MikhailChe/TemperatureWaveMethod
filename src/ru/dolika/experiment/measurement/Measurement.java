@@ -1,10 +1,15 @@
 package ru.dolika.experiment.measurement;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class Measurement {
+public class Measurement implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7462056475933664988L;
 	public long time;
 	public double frequency;
 	public ArrayList<Temperature> temperature;
