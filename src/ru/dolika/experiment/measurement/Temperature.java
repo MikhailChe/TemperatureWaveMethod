@@ -14,6 +14,6 @@ public class Temperature {
 
 	@Override
 	public String toString() {
-		return value + "";
+		return String.format("%.1f", value);
 	}
 }

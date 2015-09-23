@@ -16,7 +16,8 @@ public class TemperatureConductivity {
 
 	@Override
 	public String toString() {
-		return amplitude + "\t" + kappa + "\t" + tCond;
+
+		return String.format("%.0f\t%.3f\t%.4e", amplitude, kappa, tCond);
 	}
 
 }

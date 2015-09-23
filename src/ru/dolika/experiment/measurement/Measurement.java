@@ -1,6 +1,7 @@
 package ru.dolika.experiment.measurement;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class Measurement {
 
@@ -17,15 +18,15 @@ public class Measurement {
 
 	@Override
 	public String toString() {
-		String out = "";
-		out += frequency + "\t";
+		StringBuilder sb = new StringBuilder();
+		sb.append(String.format(Locale.getDefault(), "%4.1f\t", frequency));
+
 		for (Temperature t : temperature) {
-			out += t.toString() + "\t";
+			sb.append(t.toString() + "\t");
 		}
 		for (TemperatureConductivity t : tCond) {
-			out += t.toString() + "\t";
+			sb.append(t.toString() + "\t");
 		}
-		return out;
+		return sb.toString();
 	}
-
 }
