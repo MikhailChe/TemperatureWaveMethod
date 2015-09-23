@@ -3,14 +3,10 @@ package ru.dolika.experimentAnalyzer.drawing;
 import javax.swing.JTabbedPane;
 
 public class JDrawingTabsPlane extends JTabbedPane {
-
-	/*
-	 * public static void main(String[] args) { JFrame frame = new JFrame("yo");
-	 * frame.setLayout(new BorderLayout(5, 5)); frame.add(new
-	 * JDrawingTabsPlane()); frame.pack();
-	 * frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-	 * frame.setVisible(true); }
+	/**
+	 * 
 	 */
+	private static final long serialVersionUID = 4799499926744105296L;
 
 	public JDrawingTabsPlane() {
 		super();

@@ -27,6 +27,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
 
 public class JGraphImagePlane extends JPanel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3435828605900305971L;
 	public static boolean shouldShowIndicies = false;
 
 	class ArraysStats {
@@ -58,6 +62,10 @@ public class JGraphImagePlane extends JPanel {
 	}
 
 	class ArraySelectionContextMenu extends JPopupMenu {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 8708433669119770570L;
 		JCheckBoxMenuItem[] items = null;
 
 		public ArraySelectionContextMenu() {

@@ -6,6 +6,10 @@ import javax.swing.JScrollPane;
 
 public class JDrawingPlane extends JScrollPane {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1039411952928965988L;
 	ArrayList<double[]> graphs = new ArrayList<>();
 	JGraphImagePlane graphPlane = null;
 
