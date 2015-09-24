@@ -1,7 +1,10 @@
 package ru.dolika.thermocouple.graduate;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.nio.file.Files;
 import java.util.HashMap;
 
@@ -27,6 +30,22 @@ public class GraduateFactory {
 	}
 
 	private static HashMap<String, Graduate> cache = new HashMap<String, Graduate>();
+
+	public synchronized static Graduate forBinary(String filename) {
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
+				filename))) {
+			Object o = ois.readObject();
+			if (o instanceof Graduate) {
+				Graduate g = (Graduate) o;
+				return g;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	public synchronized static Graduate forFile(String filename)
 			throws FileNotFoundException {

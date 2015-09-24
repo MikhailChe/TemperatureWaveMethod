@@ -3,13 +3,18 @@ package ru.dolika.thermocouple.graduate;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.NavigableMap;
 import java.util.Scanner;
 import java.util.TreeMap;
 
-public class Graduate {
+public class Graduate implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1347461243070602565L;
 	private NavigableMap<Double, Double> grads;
 	private HashMap<Double, Double> answerMap;
 
@@ -46,6 +51,8 @@ public class Graduate {
 			e.printStackTrace();
 		}
 	}
+	
+	
 
 	public double getTemperature(double voltage, double zeroTemp) {
 
