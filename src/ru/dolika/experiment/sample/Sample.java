@@ -1,12 +1,17 @@
 package ru.dolika.experiment.sample;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 
 import ru.dolika.experiment.measurement.Measurement;
 
-public class Sample {
+public class Sample implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5445072467730687777L;
 	public String name;
 	public double length;
 	public String comments;
@@ -21,12 +26,23 @@ public class Sample {
 
 	@Override
 	public String toString() {
-		return "";
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("Имя:\t" + name + "\n");
+		sb.append("Коментарий:\t" + comments + "\n");
+		sb.append("Длина:\t" + length + "\n");
+
+		sb.append("Измерения\n");
+		for (Measurement m : measurements) {
+			sb.append(m.toString() + "\n");
+			sb.append("---------------------------\n");
+		}
+
+		return sb.toString();
 	}
 
 	public void sort() {
 		measurements.sort(new Comparator<Measurement>() {
-
 			@Override
 			public int compare(Measurement o1, Measurement o2) {
 				if (o1 == null) {
@@ -43,8 +59,9 @@ public class Sample {
 					return 0;
 				}
 
-				if (o1.temperature.get(0).value == o2.temperature.get(0).value)
+				if (o1.temperature.get(0).value == o2.temperature.get(0).value) {
 					return 0;
+				}
 				if (o1.temperature.get(0).value > o2.temperature.get(0).value) {
 					return 1;
 				}

@@ -36,8 +36,7 @@ public class GraduateFactory {
 				filename))) {
 			Object o = ois.readObject();
 			if (o instanceof Graduate) {
-				Graduate g = (Graduate) o;
-				return g;
+				return (Graduate) o;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

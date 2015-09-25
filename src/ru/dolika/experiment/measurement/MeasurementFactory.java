@@ -10,25 +10,20 @@ public class MeasurementFactory {
 		return new Measurement();
 	}
 
-	public static Measurement forFile(String filename) {
-		Measurement m = null;
-		try (FileInputStream fis = new FileInputStream(filename)) {
-			ObjectInputStream ois = new ObjectInputStream(fis);
+	public static Measurement forBinary(String filename) {
+
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
+				filename))) {
 			Object o = ois.readObject();
 			if (o instanceof Measurement) {
-				m = (Measurement) o;
+				return (Measurement) o;
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (m == null) {
-			m = new Measurement();
-		}
-		return m;
+		return null;
 	}
 
 }
