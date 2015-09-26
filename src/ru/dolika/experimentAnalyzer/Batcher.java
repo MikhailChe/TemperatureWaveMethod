@@ -20,6 +20,7 @@ import javax.swing.ProgressMonitor;
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.measurement.Temperature;
 import ru.dolika.experiment.measurement.TemperatureConductivity;
+import ru.dolika.experiment.sample.Sample;
 import ru.dolika.experimentAnalyzer.zeroCrossing.ZeroCrossing;
 import ru.dolika.experimentAnalyzer.zeroCrossing.ZeroCrossingFactory;
 
@@ -32,11 +33,11 @@ public class Batcher implements Callable<Measurement> {
 		file = filename;
 	}
 
-	public static void compute(File folder) {
+	public static Measurement compute(File folder, Sample sample) {
 		if (!folder.isDirectory())
-			return;
+			return null;
 		if (!folder.exists())
-			return;
+			return null;
 
 		File[] files = folder.listFiles(new FileFilter() {
 			@Override
@@ -45,11 +46,11 @@ public class Batcher implements Callable<Measurement> {
 			}
 		});
 		if (files.length <= 0)
-			return;
+			return null;
 		BufferedWriter bw;
 		File resultFile;
 		try {
-			resultFile = new File(folder, "результат.tsv");
+			resultFile = new File(folder, "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ.tsv");
 			if (resultFile.exists()) {
 				boolean exception = false;
 				do {
@@ -58,9 +59,11 @@ public class Batcher implements Callable<Measurement> {
 						Files.delete(resultFile.toPath());
 					} catch (java.nio.file.FileSystemException e) {
 						exception = true;
-						JOptionPane.showMessageDialog(null, resultFile.toString(), "Close the file!!!",
+						JOptionPane.showMessageDialog(null,
+								resultFile.toString(), "Close the file!!!",
 								JOptionPane.ERROR_MESSAGE);
-						System.err.println("Please, close the file: " + resultFile.toString());
+						System.err.println("Please, close the file: "
+								+ resultFile.toString());
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e1) {
@@ -69,15 +72,18 @@ public class Batcher implements Callable<Measurement> {
 					}
 				} while (exception);
 			}
-			bw = Files.newBufferedWriter(resultFile.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+			bw = Files.newBufferedWriter(resultFile.toPath(),
+					StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
 
 		} catch (IOException e) {
 			e.printStackTrace();
-			return;
+			return null;
 		}
-		ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+		ExecutorService pool = Executors.newFixedThreadPool(Runtime
+				.getRuntime().availableProcessors() * 2);
 		Vector<Future<Measurement>> set = new Vector<Future<Measurement>>();
-		ProgressMonitor pm = new ProgressMonitor(null, "Папка обрабатывается слишком долго", "", 0, 1);
+		ProgressMonitor pm = new ProgressMonitor(null,
+				"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ", "", 0, 1);
 		pm.setMaximum(files.length);
 		for (File f : files) {
 			Callable<Measurement> callable = new Batcher(f);
@@ -97,6 +103,9 @@ public class Batcher implements Callable<Measurement> {
 		for (Future<Measurement> future : set) {
 			try {
 				Measurement answer = future.get();
+				if (answer != null) {
+					sample.measurements.add(answer);
+				}
 				pm.setProgress(++currentProgress);
 				bw.write(String.format("%s%n", answer));
 			} catch (InterruptedException | ExecutionException | IOException e) {
@@ -119,6 +128,7 @@ public class Batcher implements Callable<Measurement> {
 				e.printStackTrace();
 			}
 		}
+		return null;
 
 	}
 
@@ -129,7 +139,8 @@ public class Batcher implements Callable<Measurement> {
 	// "oldAdjust.txt"};
 	// final static String[] SHIFTS = { null, adjustment, adjustment,
 	// adjustment};
-	final Object[] SHIFTS = { null, DC_cascade, ZeroCrossingFactory.forFile("newAmp20150910.txt"), null };
+	final Object[] SHIFTS = { null, DC_cascade,
+			ZeroCrossingFactory.forFile("newAmp20150910.txt"), null };
 
 	// final static String[] SHIFTS = { null, adjustment, adjustment, null };
 
@@ -159,12 +170,14 @@ public class Batcher implements Callable<Measurement> {
 			double[][] croppedData = reader.getCroppedData();
 			final int FREQ_INDEX = reader.getCroppedDataPeriodsCount() * 2;
 			m.frequency = EXPERIMENT_FREQUENCY;
-			for (int currentChannel = 1; currentChannel < Math.min(numCol, SHIFTS.length); currentChannel++) {
+			for (int currentChannel = 1; currentChannel < Math.min(numCol,
+					SHIFTS.length); currentChannel++) {
 				if (SHIFTS[currentChannel] == null)
 					continue;
 				// double[] col2S = singlePeriodSumm[currentChannel];
 				double[] col2S = croppedData[currentChannel];
-				double[] fourierForIndex = FFT.getFourierForIndex(col2S, FREQ_INDEX);
+				double[] fourierForIndex = FFT.getFourierForIndex(col2S,
+						FREQ_INDEX);
 				double signalAngle = FFT.getArgument(fourierForIndex, 0);
 				double targetAngle = -signalAngle;
 				double omega = 2 * Math.PI * EXPERIMENT_FREQUENCY;
@@ -206,9 +219,11 @@ public class Batcher implements Callable<Measurement> {
 
 				double A = (omega * getSampleLength(currentChannel) * getSampleLength(currentChannel))
 						/ (kappa * kappa);
-				if (SHIFTS[currentChannel] != DC_cascade && SHIFTS[currentChannel] != adjustment) {
+				if (SHIFTS[currentChannel] != DC_cascade
+						&& SHIFTS[currentChannel] != adjustment) {
 					TemperatureConductivity tCond = new TemperatureConductivity();
-					tCond.amplitude = FFT.getAbs(fourierForIndex, 0) / FREQ_INDEX;
+					tCond.amplitude = FFT.getAbs(fourierForIndex, 0)
+							/ FREQ_INDEX;
 					tCond.kappa = kappa;
 					tCond.phase = editedAngle;
 					tCond.tCond = A;

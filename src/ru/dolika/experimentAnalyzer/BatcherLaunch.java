@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer;
+ï»¿package ru.dolika.experimentAnalyzer;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -12,12 +12,21 @@ import javax.swing.JFrame;
 import javax.swing.ProgressMonitor;
 import javax.swing.UIManager;
 
+import ru.dolika.experiment.sample.Sample;
+
 public class BatcherLaunch {
 	static final String LAST_FOLDER = "experiment_storage_lastdirectory";
 	static Preferences prefs = Preferences.userNodeForPackage(Batcher.class);
 
+	private Sample sample = null;
+
 	public static void main(String[] args) {
 		new BatcherLaunch();
+	}
+
+	public BatcherLaunch(Sample s) {
+		this();
+		this.sample = s;
 	}
 
 	public BatcherLaunch() {
@@ -27,14 +36,15 @@ public class BatcherLaunch {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
 			try {
-				UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+				UIManager.setLookAndFeel(UIManager
+						.getCrossPlatformLookAndFeelClassName());
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
 		}
 
-		JFrame frame = new JFrame("Ýêñïåðèìåíòàòîð 2.0");
+		JFrame frame = new JFrame("Ð­ÐºÑÐ¿ÐµÑ€Ð¸Ð¼ÐµÐ½Ñ‚Ð°Ñ‚Ð¾Ñ€ 2.0");
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.setUndecorated(true);
 		frame.setLocationRelativeTo(null);
@@ -63,7 +73,8 @@ public class BatcherLaunch {
 
 		if (fileChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
 			File[] folders = fileChooser.getSelectedFiles();
-			ProgressMonitor pm = new ProgressMonitor(frame, "Àíàëèç ôàéëîâ â ïàïêå", "Èä¸ò âû÷èñëåíèå èçìåðåíèé", 0,
+			ProgressMonitor pm = new ProgressMonitor(frame,
+					"ÐÐ½Ð°Ð»Ð¸Ð· Ñ„Ð°Ð¹Ð»Ð¾Ð² Ð² Ð¿Ð°Ð¿ÐºÐµ", "Ð˜Ð´Ñ‘Ñ‚ Ð²Ñ‹Ñ‡Ð¸ÑÐ»ÐµÐ½Ð¸Ðµ Ð¸Ð·Ð¼ÐµÑ€ÐµÐ½Ð¸Ð¹", 0,
 					folders.length);
 			pm.setMillisToDecideToPopup(0);
 			int progress = 0;
@@ -71,7 +82,7 @@ public class BatcherLaunch {
 
 			for (File f : folders) {
 				pm.setNote(f.getName());
-				Batcher.compute(f);
+				Batcher.compute(f, sample);
 				pm.setProgress(progress++);
 				if (pm.isCanceled()) {
 					break;
@@ -79,7 +90,8 @@ public class BatcherLaunch {
 			}
 			pm.close();
 			if (folders.length > 0) {
-				prefs.put(LAST_FOLDER, folders[folders.length - 1].getAbsolutePath());
+				prefs.put(LAST_FOLDER,
+						folders[folders.length - 1].getAbsolutePath());
 			}
 		}
 		Toolkit.getDefaultToolkit().beep();

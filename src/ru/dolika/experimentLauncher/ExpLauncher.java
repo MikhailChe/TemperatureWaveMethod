@@ -1,12 +1,15 @@
-package ru.dolika.experimentLauncher;
+п»їpackage ru.dolika.experimentLauncher;
 
 import java.awt.BorderLayout;
 import java.awt.Button;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.text.NumberFormat;
+import java.text.ParseException;
 
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -34,23 +37,26 @@ public class ExpLauncher extends JFrame {
 	ExpLauncher() {
 		super("Launcher");
 
+		setLocationRelativeTo(null);
+
 		JMenuBar menuBar = new JMenuBar();
 		this.setJMenuBar(menuBar);
 
-		JMenu fileMenu = new JMenu("Файл");
+		JMenu fileMenu = new JMenu("Р¤Р°Р№Р»");
 		menuBar.add(fileMenu);
-		JMenu fileOpen = new JMenu("Открыть");
-		fileMenu.add(fileOpen);
-		fileChooser = new JFileChooser();
-		JMenuItem fileOpenProject = new JMenuItem("Проект...");
-		fileOpenProject.addActionListener(new ActionListener() {
+
+		JMenuItem fileNewSample = new JMenuItem("РќРѕРІС‹Р№ РѕР±СЂР°Р·РµС†");
+		fileNewSample.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (currentSample != null) {
-					int shouldSaveOption = JOptionPane.showConfirmDialog(ExpLauncher.this,
-							"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
-							"Не забудь сохраниться", JOptionPane.YES_NO_CANCEL_OPTION);
+					int shouldSaveOption = JOptionPane
+							.showConfirmDialog(
+									ExpLauncher.this,
+									"Р¤Р°Р№Р» РѕР±СЂР°Р·С†Р° РЅРµ Р±С‹Р» СЃРѕС…СЂР°РЅРµРЅ.\nРҐРѕС‚РёС‚Рµ СЃРѕС…СЂР°РЅРёС‚СЊ РµРіРѕ РїРµСЂРµРґ РѕС‚РєСЂС‹С‚РёРµРј РЅРѕРІРѕРіРѕ?",
+									"РќРµ Р·Р°Р±СѓРґСЊ СЃРѕС…СЂР°РЅРёС‚СЊСЃСЏ",
+									JOptionPane.YES_NO_CANCEL_OPTION);
 					if (shouldSaveOption == JOptionPane.NO_OPTION) {
 						currentSample = null;
 						System.gc();
@@ -62,39 +68,108 @@ public class ExpLauncher extends JFrame {
 					}
 				}
 				if (currentSample == null) {
-					fileChooser.setDialogTitle("Отркыть...");
+					String name = JOptionPane.showInputDialog(ExpLauncher.this,
+							"Р’РІРµРґРёС‚Рµ РёРјСЏ РѕР±СЂР°Р·С†Р°");
+					if (name == null)
+						return;
+					String comment = JOptionPane.showInputDialog(
+							ExpLauncher.this, "РљРѕРјРјРµРЅС‚Р°СЂРёР№");
+					if (comment == null) {
+						return;
+					}
+					NumberFormat format = NumberFormat.getInstance();
+					JFormattedTextField formatter = new JFormattedTextField(
+							format);
+
+					JOptionPane.showMessageDialog(ExpLauncher.this, formatter,
+							"РўРѕР»С‰РёРЅР°", JOptionPane.QUESTION_MESSAGE);
+					String lengthString = formatter.getText();
+					if (lengthString == null) {
+						return;
+					}
+
+					double length;
+					try {
+						length = format.parse(lengthString).doubleValue();
+					} catch (ParseException e1) {
+						e1.printStackTrace();
+						return;
+					}
+
+					currentSample = SampleFactory.getSample();
+					currentSample.name = name;
+					currentSample.comments = comment;
+					currentSample.length = length;
+
+				}
+			}
+		});
+		fileMenu.add(fileNewSample);
+		JMenu fileOpen = new JMenu("РћС‚РєСЂС‹С‚СЊ");
+		fileMenu.add(fileOpen);
+		fileChooser = new JFileChooser();
+		JMenuItem fileOpenProject = new JMenuItem("РџСЂРѕРµРєС‚...");
+		fileOpenProject.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (currentSample != null) {
+					int shouldSaveOption = JOptionPane
+							.showConfirmDialog(
+									ExpLauncher.this,
+									"Р¤Р°Р№Р» РѕР±СЂР°Р·С†Р° РЅРµ Р±С‹Р» СЃРѕС…СЂР°РЅРµРЅ.\nРҐРѕС‚РёС‚Рµ СЃРѕС…СЂР°РЅРёС‚СЊ РµРіРѕ РїРµСЂРµРґ РѕС‚РєСЂС‹С‚РёРµРј РЅРѕРІРѕРіРѕ?",
+									"РќРµ Р·Р°Р±СѓРґСЊ СЃРѕС…СЂР°РЅРёС‚СЊСЃСЏ",
+									JOptionPane.YES_NO_CANCEL_OPTION);
+					if (shouldSaveOption == JOptionPane.NO_OPTION) {
+						currentSample = null;
+						System.gc();
+					}
+					if (shouldSaveOption == JOptionPane.YES_OPTION) {
+						saveSample();
+						currentSample = null;
+						System.gc();
+					}
+				}
+				if (currentSample == null) {
+					fileChooser.setDialogTitle("РћС‚СЂРєС‹С‚СЊ...");
 					fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					fileChooser.setMultiSelectionEnabled(false);
 					int option = fileChooser.showOpenDialog(ExpLauncher.this);
 					if (option == JFileChooser.APPROVE_OPTION) {
 						if (fileChooser.getSelectedFile() != null) {
-							SampleFactory.forBinary(fileChooser.getSelectedFile().getAbsolutePath());
+							currentSample = SampleFactory.forBinary(fileChooser
+									.getSelectedFile().getAbsolutePath());
 							sampleFile = fileChooser.getSelectedFile();
+							System.out.println(currentSample);
+							ExpLauncher.this.setTitle(currentSample.name);
 						}
 					}
+
 				}
 			}
 		});
 		fileOpen.add(fileOpenProject);
 
-		JMenu fileSave = new JMenu("Сохранить...");
+		JMenuItem fileSave = new JMenuItem("РЎРѕС…СЂР°РЅРёС‚СЊ...");
 		fileMenu.add(fileSave);
 
-		JMenu fileSaveAs = new JMenu("Сохранить как...");
+		JMenuItem fileSaveAs = new JMenuItem("РЎРѕС…СЂР°РЅРёС‚СЊ РєР°Рє...");
 		fileMenu.add(fileSaveAs);
 
-		JMenu toolsMenu = new JMenu("Инструменты");
+		JMenu toolsMenu = new JMenu("РРЅСЃС‚СЂСѓРјРµРЅС‚С‹");
 		menuBar.add(toolsMenu);
-		JMenuItem prepareZeroCrossing = new JMenuItem("Подготовить юстировку");
+		JMenuItem prepareZeroCrossing = new JMenuItem("РџРѕРґРіРѕС‚РѕРІРёС‚СЊ СЋСЃС‚РёСЂРѕРІРєСѓ");
 		toolsMenu.add(prepareZeroCrossing);
-		JMenuItem prepareGrads = new JMenuItem("Подготовить градуировку");
+		JMenuItem prepareGrads = new JMenuItem("РџРѕРґРіРѕС‚РѕРІРёС‚СЊ РіСЂР°РґСѓРёСЂРѕРІРєСѓ");
 		toolsMenu.add(prepareGrads);
-
-		JMenu settingsMenu = new JMenu("Настройки");
+		JMenuItem toolsDofiles = new JMenuItem("РџСЂРѕРёР·РІРµСЃС‚Рё РёР·РјРµСЂРµРЅРёСЏ");
+		
+		toolsMenu.add(toolsDofiles);
+		
+		JMenu settingsMenu = new JMenu("РќР°СЃС‚СЂРѕР№РєРё");
 		menuBar.add(settingsMenu);
-		JMenuItem chooseChannels = new JMenuItem("Выбрать каналы");
+		JMenuItem chooseChannels = new JMenuItem("Р’С‹Р±СЂР°С‚СЊ РєР°РЅР°Р»С‹");
 		settingsMenu.add(chooseChannels);
-		JMenuItem sampleSettings = new JMenuItem("Настройки образца");
+		JMenuItem sampleSettings = new JMenuItem("РќР°СЃС‚СЂРѕР№РєРё РѕР±СЂР°Р·С†Р°");
 		settingsMenu.add(sampleSettings);
 
 		setLayout(new BorderLayout(16, 16));
@@ -123,17 +198,21 @@ public class ExpLauncher extends JFrame {
 		if (sampleFile == null)
 
 		{
-			fileChooser.setDialogTitle("Сохранить как...");
+			fileChooser.setDialogTitle("РЎРѕС…СЂР°РЅРёС‚СЊ РєР°Рє...");
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setMultiSelectionEnabled(false);
 			int option = fileChooser.showSaveDialog(ExpLauncher.this);
 			if (option == JFileChooser.APPROVE_OPTION) {
 				if (fileChooser.getSelectedFile() != null) {
 					if (fileChooser.getSelectedFile().exists()) {
-						int confirmer = JOptionPane.showConfirmDialog(ExpLauncher.this,
-								"Файл уже существует.\nВы хотите перезаписать его?");
-						if (confirmer == JOptionPane.YES_OPTION || confirmer == JOptionPane.OK_OPTION) {
-							SampleFactory.saveSample(fileChooser.getSelectedFile().getAbsolutePath(), currentSample);
+						int confirmer = JOptionPane
+								.showConfirmDialog(ExpLauncher.this,
+										"Р¤Р°Р№Р» СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚.\nР’С‹ С…РѕС‚РёС‚Рµ РїРµСЂРµР·Р°РїРёСЃР°С‚СЊ РµРіРѕ?");
+						if (confirmer == JOptionPane.YES_OPTION
+								|| confirmer == JOptionPane.OK_OPTION) {
+							SampleFactory.saveSample(fileChooser
+									.getSelectedFile().getAbsolutePath(),
+									currentSample);
 							currentSample = null;
 							sampleFile = null;
 						}
@@ -143,7 +222,8 @@ public class ExpLauncher extends JFrame {
 		} else
 
 		{
-			SampleFactory.saveSample(sampleFile.getAbsolutePath(), currentSample);
+			SampleFactory.saveSample(sampleFile.getAbsolutePath(),
+					currentSample);
 			currentSample = null;
 			sampleFile = null;
 		}

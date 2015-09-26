@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import javax.swing.ProgressMonitorInputStream;
+
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.measurement.MeasurementFactory;
 import ru.dolika.experiment.measurement.Temperature;
@@ -58,8 +60,9 @@ public class SampleFactory {
 
 	public static Sample forBinary(String filename) {
 
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
-				filename))) {
+		try (ObjectInputStream ois = new ObjectInputStream(
+				new ProgressMonitorInputStream(null, "Открытие",
+						new FileInputStream(filename)))) {
 			Object o = ois.readObject();
 			if (o instanceof Sample) {
 				return (Sample) o;
