@@ -35,9 +35,7 @@ public class Sample implements Serializable {
 		sb.append("Измерения\n");
 		for (Measurement m : measurements) {
 			sb.append(m.toString() + "\n");
-			sb.append("---------------------------\n");
 		}
-
 		return sb.toString();
 	}
 

@@ -17,8 +17,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.WindowConstants;
 
-import ru.dolika.experiment.sample.Sample;
 import ru.dolika.experiment.sample.SampleFactory;
+import ru.dolika.experiment.workspace.Workspace;
 import ru.dolika.experimentAnalyzer.BatcherLaunch;
 
 public class ExpLauncher extends JFrame {
@@ -29,8 +29,7 @@ public class ExpLauncher extends JFrame {
 	}
 
 	Button b = null;
-	Sample currentSample = null;
-	File sampleFile = null;
+	Workspace workspace = Workspace.getInstance();
 
 	JFileChooser fileChooser = null;
 
@@ -50,39 +49,32 @@ public class ExpLauncher extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (currentSample != null) {
-					int shouldSaveOption = JOptionPane
-							.showConfirmDialog(
-									ExpLauncher.this,
-									"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
-									"Не забудь сохраниться",
-									JOptionPane.YES_NO_CANCEL_OPTION);
+				if (workspace.s != null) {
+					int shouldSaveOption = JOptionPane.showConfirmDialog(ExpLauncher.this,
+							"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
+							"Не забудь сохраниться", JOptionPane.YES_NO_CANCEL_OPTION);
 					if (shouldSaveOption == JOptionPane.NO_OPTION) {
-						currentSample = null;
+						workspace.s = null;
 						System.gc();
 					}
 					if (shouldSaveOption == JOptionPane.YES_OPTION) {
 						saveSample();
-						currentSample = null;
+						workspace.s = null;
 						System.gc();
 					}
 				}
-				if (currentSample == null) {
-					String name = JOptionPane.showInputDialog(ExpLauncher.this,
-							"Введите имя образца");
+				if (workspace.s == null) {
+					String name = JOptionPane.showInputDialog(ExpLauncher.this, "Введите имя образца");
 					if (name == null)
 						return;
-					String comment = JOptionPane.showInputDialog(
-							ExpLauncher.this, "Комментарий");
+					String comment = JOptionPane.showInputDialog(ExpLauncher.this, "Комментарий");
 					if (comment == null) {
 						return;
 					}
 					NumberFormat format = NumberFormat.getInstance();
-					JFormattedTextField formatter = new JFormattedTextField(
-							format);
+					JFormattedTextField formatter = new JFormattedTextField(format);
 
-					JOptionPane.showMessageDialog(ExpLauncher.this, formatter,
-							"Толщина", JOptionPane.QUESTION_MESSAGE);
+					JOptionPane.showMessageDialog(ExpLauncher.this, formatter, "Толщина", JOptionPane.QUESTION_MESSAGE);
 					String lengthString = formatter.getText();
 					if (lengthString == null) {
 						return;
@@ -96,10 +88,10 @@ public class ExpLauncher extends JFrame {
 						return;
 					}
 
-					currentSample = SampleFactory.getSample();
-					currentSample.name = name;
-					currentSample.comments = comment;
-					currentSample.length = length;
+					workspace.s = SampleFactory.getSample();
+					workspace.s.name = name;
+					workspace.s.comments = comment;
+					workspace.s.length = length;
 
 				}
 			}
@@ -112,35 +104,31 @@ public class ExpLauncher extends JFrame {
 		fileOpenProject.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (currentSample != null) {
-					int shouldSaveOption = JOptionPane
-							.showConfirmDialog(
-									ExpLauncher.this,
-									"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
-									"Не забудь сохраниться",
-									JOptionPane.YES_NO_CANCEL_OPTION);
+				if (workspace.s != null) {
+					int shouldSaveOption = JOptionPane.showConfirmDialog(ExpLauncher.this,
+							"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
+							"Не забудь сохраниться", JOptionPane.YES_NO_CANCEL_OPTION);
 					if (shouldSaveOption == JOptionPane.NO_OPTION) {
-						currentSample = null;
+						workspace.s = null;
 						System.gc();
 					}
 					if (shouldSaveOption == JOptionPane.YES_OPTION) {
 						saveSample();
-						currentSample = null;
+						workspace.s = null;
 						System.gc();
 					}
 				}
-				if (currentSample == null) {
+				if (workspace.s == null) {
 					fileChooser.setDialogTitle("Отркыть...");
 					fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					fileChooser.setMultiSelectionEnabled(false);
 					int option = fileChooser.showOpenDialog(ExpLauncher.this);
 					if (option == JFileChooser.APPROVE_OPTION) {
 						if (fileChooser.getSelectedFile() != null) {
-							currentSample = SampleFactory.forBinary(fileChooser
-									.getSelectedFile().getAbsolutePath());
-							sampleFile = fileChooser.getSelectedFile();
-							System.out.println(currentSample);
-							ExpLauncher.this.setTitle(currentSample.name);
+							workspace.s = SampleFactory.forBinary(fileChooser.getSelectedFile().getAbsolutePath());
+							workspace.samplefile = fileChooser.getSelectedFile();
+							System.out.println(workspace.s);
+							ExpLauncher.this.setTitle(workspace.s.name);
 						}
 					}
 
@@ -162,9 +150,9 @@ public class ExpLauncher extends JFrame {
 		JMenuItem prepareGrads = new JMenuItem("Подготовить градуировку");
 		toolsMenu.add(prepareGrads);
 		JMenuItem toolsDofiles = new JMenuItem("Произвести измерения");
-		
+
 		toolsMenu.add(toolsDofiles);
-		
+
 		JMenu settingsMenu = new JMenu("Настройки");
 		menuBar.add(settingsMenu);
 		JMenuItem chooseChannels = new JMenuItem("Выбрать каналы");
@@ -185,17 +173,17 @@ public class ExpLauncher extends JFrame {
 	}
 
 	public void saveSampleAs() {
-		File sf = sampleFile;
-		sampleFile = null;
+		File sf = workspace.samplefile;
+		workspace.samplefile = null;
 		saveSample();
-		sampleFile = sf;
+		workspace.samplefile = sf;
 	}
 
 	public void saveSample() {
-		if (currentSample == null) {
+		if (workspace.s == null) {
 			return;
 		}
-		if (sampleFile == null)
+		if (workspace.samplefile == null)
 
 		{
 			fileChooser.setDialogTitle("Сохранить как...");
@@ -205,16 +193,12 @@ public class ExpLauncher extends JFrame {
 			if (option == JFileChooser.APPROVE_OPTION) {
 				if (fileChooser.getSelectedFile() != null) {
 					if (fileChooser.getSelectedFile().exists()) {
-						int confirmer = JOptionPane
-								.showConfirmDialog(ExpLauncher.this,
-										"Файл уже существует.\nВы хотите перезаписать его?");
-						if (confirmer == JOptionPane.YES_OPTION
-								|| confirmer == JOptionPane.OK_OPTION) {
-							SampleFactory.saveSample(fileChooser
-									.getSelectedFile().getAbsolutePath(),
-									currentSample);
-							currentSample = null;
-							sampleFile = null;
+						int confirmer = JOptionPane.showConfirmDialog(ExpLauncher.this,
+								"Файл уже существует.\nВы хотите перезаписать его?");
+						if (confirmer == JOptionPane.YES_OPTION || confirmer == JOptionPane.OK_OPTION) {
+							SampleFactory.saveSample(fileChooser.getSelectedFile().getAbsolutePath(), workspace.s);
+							workspace.s = null;
+							workspace.samplefile = null;
 						}
 					}
 				}
@@ -222,10 +206,9 @@ public class ExpLauncher extends JFrame {
 		} else
 
 		{
-			SampleFactory.saveSample(sampleFile.getAbsolutePath(),
-					currentSample);
-			currentSample = null;
-			sampleFile = null;
+			SampleFactory.saveSample(workspace.samplefile.getAbsolutePath(), workspace.s);
+			workspace.s = null;
+			workspace.samplefile = null;
 		}
 	}
 
