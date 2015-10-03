@@ -10,30 +10,10 @@ import java.util.HashMap;
 
 public class GraduateFactory {
 
-	public static void main(String[] args) {
-		Graduate g = null;
-		try {
-			g = GraduateFactory.forFile("VR5-20.txt");
-		} catch (FileNotFoundException e) {
-
-		}
-		if (g == null) {
-			return;
-		}
-		for (int j = 0; j < 2; j++) {
-			for (double i = 0; i < 1.2; i += 0.1) {
-				System.out.println(g.getTemperature(i, 0));
-				System.out.println(g.getTemperature(i, 0));
-			}
-		}
-
-	}
-
 	private static HashMap<String, Graduate> cache = new HashMap<String, Graduate>();
 
 	public synchronized static Graduate forBinary(String filename) {
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
-				filename))) {
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
 			Object o = ois.readObject();
 			if (o instanceof Graduate) {
 				return (Graduate) o;
@@ -46,8 +26,7 @@ public class GraduateFactory {
 		return null;
 	}
 
-	public synchronized static Graduate forFile(String filename)
-			throws FileNotFoundException {
+	public synchronized static Graduate forFile(String filename) throws FileNotFoundException {
 		if (filename == null) {
 			throw new NullPointerException();
 		}
