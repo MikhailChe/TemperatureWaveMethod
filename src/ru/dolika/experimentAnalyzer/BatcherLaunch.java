@@ -16,13 +16,9 @@ import ru.dolika.experiment.sample.Sample;
 
 public class BatcherLaunch {
 	static final String LAST_FOLDER = "experiment_storage_lastdirectory";
-	static Preferences prefs = Preferences.userNodeForPackage(Batcher.class);
+	static Preferences prefs = Preferences.userNodeForPackage(ExperimentComputer.class);
 
 	private Sample sample = null;
-
-	public static void main(String[] args) {
-		new BatcherLaunch();
-	}
 
 	public BatcherLaunch(Sample s) {
 		this();
@@ -36,8 +32,7 @@ public class BatcherLaunch {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
 			try {
-				UIManager.setLookAndFeel(UIManager
-						.getCrossPlatformLookAndFeelClassName());
+				UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
@@ -73,8 +68,7 @@ public class BatcherLaunch {
 
 		if (fileChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
 			File[] folders = fileChooser.getSelectedFiles();
-			ProgressMonitor pm = new ProgressMonitor(frame,
-					"Анализ файлов в папке", "Идёт вычисление измерений", 0,
+			ProgressMonitor pm = new ProgressMonitor(frame, "Анализ файлов в папке", "Идёт вычисление измерений", 0,
 					folders.length);
 			pm.setMillisToDecideToPopup(0);
 			int progress = 0;
@@ -82,7 +76,7 @@ public class BatcherLaunch {
 
 			for (File f : folders) {
 				pm.setNote(f.getName());
-				Batcher.compute(f, sample);
+				ExperimentComputer.compute(f, sample);
 				pm.setProgress(progress++);
 				if (pm.isCanceled()) {
 					break;
@@ -90,8 +84,7 @@ public class BatcherLaunch {
 			}
 			pm.close();
 			if (folders.length > 0) {
-				prefs.put(LAST_FOLDER,
-						folders[folders.length - 1].getAbsolutePath());
+				prefs.put(LAST_FOLDER, folders[folders.length - 1].getAbsolutePath());
 			}
 		}
 		Toolkit.getDefaultToolkit().beep();

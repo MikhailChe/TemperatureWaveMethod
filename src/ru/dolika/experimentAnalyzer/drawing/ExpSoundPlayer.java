@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer;
+package ru.dolika.experimentAnalyzer.drawing;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -9,6 +9,8 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import javax.swing.JFileChooser;
+
+import ru.dolika.experimentAnalyzer.ExperimentReader;
 
 public class ExpSoundPlayer {
 

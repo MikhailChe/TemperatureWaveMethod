@@ -21,16 +21,31 @@ import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.measurement.Temperature;
 import ru.dolika.experiment.measurement.TemperatureConductivity;
 import ru.dolika.experiment.sample.Sample;
+import ru.dolika.experimentAnalyzer.signalID.AdjustmentSignalID;
+import ru.dolika.experimentAnalyzer.signalID.BaseSignalID;
+import ru.dolika.experimentAnalyzer.signalID.DCsignalID;
+import ru.dolika.experimentAnalyzer.signalID.SignalIdentifier;
 import ru.dolika.experimentAnalyzer.zeroCrossing.ZeroCrossing;
-import ru.dolika.experimentAnalyzer.zeroCrossing.ZeroCrossingFactory;
 
-public class Batcher implements Callable<Measurement> {
+public class ExperimentComputer implements Callable<Measurement> {
 
-	File file;
-	public String result;
+	// final static String[] SHIFTS = { null, adjustment, adjustment, null };
 
-	public Batcher(File filename) {
-		file = filename;
+	final static double getSampleLength(int index) {
+		return 1.641 / 1000.0;
+	}
+
+	final static String DC_cascade = "DCCASCADE";
+	final static String adjustment = "adjustment";
+
+	public double truncatePositive(double value) {
+		while (value < 0) {
+			value += Math.PI * 2.0;
+		}
+		while (value > Math.PI * 2.0) {
+			value -= Math.PI * 2.0;
+		}
+		return value;
 	}
 
 	public static Measurement compute(File folder, Sample sample) {
@@ -50,7 +65,7 @@ public class Batcher implements Callable<Measurement> {
 		BufferedWriter bw;
 		File resultFile;
 		try {
-			resultFile = new File(folder, "���������.tsv");
+			resultFile = new File(folder, "result.tsv");
 			if (resultFile.exists()) {
 				boolean exception = false;
 				do {
@@ -59,11 +74,9 @@ public class Batcher implements Callable<Measurement> {
 						Files.delete(resultFile.toPath());
 					} catch (java.nio.file.FileSystemException e) {
 						exception = true;
-						JOptionPane.showMessageDialog(null,
-								resultFile.toString(), "Close the file!!!",
+						JOptionPane.showMessageDialog(null, resultFile.toString(), "Close the file!!!",
 								JOptionPane.ERROR_MESSAGE);
-						System.err.println("Please, close the file: "
-								+ resultFile.toString());
+						System.err.println("Please, close the file: " + resultFile.toString());
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e1) {
@@ -72,21 +85,18 @@ public class Batcher implements Callable<Measurement> {
 					}
 				} while (exception);
 			}
-			bw = Files.newBufferedWriter(resultFile.toPath(),
-					StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+			bw = Files.newBufferedWriter(resultFile.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
 
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
-		ExecutorService pool = Executors.newFixedThreadPool(Runtime
-				.getRuntime().availableProcessors() * 2);
+		ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 		Vector<Future<Measurement>> set = new Vector<Future<Measurement>>();
-		ProgressMonitor pm = new ProgressMonitor(null,
-				"����� �������������� ������� �����", "", 0, 1);
+		ProgressMonitor pm = new ProgressMonitor(null, "Папка обрабатывается слишком долго", "", 0, 1);
 		pm.setMaximum(files.length);
 		for (File f : files) {
-			Callable<Measurement> callable = new Batcher(f);
+			Callable<Measurement> callable = new ExperimentComputer(f);
 			Future<Measurement> future = pool.submit(callable);
 			set.add(future);
 		}
@@ -132,25 +142,36 @@ public class Batcher implements Callable<Measurement> {
 
 	}
 
-	final static String adjustment = "adjustment";
-	final static String DC_cascade = "DCCASCADE";
+	public SignalParameters getSignalParameters(double[] signal, int frequency) {
+		double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
+		double phase = FFT.getArgument(fourierForFreq, 0);
+		double amplitude = FFT.getAbs(fourierForFreq, 0) / signal.length;
+		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
+		double nullOffset = FFT.getAbs(nullOffsetFourier, 0) / signal.length;
 
-	// final static String[] SHIFTS = { null, "newAmp.txt", "newAmp.txt",
-	// "oldAdjust.txt"};
-	// final static String[] SHIFTS = { null, adjustment, adjustment,
-	// adjustment};
-	final Object[] SHIFTS = { null, DC_cascade,
-			ZeroCrossingFactory.forFile("newAmp20150910.txt"), null };
+		SignalParameters params = new SignalParameters(phase, amplitude, nullOffset);
 
-	// final static String[] SHIFTS = { null, adjustment, adjustment, null };
-
-	final static double getSampleLength(int index) {
-		return 1.641 / 1000.0;
+		return params;
 	}
+
+	// Non-static functions
+	File file;
+	public Measurement result;
+
+	public ExperimentComputer(File filename) {
+		file = filename;
+	}
+
+	public ExperimentComputer(File filename, SignalIdentifier[] shifts) {
+		this.SHIFTS = shifts;
+	}
+
+	SignalIdentifier[] SHIFTS = { null, new DCsignalID(), new BaseSignalID("newAmp20150910.txt", (ZeroCrossing) null),
+			null };
 
 	public Measurement call() {
 		ExperimentReader reader = null;
-		Measurement m = new Measurement();
+		result = new Measurement();
 
 		// Set high priority to read the file
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
@@ -158,7 +179,7 @@ public class Batcher implements Callable<Measurement> {
 			reader = new ExperimentReader(file.toPath());
 		} catch (Exception e) {
 			e.printStackTrace();
-			return m;
+			return result;
 		}
 		// Set low priority, so that other threads could easily read the file
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
@@ -169,71 +190,54 @@ public class Batcher implements Callable<Measurement> {
 			// double[][] singlePeriodSumm = reader.getOnePeriodSumm();
 			double[][] croppedData = reader.getCroppedData();
 			final int FREQ_INDEX = reader.getCroppedDataPeriodsCount() * 2;
-			m.frequency = EXPERIMENT_FREQUENCY;
-			for (int currentChannel = 1; currentChannel < Math.min(numCol,
-					SHIFTS.length); currentChannel++) {
+			result.frequency = EXPERIMENT_FREQUENCY;
+			for (int currentChannel = 1; currentChannel < Math.min(numCol, SHIFTS.length); currentChannel++) {
 				if (SHIFTS[currentChannel] == null)
 					continue;
-				// double[] col2S = singlePeriodSumm[currentChannel];
-				double[] col2S = croppedData[currentChannel];
-				double[] fourierForIndex = FFT.getFourierForIndex(col2S,
-						FREQ_INDEX);
-				double signalAngle = FFT.getArgument(fourierForIndex, 0);
-				double targetAngle = -signalAngle;
-				double omega = 2 * Math.PI * EXPERIMENT_FREQUENCY;
-				double currentShift = 0;
-				if (SHIFTS[currentChannel] instanceof ZeroCrossing) {
-					ZeroCrossing zc = (ZeroCrossing) SHIFTS[currentChannel];
+				SignalParameters params = getSignalParameters(croppedData[currentChannel], FREQ_INDEX);
+				if (SHIFTS[currentChannel] instanceof BaseSignalID) {
+
+					BaseSignalID id = (BaseSignalID) SHIFTS[currentChannel];
+					ZeroCrossing zc = id.zc;
+					if (zc == null)
+						continue;
+
+					double signalAngle = params.phase;
+					double targetAngle = -signalAngle;
+					double omega = 2 * Math.PI * EXPERIMENT_FREQUENCY;
+					double currentShift = 0;
+
 					currentShift = zc.getCurrentShift(EXPERIMENT_FREQUENCY);
-				}
-				if (SHIFTS[currentChannel] == DC_cascade) {
-					Temperature t = new Temperature();
-					t.value = 0;
-					m.temperature.add(t);
-				}
-				double adjustAngle = targetAngle - Math.toRadians(currentShift);
-				double editedAngle = adjustAngle - Math.PI / 4.0;
 
-				while (targetAngle < 0) {
-					targetAngle += Math.PI * 2.0;
-				}
-				while (targetAngle > 2.0 * Math.PI) {
-					targetAngle -= Math.PI * 2.0;
-				}
+					double adjustAngle = targetAngle - Math.toRadians(currentShift);
+					double editedAngle = truncatePositive(adjustAngle - Math.PI / 4.0);
 
-				double sineTargetAngle = targetAngle - Math.PI / 2;
-				while (sineTargetAngle < Math.PI * 2.0) {
-					sineTargetAngle += Math.PI * 2.0;
-				}
-				while (sineTargetAngle > 0) {
-					sineTargetAngle -= Math.PI * 2.0;
-				}
+					targetAngle = truncatePositive(targetAngle);
 
-				while (editedAngle < 0)
-					editedAngle += Math.PI * 2;
+					double kappa = Math.sqrt(2) * (editedAngle);
 
-				while (editedAngle > 2 * Math.PI)
-					editedAngle -= Math.PI * 2;
+					double A = (omega * getSampleLength(currentChannel) * getSampleLength(currentChannel))
+							/ (kappa * kappa);
 
-				double kappa = Math.sqrt(2) * (editedAngle);
-
-				double A = (omega * getSampleLength(currentChannel) * getSampleLength(currentChannel))
-						/ (kappa * kappa);
-				if (SHIFTS[currentChannel] != DC_cascade
-						&& SHIFTS[currentChannel] != adjustment) {
 					TemperatureConductivity tCond = new TemperatureConductivity();
-					tCond.amplitude = FFT.getAbs(fourierForIndex, 0)
-							/ FREQ_INDEX;
+					tCond.amplitude = params.amplitude;
 					tCond.kappa = kappa;
 					tCond.phase = editedAngle;
 					tCond.tCond = A;
-					m.tCond.add(tCond);
+					result.tCond.add(tCond);
+
+				} else if (SHIFTS[currentChannel] instanceof DCsignalID) {
+					Temperature t = new Temperature();
+					t.value = params.nullOffset;
+					result.temperature.add(t);
+				} else if (SHIFTS[currentChannel] instanceof AdjustmentSignalID) {
+
 				}
 			}
 			reader = null;
 			System.gc();
 		}
-		return m;
+		return result;
 	}
 
 }
