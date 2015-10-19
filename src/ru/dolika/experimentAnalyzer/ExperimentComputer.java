@@ -20,7 +20,7 @@ import javax.swing.ProgressMonitor;
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.measurement.Temperature;
 import ru.dolika.experiment.measurement.TemperatureConductivity;
-import ru.dolika.experiment.sample.Sample;
+import ru.dolika.experiment.workspace.Workspace;
 import ru.dolika.experimentAnalyzer.signalID.AdjustmentSignalID;
 import ru.dolika.experimentAnalyzer.signalID.BaseSignalID;
 import ru.dolika.experimentAnalyzer.signalID.DCsignalID;
@@ -28,15 +28,6 @@ import ru.dolika.experimentAnalyzer.signalID.SignalIdentifier;
 import ru.dolika.experimentAnalyzer.zeroCrossing.ZeroCrossing;
 
 public class ExperimentComputer implements Callable<Measurement> {
-
-	// final static String[] SHIFTS = { null, adjustment, adjustment, null };
-
-	final static double getSampleLength(int index) {
-		return 1.641 / 1000.0;
-	}
-
-	final static String DC_cascade = "DCCASCADE";
-	final static String adjustment = "adjustment";
 
 	public double truncatePositive(double value) {
 		while (value < 0) {
@@ -48,7 +39,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		return value;
 	}
 
-	public static Measurement compute(File folder, Sample sample) {
+	public static Measurement computeFolder(File folder, Workspace workspace) {
 		if (!folder.isDirectory())
 			return null;
 		if (!folder.exists())
@@ -96,7 +87,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		ProgressMonitor pm = new ProgressMonitor(null, "Папка обрабатывается слишком долго", "", 0, 1);
 		pm.setMaximum(files.length);
 		for (File f : files) {
-			Callable<Measurement> callable = new ExperimentComputer(f);
+			Callable<Measurement> callable = new ExperimentComputer(f, workspace);
 			Future<Measurement> future = pool.submit(callable);
 			set.add(future);
 		}
@@ -114,7 +105,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 			try {
 				Measurement answer = future.get();
 				if (answer != null) {
-					sample.measurements.add(answer);
+					workspace.sample.measurements.add(answer);
 				}
 				pm.setProgress(++currentProgress);
 				bw.write(String.format("%s%n", answer));
@@ -142,6 +133,35 @@ public class ExperimentComputer implements Callable<Measurement> {
 
 	}
 
+	// Non-static functions
+	File file;
+	Workspace workspace;
+	public Measurement result;
+	SignalIdentifier[] SHIFTS = { null, new DCsignalID(), new BaseSignalID("newAmp20150910.txt", (ZeroCrossing) null),
+			null };
+
+	public ExperimentComputer(File filename) {
+		file = filename;
+	}
+
+	public ExperimentComputer(File filename, Workspace workspace) {
+		this(filename);
+		this.workspace = workspace;
+		if (workspace.signalIDs != null) {
+			if (workspace.signalIDs.size() > 0) {
+				this.SHIFTS = (SignalIdentifier[]) workspace.signalIDs
+						.toArray(new SignalIdentifier[workspace.signalIDs.size()]);
+			}
+		}
+	}
+
+	public ExperimentComputer(File filename, SignalIdentifier[] shifts) {
+		this(filename);
+		if (shifts != null) {
+			this.SHIFTS = shifts;
+		}
+	}
+
 	public SignalParameters getSignalParameters(double[] signal, int frequency) {
 		double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
 		double phase = FFT.getArgument(fourierForFreq, 0);
@@ -153,21 +173,6 @@ public class ExperimentComputer implements Callable<Measurement> {
 
 		return params;
 	}
-
-	// Non-static functions
-	File file;
-	public Measurement result;
-
-	public ExperimentComputer(File filename) {
-		file = filename;
-	}
-
-	public ExperimentComputer(File filename, SignalIdentifier[] shifts) {
-		this.SHIFTS = shifts;
-	}
-
-	SignalIdentifier[] SHIFTS = { null, new DCsignalID(), new BaseSignalID("newAmp20150910.txt", (ZeroCrossing) null),
-			null };
 
 	public Measurement call() {
 		ExperimentReader reader = null;
@@ -216,8 +221,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 
 					double kappa = Math.sqrt(2) * (editedAngle);
 
-					double A = (omega * getSampleLength(currentChannel) * getSampleLength(currentChannel))
-							/ (kappa * kappa);
+					double A = (omega * workspace.sample.length * workspace.sample.length) / (kappa * kappa);
 
 					TemperatureConductivity tCond = new TemperatureConductivity();
 					tCond.amplitude = params.amplitude;

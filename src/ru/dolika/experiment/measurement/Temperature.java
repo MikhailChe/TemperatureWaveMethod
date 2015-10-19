@@ -6,11 +6,9 @@ import ru.dolika.experimentAnalyzer.signalID.DCsignalID;
 
 public class Temperature implements Serializable {
 
-	
-	
 	/**
-	 * 
-	 */
+	* 
+	*/
 	private static final long serialVersionUID = 4120156102719235528L;
 	public double value;
 	public DCsignalID signalID;

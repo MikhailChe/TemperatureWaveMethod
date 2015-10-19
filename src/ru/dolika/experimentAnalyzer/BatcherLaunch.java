@@ -11,22 +11,32 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.ProgressMonitor;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 
-import ru.dolika.experiment.sample.Sample;
+import ru.dolika.experiment.workspace.Workspace;
 
-public class BatcherLaunch {
+/**
+ * @since 05.10.2015
+ * @author Mikey
+ * 
+ */
+public class BatcherLaunch extends JFrame implements Runnable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4738936172017785472L;
 	static final String LAST_FOLDER = "experiment_storage_lastdirectory";
 	static Preferences prefs = Preferences.userNodeForPackage(ExperimentComputer.class);
 
-	private Sample sample = null;
+	private Workspace workspace = null;
 
-	public BatcherLaunch(Sample s) {
+	public BatcherLaunch(Workspace ws) {
 		this();
-		this.sample = s;
+		workspace = ws;
 	}
 
-	public BatcherLaunch() {
-
+	private BatcherLaunch() {
+		super("Экспериментатор 2.0");
 		Locale.setDefault(new Locale("ru", "ru"));
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -38,17 +48,20 @@ public class BatcherLaunch {
 			}
 			e.printStackTrace();
 		}
+		this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		this.setUndecorated(true);
+		this.setLocationRelativeTo(null);
+		this.setVisible(true);
+	}
 
-		JFrame frame = new JFrame("Экспериментатор 2.0");
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		frame.setUndecorated(true);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-
+	@Override
+	public void run() {
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		fileChooser.setMultiSelectionEnabled(true);
 		fileChooser.setPreferredSize(new Dimension(800, 600));
+		fileChooser.setDialogTitle("Выберите папку с данными");
+
 		Action details = fileChooser.getActionMap().get("viewTypeDetails");
 		details.actionPerformed(null);
 
@@ -66,9 +79,9 @@ public class BatcherLaunch {
 			}
 		}
 
-		if (fileChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
+		if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 			File[] folders = fileChooser.getSelectedFiles();
-			ProgressMonitor pm = new ProgressMonitor(frame, "Анализ файлов в папке", "Идёт вычисление измерений", 0,
+			ProgressMonitor pm = new ProgressMonitor(this, "Анализ файлов в папке", "Идёт вычисление измерений", 0,
 					folders.length);
 			pm.setMillisToDecideToPopup(0);
 			int progress = 0;
@@ -76,7 +89,7 @@ public class BatcherLaunch {
 
 			for (File f : folders) {
 				pm.setNote(f.getName());
-				ExperimentComputer.compute(f, sample);
+				ExperimentComputer.computeFolder(f, workspace);
 				pm.setProgress(progress++);
 				if (pm.isCanceled()) {
 					break;
@@ -88,7 +101,8 @@ public class BatcherLaunch {
 			}
 		}
 		Toolkit.getDefaultToolkit().beep();
-		frame.setVisible(false);
-		frame.dispose();
+		this.setVisible(false);
+		workspace = null;
+		this.dispose();
 	}
 }
