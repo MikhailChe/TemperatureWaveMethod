@@ -105,7 +105,11 @@ public class ExperimentComputer implements Callable<Measurement> {
 			try {
 				Measurement answer = future.get();
 				if (answer != null) {
-					workspace.sample.measurements.add(answer);
+					if (workspace.sample != null) {
+						if (workspace.sample.measurements != null) {
+							workspace.sample.measurements.add(answer);
+						}
+					}
 				}
 				pm.setProgress(++currentProgress);
 				bw.write(String.format("%s%n", answer));
@@ -137,8 +141,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 	File file;
 	Workspace workspace;
 	public Measurement result;
-	SignalIdentifier[] SHIFTS = { null, new DCsignalID(), new BaseSignalID("newAmp20150910.txt", (ZeroCrossing) null),
-			null };
+	SignalIdentifier[] SHIFTS = { null, new BaseSignalID("newAmp20150910.txt", (ZeroCrossing) null), new DCsignalID() };
 
 	public ExperimentComputer(File filename) {
 		file = filename;

@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import ru.dolika.experiment.sample.Sample;
+import ru.dolika.experiment.sample.SampleFactory;
 import ru.dolika.experimentAnalyzer.signalID.SignalIdentifier;
 
 public class Workspace implements Serializable {
@@ -52,7 +53,11 @@ public class Workspace implements Serializable {
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
 			Object o = ois.readObject();
 			if (o instanceof Workspace) {
-				return (Workspace) o;
+				Workspace wspace = (Workspace) o;
+				if (wspace.samplefile != null) {
+					wspace.sample = SampleFactory.forBinary(filename);
+				}
+				return wspace;
 			}
 
 		} catch (FileNotFoundException e) {
