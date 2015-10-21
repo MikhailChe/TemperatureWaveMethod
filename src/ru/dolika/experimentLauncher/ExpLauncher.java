@@ -25,7 +25,7 @@ public class ExpLauncher extends JFrame {
 
 	Workspace workspace = null;
 
-	JFileChooser fileChooser = null;
+	JFileChooser fileChooser = new JFileChooser();
 
 	JLabel statusBar = new JLabel();
 
@@ -35,8 +35,6 @@ public class ExpLauncher extends JFrame {
 			public void run() {
 
 				workspace = Workspace.getInstance();
-
-				setLocationRelativeTo(null);
 
 				JMenuBar menuBar = new ExpLauncherMenu(workspace,
 						ExpLauncher.this);
@@ -50,9 +48,8 @@ public class ExpLauncher extends JFrame {
 
 				if (workspace != null) {
 					if (workspace.sample != null) {
-						if (workspace.sample.name != null)
-							ExpLauncher.this.setTitle(workspace.sample.name);
 
+						ExpLauncher.this.setTitle(workspace.sample.name);
 						ExpLauncher.this.statusBar.setText(""
 								+ workspace.sample.length);
 					}
@@ -86,7 +83,7 @@ public class ExpLauncher extends JFrame {
 		if (workspace.sample == null) {
 			return;
 		}
-		if (workspace.samplefile == null)
+		if (workspace.samplefile == null || !workspace.samplefile.exists())
 
 		{
 			fileChooser.setDialogTitle("Сохранить как...");

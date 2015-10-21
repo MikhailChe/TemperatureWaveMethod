@@ -16,6 +16,8 @@ import ru.dolika.experiment.measurement.TemperatureConductivity;
 
 public class SampleFactory {
 
+	static boolean debug = true;
+
 	public static void main(String... args) {
 		String filename = "Samplebinary.smpl";
 		Sample sample = null;
@@ -59,19 +61,32 @@ public class SampleFactory {
 	}
 
 	public static Sample forBinary(String filename) {
+		if (debug)
+			System.out.println("Opening samplefile " + filename);
 
 		try (ObjectInputStream ois = new ObjectInputStream(
 				new ProgressMonitorInputStream(null, "Открытие",
 						new FileInputStream(filename)))) {
 			Object o = ois.readObject();
 			if (o instanceof Sample) {
-				return (Sample) o;
+				Sample sample = (Sample) o;
+				if (debug)
+					System.out.println("Opened sample binary");
+				if (debug)
+					if (sample.name == null)
+						System.out.println("Sample name empty (null)");
+					else
+						System.out.println("Sample name: " + sample.name);
+
+				return sample;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
+		if (debug)
+			System.out.println("Problems openning sample file");
 		return null;
 	}
 

@@ -26,10 +26,12 @@ public class GraduateConverter {
 
 		Graduate graduate = null;
 
-		graduate = GraduateFactory.forBinary(fileChooser.getSelectedFile().getAbsolutePath());
+		graduate = GraduateFactory.forBinary(fileChooser.getSelectedFile()
+				.getAbsolutePath());
 
 		if (graduate == null) {
-			graduate = GraduateFactory.forFile(fileChooser.getSelectedFile().getAbsolutePath());
+			graduate = GraduateFactory.forFile(fileChooser.getSelectedFile()
+					.getAbsolutePath());
 		}
 
 		if (graduate == null)
@@ -45,7 +47,8 @@ public class GraduateConverter {
 		List<String> tVtgLines = null;
 
 		try {
-			tVtgLines = Files.readAllLines(fileChooser.getSelectedFile().toPath());
+			tVtgLines = Files.readAllLines(fileChooser.getSelectedFile()
+					.toPath());
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -55,7 +58,7 @@ public class GraduateConverter {
 
 		ArrayList<Double> values = new ArrayList<Double>();
 		for (String line : tVtgLines) {
-			line.replaceAll(",", ".");
+			line = line.replaceAll(",", ".");
 
 			Double voltage = null;
 			try {

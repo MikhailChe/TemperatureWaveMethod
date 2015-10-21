@@ -17,7 +17,7 @@ public class DCsignalID extends SignalIdentifier {
 		graduate = grad;
 	}
 
-	double zeroTemperature = 20;
+	double zeroTemperature = 273 + 22;
 
 	double gain = 1;
 	final double ADCgain = 6553.5;

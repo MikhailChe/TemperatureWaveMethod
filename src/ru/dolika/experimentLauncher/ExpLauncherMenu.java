@@ -44,9 +44,12 @@ public class ExpLauncherMenu extends JMenuBar {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (workspace.sample != null) {
-					int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
-							"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
-							"Не забудь сохраниться", JOptionPane.YES_NO_CANCEL_OPTION);
+					int shouldSaveOption = JOptionPane
+							.showConfirmDialog(
+									parent,
+									"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
+									"Не забудь сохраниться",
+									JOptionPane.YES_NO_CANCEL_OPTION);
 					if (shouldSaveOption == JOptionPane.NO_OPTION) {
 						workspace.sample = null;
 						System.gc();
@@ -58,20 +61,24 @@ public class ExpLauncherMenu extends JMenuBar {
 					}
 				}
 				if (workspace.sample == null) {
-					String name = JOptionPane.showInputDialog(parent, "Введите имя образца");
+					String name = JOptionPane.showInputDialog(parent,
+							"Введите имя образца");
 					if (name == null)
 						return;
-					String comment = JOptionPane.showInputDialog(parent, "Комментарий");
+					String comment = JOptionPane.showInputDialog(parent,
+							"Комментарий");
 					if (comment == null) {
 						return;
 					}
 					NumberFormat format = NumberFormat.getInstance();
 					format.setMaximumFractionDigits(7);
 					format.setMinimumFractionDigits(0);
-					JFormattedTextField formatter = new JFormattedTextField(format);
+					JFormattedTextField formatter = new JFormattedTextField(
+							format);
 					formatter.requestFocus();
 					formatter.requestFocusInWindow();
-					JOptionPane.showMessageDialog(parent, formatter, "Толщина", JOptionPane.QUESTION_MESSAGE);
+					JOptionPane.showMessageDialog(parent, formatter, "Толщина",
+							JOptionPane.QUESTION_MESSAGE);
 					String lengthString = formatter.getText();
 					if (lengthString == null) {
 						return;
@@ -90,6 +97,8 @@ public class ExpLauncherMenu extends JMenuBar {
 					workspace.sample.comments = comment;
 					workspace.sample.length = length;
 
+					workspace.samplefile = null;
+
 					parent.setTitle(workspace.sample.name);
 					parent.statusBar.setText("" + workspace.sample.length);
 
@@ -99,15 +108,17 @@ public class ExpLauncherMenu extends JMenuBar {
 		fileMenu.add(fileNewSample);
 		JMenu fileOpen = new JMenu("Открыть");
 		fileMenu.add(fileOpen);
-		parent.fileChooser = new JFileChooser();
 		JMenuItem fileOpenProject = new JMenuItem("Проект...");
 		fileOpenProject.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (workspace.sample != null) {
-					int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
-							"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
-							"Не забудь сохраниться", JOptionPane.YES_NO_CANCEL_OPTION);
+					int shouldSaveOption = JOptionPane
+							.showConfirmDialog(
+									parent,
+									"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
+									"Не забудь сохраниться",
+									JOptionPane.YES_NO_CANCEL_OPTION);
 					if (shouldSaveOption == JOptionPane.NO_OPTION) {
 						workspace.sample = null;
 						System.gc();
@@ -120,17 +131,22 @@ public class ExpLauncherMenu extends JMenuBar {
 				}
 				if (workspace.sample == null) {
 					parent.fileChooser.setDialogTitle("Отркыть...");
-					parent.fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+					parent.fileChooser
+							.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					parent.fileChooser.setMultiSelectionEnabled(false);
 					int option = parent.fileChooser.showOpenDialog(parent);
 					if (option == JFileChooser.APPROVE_OPTION) {
 						if (parent.fileChooser.getSelectedFile() != null) {
 							workspace.sample = SampleFactory
-									.forBinary(parent.fileChooser.getSelectedFile().getAbsolutePath());
-							workspace.samplefile = parent.fileChooser.getSelectedFile();
+									.forBinary(parent.fileChooser
+											.getSelectedFile()
+											.getAbsolutePath());
+							workspace.samplefile = parent.fileChooser
+									.getSelectedFile();
 							System.out.println(workspace.sample);
 							parent.setTitle(workspace.sample.name);
-							parent.statusBar.setText("" + workspace.sample.length);
+							parent.statusBar.setText(""
+									+ workspace.sample.length);
 						}
 					}
 
@@ -180,7 +196,8 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		toolsMenu.add(new JSeparator(SwingConstants.HORIZONTAL));
 
-		JMenuItem convertTemperature = new JMenuItem("Преобразовать температуру");
+		JMenuItem convertTemperature = new JMenuItem(
+				"Преобразовать температуру");
 		convertTemperature.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
