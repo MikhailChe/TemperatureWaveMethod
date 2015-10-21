@@ -5,11 +5,8 @@ package ru.dolika.experimentLauncher;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.NumberFormat;
-import java.text.ParseException;
 
 import javax.swing.JFileChooser;
-import javax.swing.JFormattedTextField;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -17,7 +14,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
+import ru.dolika.experiment.sample.Sample;
 import ru.dolika.experiment.sample.SampleFactory;
+import ru.dolika.experiment.sample.SampleSettingsDialog;
 import ru.dolika.experiment.workspace.Workspace;
 import ru.dolika.experimentAnalyzer.BatcherLaunch;
 import ru.dolika.experimentAnalyzer.signalID.dialog.SignalIDSettingsDialog;
@@ -44,12 +43,9 @@ public class ExpLauncherMenu extends JMenuBar {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (workspace.sample != null) {
-					int shouldSaveOption = JOptionPane
-							.showConfirmDialog(
-									parent,
-									"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
-									"Не забудь сохраниться",
-									JOptionPane.YES_NO_CANCEL_OPTION);
+					int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
+							"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
+							"Не забудь сохраниться", JOptionPane.YES_NO_CANCEL_OPTION);
 					if (shouldSaveOption == JOptionPane.NO_OPTION) {
 						workspace.sample = null;
 						System.gc();
@@ -61,46 +57,17 @@ public class ExpLauncherMenu extends JMenuBar {
 					}
 				}
 				if (workspace.sample == null) {
-					String name = JOptionPane.showInputDialog(parent,
-							"Введите имя образца");
-					if (name == null)
-						return;
-					String comment = JOptionPane.showInputDialog(parent,
-							"Комментарий");
-					if (comment == null) {
-						return;
+					Sample s = SampleFactory.getSample();
+					int status = SampleSettingsDialog.showSampleSettings(parent, s);
+
+					if (status == SampleSettingsDialog.OK_BUTTON) {
+						workspace.sample = s;
+						parent.setTitle(workspace.sample.name);
+						parent.statusBar.setText("" + workspace.sample.length);
+						workspace.samplefile = null;
+					} else {
+						/* Добавить обработчик отказа */;
 					}
-					NumberFormat format = NumberFormat.getInstance();
-					format.setMaximumFractionDigits(7);
-					format.setMinimumFractionDigits(0);
-					JFormattedTextField formatter = new JFormattedTextField(
-							format);
-					formatter.requestFocus();
-					formatter.requestFocusInWindow();
-					JOptionPane.showMessageDialog(parent, formatter, "Толщина",
-							JOptionPane.QUESTION_MESSAGE);
-					String lengthString = formatter.getText();
-					if (lengthString == null) {
-						return;
-					}
-
-					double length;
-					try {
-						length = format.parse(lengthString).doubleValue();
-					} catch (ParseException e1) {
-						e1.printStackTrace();
-						return;
-					}
-
-					workspace.sample = SampleFactory.getSample();
-					workspace.sample.name = name;
-					workspace.sample.comments = comment;
-					workspace.sample.length = length;
-
-					workspace.samplefile = null;
-
-					parent.setTitle(workspace.sample.name);
-					parent.statusBar.setText("" + workspace.sample.length);
 
 				}
 			}
@@ -113,12 +80,9 @@ public class ExpLauncherMenu extends JMenuBar {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (workspace.sample != null) {
-					int shouldSaveOption = JOptionPane
-							.showConfirmDialog(
-									parent,
-									"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
-									"Не забудь сохраниться",
-									JOptionPane.YES_NO_CANCEL_OPTION);
+					int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
+							"Файл образца не был сохранен.\nХотите сохранить его перед открытием нового?",
+							"Не забудь сохраниться", JOptionPane.YES_NO_CANCEL_OPTION);
 					if (shouldSaveOption == JOptionPane.NO_OPTION) {
 						workspace.sample = null;
 						System.gc();
@@ -131,22 +95,17 @@ public class ExpLauncherMenu extends JMenuBar {
 				}
 				if (workspace.sample == null) {
 					parent.fileChooser.setDialogTitle("Отркыть...");
-					parent.fileChooser
-							.setFileSelectionMode(JFileChooser.FILES_ONLY);
+					parent.fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					parent.fileChooser.setMultiSelectionEnabled(false);
 					int option = parent.fileChooser.showOpenDialog(parent);
 					if (option == JFileChooser.APPROVE_OPTION) {
 						if (parent.fileChooser.getSelectedFile() != null) {
 							workspace.sample = SampleFactory
-									.forBinary(parent.fileChooser
-											.getSelectedFile()
-											.getAbsolutePath());
-							workspace.samplefile = parent.fileChooser
-									.getSelectedFile();
+									.forBinary(parent.fileChooser.getSelectedFile().getAbsolutePath());
+							workspace.samplefile = parent.fileChooser.getSelectedFile();
 							System.out.println(workspace.sample);
 							parent.setTitle(workspace.sample.name);
-							parent.statusBar.setText(""
-									+ workspace.sample.length);
+							parent.statusBar.setText("" + workspace.sample.length);
 						}
 					}
 
@@ -196,8 +155,7 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		toolsMenu.add(new JSeparator(SwingConstants.HORIZONTAL));
 
-		JMenuItem convertTemperature = new JMenuItem(
-				"Преобразовать температуру");
+		JMenuItem convertTemperature = new JMenuItem("Преобразовать температуру");
 		convertTemperature.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -217,6 +175,23 @@ public class ExpLauncherMenu extends JMenuBar {
 		});
 		settingsMenu.add(chooseChannels);
 		JMenuItem sampleSettings = new JMenuItem("Настройки образца");
+		sampleSettings.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+
+					int status = SampleSettingsDialog.showSampleSettings(parent, workspace.sample);
+
+					if (status == SampleSettingsDialog.OK_BUTTON) {
+						parent.setTitle(workspace.sample.name);
+						parent.statusBar.setText("" + workspace.sample.length);
+					}
+
+				} catch (IllegalArgumentException e1) {
+				}
+			}
+		});
 		settingsMenu.add(sampleSettings);
 
 		// TODO Auto-generated constructor stub

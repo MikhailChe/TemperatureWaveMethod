@@ -40,8 +40,7 @@ public class SampleFactory {
 				tCond.phase = 3.1;
 				tCond.kappa = Math.sqrt(2) * (tCond.phase - Math.PI / 4.0);
 
-				tCond.tCond = ((2.0 * Math.PI * m.frequency) * (sample.length))
-						/ (tCond.kappa * tCond.kappa);
+				tCond.tCond = ((2.0 * Math.PI * m.frequency) * (sample.length)) / (tCond.kappa * tCond.kappa);
 				m.tCond.add(tCond);
 
 				Temperature temp = new Temperature();
@@ -65,8 +64,7 @@ public class SampleFactory {
 			System.out.println("Opening samplefile " + filename);
 
 		try (ObjectInputStream ois = new ObjectInputStream(
-				new ProgressMonitorInputStream(null, "Открытие",
-						new FileInputStream(filename)))) {
+				new ProgressMonitorInputStream(null, "Открытие", new FileInputStream(filename)))) {
 			Object o = ois.readObject();
 			if (o instanceof Sample) {
 				Sample sample = (Sample) o;
@@ -91,8 +89,7 @@ public class SampleFactory {
 	}
 
 	public static boolean saveSample(String filename, Sample sample) {
-		try (ObjectOutputStream oos = new ObjectOutputStream(
-				new FileOutputStream(filename))) {
+		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
 			oos.writeObject(sample);
 			return true;
 		} catch (IOException e) {
