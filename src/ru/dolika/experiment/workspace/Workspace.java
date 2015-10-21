@@ -90,6 +90,9 @@ public class Workspace implements Serializable {
 	}
 
 	public synchronized void save(String filename) {
+		if (debug) {
+			System.out.println("Сохраняю рабочее пространство " + filename);
+		}
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
 			oos.writeObject(this);
 			oos.flush();

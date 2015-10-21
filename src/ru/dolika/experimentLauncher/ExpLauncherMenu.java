@@ -14,11 +14,14 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 
 import ru.dolika.experiment.sample.SampleFactory;
 import ru.dolika.experiment.workspace.Workspace;
 import ru.dolika.experimentAnalyzer.BatcherLaunch;
 import ru.dolika.experimentAnalyzer.signalID.dialog.SignalIDSettingsDialog;
+import ru.dolika.thermocouple.graduate.GraduateConverter;
 
 /**
  * @author Mikey
@@ -173,8 +176,18 @@ public class ExpLauncherMenu extends JMenuBar {
 				new Thread(new BatcherLaunch(workspace)).start();
 			}
 		});
-
 		toolsMenu.add(toolsDofiles);
+
+		toolsMenu.add(new JSeparator(SwingConstants.HORIZONTAL));
+
+		JMenuItem convertTemperature = new JMenuItem("Преобразовать температуру");
+		convertTemperature.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new GraduateConverter(parent);
+			}
+		});
+		toolsMenu.add(convertTemperature);
 
 		JMenu settingsMenu = new JMenu("Настройки");
 		this.add(settingsMenu);

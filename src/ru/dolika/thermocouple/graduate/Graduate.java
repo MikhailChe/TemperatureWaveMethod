@@ -1,14 +1,25 @@
 package ru.dolika.thermocouple.graduate;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.NavigableMap;
-import java.util.Scanner;
 import java.util.TreeMap;
+
+/**
+ * 
+ * Класс градуировки термопары. Предполагается, что значение термо-ЭДС вводится
+ * в миливольтах Выдаваемое значение температуры в градусах
+ * 
+ * @author Mikey
+ * 
+ */
 
 public class Graduate implements Serializable {
 	/**
@@ -19,40 +30,45 @@ public class Graduate implements Serializable {
 	private HashMap<Double, Double> answerMap;
 
 	protected Graduate() {
-		grads = Collections
-				.synchronizedNavigableMap(new TreeMap<Double, Double>());
+		grads = Collections.synchronizedNavigableMap(new TreeMap<Double, Double>());
 		answerMap = new HashMap<Double, Double>();
 	}
 
 	protected Graduate(String filename) throws IllegalArgumentException {
 		this();
-		Scanner s;
+
 		try {
+			List<String> fileLines = Files.readAllLines(new File(filename).toPath());
 
-			// TODO: implement this thing
-			s = new Scanner(new BufferedInputStream(new FileInputStream(
-					filename)));
+			int currentTemperature = 0;
+			for (String singleLine : fileLines) {
+				singleLine = singleLine.replaceAll(",", ".");
+				String[] vtgValStrings = singleLine.split("\t");
 
-			int intKey = 0;
+				double innerTemperature = currentTemperature;
+				double innerTemperatureIncrement = 10.0 / vtgValStrings.length;
 
-			while (s.hasNext()) {
+				for (String voltageStr : vtgValStrings) {
 
-				double value = 0;
-				if (s.hasNextDouble()) {
-					value = s.nextDouble();
-				} else {
-					value = s.nextInt();
+					try {
+						Double voltage = Double.valueOf(voltageStr);
+						if (voltage != null) {
+							grads.put(voltage, innerTemperature);
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						innerTemperature += innerTemperatureIncrement;
+					}
 				}
-				grads.put(intKey / 10.0, value);
-				intKey += 1;
+
+				currentTemperature += 10;
+
 			}
-			s.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 	}
-	
-	
 
 	public double getTemperature(double voltage, double zeroTemp) {
 
@@ -103,14 +119,23 @@ public class Graduate implements Serializable {
 				double higherDiff = nearestHigherKey - voltage;
 				double lowerK = 1 - (lowerDiff / diff);
 				double higherK = 1 - (higherDiff / diff);
-				double value = nearestLowerValue * lowerK + nearestHigherValue
-						* higherK;
+				double value = nearestLowerValue * lowerK + nearestHigherValue * higherK;
 				answerMap.put(voltage, value);
 				return value + zeroTemp;
 			}
 		}
 
 		return 0 + zeroTemp;
+	}
+
+	public void save(File file) {
+		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+			oos.writeObject(this);
+			oos.flush();
+			oos.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }

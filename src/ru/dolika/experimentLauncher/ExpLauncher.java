@@ -2,6 +2,7 @@
 
 import java.awt.BorderLayout;
 import java.awt.Button;
+import java.awt.Dimension;
 import java.io.File;
 
 import javax.swing.JFileChooser;
@@ -9,6 +10,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import ru.dolika.experiment.sample.SampleFactory;
@@ -28,32 +31,48 @@ public class ExpLauncher extends JFrame {
 
 	JLabel statusBar = new JLabel();
 
+	public void createAndShowGUI() {
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+
+				workspace = Workspace.getInstance();
+
+				setLocationRelativeTo(null);
+
+				JMenuBar menuBar = new ExpLauncherMenu(workspace, ExpLauncher.this);
+				ExpLauncher.this.setJMenuBar(menuBar);
+
+				getContentPane().setLayout(new BorderLayout(16, 16));
+
+				getContentPane().add(statusBar, BorderLayout.SOUTH);
+
+				getContentPane().setPreferredSize(new Dimension(640, 480));
+
+				if (workspace != null) {
+					if (workspace.sample != null) {
+						if (workspace.sample.name != null)
+							ExpLauncher.this.setTitle(workspace.sample.name);
+
+						ExpLauncher.this.statusBar.setText("" + workspace.sample.length);
+					}
+				}
+				pack();
+				setLocationRelativeTo(null);
+				setVisible(true);
+				setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+			}
+		});
+	}
+
 	ExpLauncher() {
 		super("Обработчик данных");
+		try {
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
 
-		workspace = Workspace.getInstance();
-
-		setLocationRelativeTo(null);
-
-		JMenuBar menuBar = new ExpLauncherMenu(workspace, this);
-		this.setJMenuBar(menuBar);
-
-		setLayout(new BorderLayout(16, 16));
-
-		add(statusBar, BorderLayout.SOUTH);
-
-		if (workspace != null) {
-			if (workspace.sample != null) {
-				if (workspace.sample.name != null)
-					ExpLauncher.this.setTitle(workspace.sample.name);
-
-				ExpLauncher.this.statusBar.setText("" + workspace.sample.length);
-			}
 		}
-		pack();
-		setVisible(true);
-		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		setAlwaysOnTop(true);
+		createAndShowGUI();
 	}
 
 	public void saveSampleAs() {
