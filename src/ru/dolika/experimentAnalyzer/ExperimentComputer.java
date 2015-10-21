@@ -57,7 +57,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		BufferedWriter bw;
 		File resultFile;
 		try {
-			resultFile = new File(folder, "result.tsv");
+			resultFile = new File(folder, "result-" + folder.getName() + ".tsv");
 			if (resultFile.exists()) {
 				boolean exception = false;
 				do {
@@ -111,9 +111,9 @@ public class ExperimentComputer implements Callable<Measurement> {
 							workspace.sample.measurements.add(answer);
 						}
 					}
+					bw.write(String.format("%s%n", answer));
 				}
 				pm.setProgress(++currentProgress);
-				bw.write(String.format("%s%n", answer));
 			} catch (InterruptedException | ExecutionException | IOException e) {
 				e.printStackTrace();
 			}
@@ -145,25 +145,14 @@ public class ExperimentComputer implements Callable<Measurement> {
 	SignalIdentifier[] SHIFTS = { null, new BaseSignalID("config/just/newAmp20150910.txt", (ZeroCrossing) null),
 			new DCsignalID() };
 
-	public ExperimentComputer(File filename) {
-		file = filename;
-	}
-
 	public ExperimentComputer(File filename, Workspace workspace) {
-		this(filename);
+		this.file = filename;
 		this.workspace = workspace;
 		if (workspace.signalIDs != null) {
 			if (workspace.signalIDs.size() > 0) {
 				this.SHIFTS = (SignalIdentifier[]) workspace.signalIDs
 						.toArray(new SignalIdentifier[workspace.signalIDs.size()]);
 			}
-		}
-	}
-
-	public ExperimentComputer(File filename, SignalIdentifier[] shifts) {
-		this(filename);
-		if (shifts != null) {
-			this.SHIFTS = shifts;
 		}
 	}
 
