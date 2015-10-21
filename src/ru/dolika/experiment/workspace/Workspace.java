@@ -18,7 +18,8 @@ public class Workspace implements Serializable {
 
 	/**
 	 * @author Mikey
-	 * @serialField serialVersionUID
+	 * @serialField
+	 *                  serialVersionUID
 	 */
 	private static final long serialVersionUID = -2757711622043028895L;
 	private static Workspace instance = null;
@@ -39,7 +40,8 @@ public class Workspace implements Serializable {
 		Workspace opened = open(defaultWorkspace);
 		if (opened == null) {
 			if (debug)
-				System.out.println("There was no workspace file, creating new one");
+				System.out
+						.println("There was no workspace file, creating new one");
 			opened = new Workspace();
 		}
 		return opened;
@@ -50,13 +52,24 @@ public class Workspace implements Serializable {
 		File f = new File(filename);
 		if (!f.exists())
 			return null;
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
+				f))) {
 			Object o = ois.readObject();
 			if (o instanceof Workspace) {
 				Workspace wspace = (Workspace) o;
+				if (debug)
+					System.out.println("Opened workspace " + filename);
+
+				if (debug)
+					System.out.println("Workspace samplefile "
+							+ wspace.samplefile);
 				if (wspace.samplefile != null) {
-					wspace.sample = SampleFactory.forBinary(filename);
+					wspace.sample = SampleFactory.forBinary(wspace.samplefile
+							.getAbsolutePath());
+					if (debug)
+						System.out.println("Opened samplefile");
 				}
+
 				return wspace;
 			}
 
@@ -93,7 +106,8 @@ public class Workspace implements Serializable {
 		if (debug) {
 			System.out.println("Сохраняю рабочее пространство " + filename);
 		}
-		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
+		try (ObjectOutputStream oos = new ObjectOutputStream(
+				new FileOutputStream(filename))) {
 			oos.writeObject(this);
 			oos.flush();
 			oos.close();
