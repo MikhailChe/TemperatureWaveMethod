@@ -148,7 +148,7 @@ public class ExpLauncherMenu extends JMenuBar {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new Thread(new BatcherLaunch(workspace)).start();
+				new Thread(new BatcherLaunch(parent, workspace)).start();
 			}
 		});
 		toolsMenu.add(toolsDofiles);

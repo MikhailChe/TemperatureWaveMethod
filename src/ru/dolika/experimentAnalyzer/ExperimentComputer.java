@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
@@ -39,7 +40,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		return value;
 	}
 
-	public static Measurement computeFolder(File folder, Workspace workspace) {
+	public static Measurement computeFolder(File folder, Workspace workspace, JFrame parent) {
 		if (!folder.isDirectory())
 			return null;
 		if (!folder.exists())
@@ -65,11 +66,9 @@ public class ExperimentComputer implements Callable<Measurement> {
 						Files.delete(resultFile.toPath());
 					} catch (java.nio.file.FileSystemException e) {
 						exception = true;
-						JOptionPane.showMessageDialog(null,
-								resultFile.toString(), "Close the file!!!",
+						JOptionPane.showMessageDialog(null, resultFile.toString(), "Close the file!!!",
 								JOptionPane.ERROR_MESSAGE);
-						System.err.println("Please, close the file: "
-								+ resultFile.toString());
+						System.err.println("Please, close the file: " + resultFile.toString());
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e1) {
@@ -78,22 +77,18 @@ public class ExperimentComputer implements Callable<Measurement> {
 					}
 				} while (exception);
 			}
-			bw = Files.newBufferedWriter(resultFile.toPath(),
-					StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+			bw = Files.newBufferedWriter(resultFile.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
 
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
-		ExecutorService pool = Executors.newFixedThreadPool(Runtime
-				.getRuntime().availableProcessors() * 2);
+		ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 		Vector<Future<Measurement>> set = new Vector<Future<Measurement>>();
-		ProgressMonitor pm = new ProgressMonitor(null,
-				"Папка обрабатывается слишком долго", "", 0, 1);
+		ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
 		pm.setMaximum(files.length);
 		for (File f : files) {
-			Callable<Measurement> callable = new ExperimentComputer(f,
-					workspace);
+			Callable<Measurement> callable = new ExperimentComputer(f, workspace);
 			Future<Measurement> future = pool.submit(callable);
 			set.add(future);
 		}
@@ -147,10 +142,8 @@ public class ExperimentComputer implements Callable<Measurement> {
 	File file;
 	Workspace workspace;
 	public Measurement result;
-	SignalIdentifier[] SHIFTS = {
-			null,
-			new BaseSignalID("config/just/newAmp20150910.txt",
-					(ZeroCrossing) null), new DCsignalID() };
+	SignalIdentifier[] SHIFTS = { null, new BaseSignalID("config/just/newAmp20150910.txt", (ZeroCrossing) null),
+			new DCsignalID() };
 
 	public ExperimentComputer(File filename) {
 		file = filename;
@@ -162,8 +155,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		if (workspace.signalIDs != null) {
 			if (workspace.signalIDs.size() > 0) {
 				this.SHIFTS = (SignalIdentifier[]) workspace.signalIDs
-						.toArray(new SignalIdentifier[workspace.signalIDs
-								.size()]);
+						.toArray(new SignalIdentifier[workspace.signalIDs.size()]);
 			}
 		}
 	}
@@ -182,8 +174,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
 		double nullOffset = FFT.getAbs(nullOffsetFourier, 0) / signal.length;
 
-		SignalParameters params = new SignalParameters(phase, amplitude,
-				nullOffset);
+		SignalParameters params = new SignalParameters(phase, amplitude, nullOffset);
 
 		return params;
 	}
@@ -210,12 +201,10 @@ public class ExperimentComputer implements Callable<Measurement> {
 			double[][] croppedData = reader.getCroppedData();
 			final int FREQ_INDEX = reader.getCroppedDataPeriodsCount() * 2;
 			result.frequency = EXPERIMENT_FREQUENCY;
-			for (int currentChannel = 1; currentChannel < Math.min(numCol,
-					SHIFTS.length); currentChannel++) {
+			for (int currentChannel = 1; currentChannel < Math.min(numCol, SHIFTS.length); currentChannel++) {
 				if (SHIFTS[currentChannel] == null)
 					continue;
-				SignalParameters params = getSignalParameters(
-						croppedData[currentChannel], FREQ_INDEX);
+				SignalParameters params = getSignalParameters(croppedData[currentChannel], FREQ_INDEX);
 				if (SHIFTS[currentChannel] instanceof BaseSignalID) {
 
 					BaseSignalID id = (BaseSignalID) SHIFTS[currentChannel];
@@ -230,17 +219,14 @@ public class ExperimentComputer implements Callable<Measurement> {
 
 					currentShift = zc.getCurrentShift(EXPERIMENT_FREQUENCY);
 
-					double adjustAngle = targetAngle
-							- Math.toRadians(currentShift);
-					double editedAngle = truncatePositive(adjustAngle - Math.PI
-							/ 4.0);
+					double adjustAngle = targetAngle - Math.toRadians(currentShift);
+					double editedAngle = truncatePositive(adjustAngle - Math.PI / 4.0);
 
 					targetAngle = truncatePositive(targetAngle);
 
 					double kappa = Math.sqrt(2) * (editedAngle);
 
-					double A = (omega * workspace.sample.length * workspace.sample.length)
-							/ (kappa * kappa);
+					double A = (omega * workspace.sample.length * workspace.sample.length) / (kappa * kappa);
 
 					TemperatureConductivity tCond = new TemperatureConductivity();
 					tCond.amplitude = params.amplitude;
