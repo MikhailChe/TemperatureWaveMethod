@@ -1,6 +1,7 @@
 package ru.dolika.experimentAnalyzer.zeroCrossing;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Collections;
@@ -9,24 +10,38 @@ import java.util.NavigableMap;
 import java.util.Scanner;
 import java.util.TreeMap;
 
+/**
+ * Класс юстировки. Хранит в себе информацию о юстировке нулевой фазы
+ * 
+ * @author Mikey
+ *
+ */
 public class ZeroCrossing {
 
 	private NavigableMap<Double, Double> shifts;
 
 	private HashMap<Double, Double> answerMap;
 
+	/**
+	 * Защищенный конструктор юстировки.
+	 */
 	protected ZeroCrossing() {
-		shifts = Collections
-				.synchronizedNavigableMap(new TreeMap<Double, Double>());
+		shifts = Collections.synchronizedNavigableMap(new TreeMap<Double, Double>());
 		answerMap = new HashMap<Double, Double>();
 	}
 
-	protected ZeroCrossing(String filename) throws IllegalArgumentException {
+	/**
+	 * Защищенный конструктор для создания юстировки из файла
+	 * 
+	 * @param filename
+	 *            текстовый файл с юстировкой
+	 * @throws IllegalArgumentException
+	 */
+	protected ZeroCrossing(File filename) throws IllegalArgumentException {
 		this();
 		Scanner s;
 		try {
-			s = new Scanner(new BufferedInputStream(new FileInputStream(
-					filename)));
+			s = new Scanner(new BufferedInputStream(new FileInputStream(filename)));
 			while (s.hasNext()) {
 
 				double key = 0;
@@ -51,6 +66,14 @@ public class ZeroCrossing {
 
 	}
 
+	/**
+	 * Функиця вычисляет сдвиг фазы основываясь на существующих данных и
+	 * интерполируя их
+	 * 
+	 * @param frequency
+	 *            частота в Гц
+	 * @return значение текущего сдвига фаз для выбранной частоты
+	 */
 	public synchronized double getCurrentShift(double frequency) {
 		if (answerMap.containsKey(frequency)) {
 			Double answer = answerMap.get(frequency);
@@ -100,8 +123,7 @@ public class ZeroCrossing {
 				double higherDiff = nearestHigherKey - frequency;
 				double lowerK = 1 - (lowerDiff / diff);
 				double higherK = 1 - (higherDiff / diff);
-				double value = nearestLowerValue * lowerK + nearestHigherValue
-						* higherK;
+				double value = nearestLowerValue * lowerK + nearestHigherValue * higherK;
 				answerMap.put(frequency, value);
 				return value;
 			}

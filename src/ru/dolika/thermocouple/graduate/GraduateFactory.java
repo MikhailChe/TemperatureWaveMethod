@@ -8,14 +8,14 @@ import java.util.HashMap;
 
 public class GraduateFactory {
 
-	private static HashMap<String, Graduate> cache = new HashMap<String, Graduate>();
+	private static HashMap<File, Graduate> cache = new HashMap<File, Graduate>();
 
-	public synchronized static Graduate forBinary(String filename) {
+	public synchronized static Graduate forBinary(File file) {
 
-		if (filename == null)
+		if (file == null)
 			return null;
 
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
 			Object o = ois.readObject();
 			if (o instanceof Graduate) {
 				return (Graduate) o;
@@ -28,23 +28,23 @@ public class GraduateFactory {
 		return null;
 	}
 
-	public synchronized static Graduate forFile(String filename) {
+	public synchronized static Graduate forFile(File file) {
 
-		if (filename == null)
+		if (file == null)
 			return null;
 		if (cache != null) {
 			synchronized (cache) {
-				if (cache.containsKey(filename) && cache.get(filename) != null) {
-					return cache.get(filename);
+				if (cache.containsKey(file) && cache.get(file) != null) {
+					return cache.get(file);
 				}
-				cache.remove(filename);
-				if (!new File(filename).exists()) {
+				cache.remove(file);
+				if (!file.exists()) {
 					return null;
 				}
 				try {
-					System.out.println("Actually opening a file " + filename);
-					Graduate grads = new Graduate(filename);
-					cache.put(filename, grads);
+					System.out.println("Actually opening a file " + file);
+					Graduate grads = new Graduate(file);
+					cache.put(file, grads);
 					return grads;
 				} catch (IllegalArgumentException e) {
 					return null;

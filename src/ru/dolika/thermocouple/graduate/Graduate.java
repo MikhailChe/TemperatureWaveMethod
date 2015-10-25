@@ -29,16 +29,25 @@ public class Graduate implements Serializable {
 	private NavigableMap<Double, Double> grads;
 	private HashMap<Double, Double> answerMap;
 
+	/**
+	 * Конструктор градуировки
+	 */
 	protected Graduate() {
 		grads = Collections.synchronizedNavigableMap(new TreeMap<Double, Double>());
 		answerMap = new HashMap<Double, Double>();
 	}
 
-	protected Graduate(String filename) throws IllegalArgumentException {
+	/**
+	 * Конструктор градуировки по имени файла
+	 * 
+	 * @param filename
+	 * @throws IllegalArgumentException
+	 */
+	protected Graduate(File file) throws IllegalArgumentException {
 		this();
 
 		try {
-			List<String> fileLines = Files.readAllLines(new File(filename).toPath());
+			List<String> fileLines = Files.readAllLines(file.toPath());
 
 			int currentTemperature = 0;
 			for (String singleLine : fileLines) {
@@ -70,6 +79,17 @@ public class Graduate implements Serializable {
 		}
 	}
 
+	/**
+	 * Получить температуру по напряжению. Напряжение вводится в миливольтах
+	 * 
+	 * @param voltage
+	 *            Напряжение в миливольтах
+	 * @param zeroTemp
+	 *            Температура холодных концов
+	 * 
+	 * @return Разница температуры между горячими и холодными концами в
+	 *         кельвинах
+	 */
 	public double getTemperature(double voltage, double zeroTemp) {
 
 		if (answerMap.containsKey(voltage)) {
@@ -128,6 +148,12 @@ public class Graduate implements Serializable {
 		return 0 + zeroTemp;
 	}
 
+	/**
+	 * Сохранить градуировку в объектный файл
+	 * 
+	 * @param file
+	 *            файл, в который нужно записать граудировку
+	 */
 	public void save(File file) {
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
 			oos.writeObject(this);

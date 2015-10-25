@@ -1,5 +1,7 @@
 package ru.dolika.experimentAnalyzer.signalID;
 
+import java.io.File;
+
 import ru.dolika.thermocouple.graduate.Graduate;
 import ru.dolika.thermocouple.graduate.GraduateFactory;
 
@@ -8,7 +10,7 @@ public class DCsignalID extends SignalIdentifier {
 	Graduate graduate;
 
 	public DCsignalID() {
-		graduate = GraduateFactory.forFile("config/grad/VR5-20.txt");
+		graduate = GraduateFactory.forFile(new File("config/grad/VR5-20.txt"));
 	}
 
 	public DCsignalID(Graduate grad) {

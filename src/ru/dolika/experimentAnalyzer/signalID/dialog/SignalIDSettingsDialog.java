@@ -6,6 +6,12 @@ import java.awt.Frame;
 import javax.swing.JDialog;
 import javax.swing.WindowConstants;
 
+/**
+ * Диалог настроек каналов
+ * 
+ * @author Mikey
+ *
+ */
 public class SignalIDSettingsDialog extends JDialog {
 
 	/**

@@ -9,6 +9,12 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
+/**
+ * Кнопка для добавления нового канала в список
+ * 
+ * @author Mikey
+ *
+ */
 public class SignalIDAddNewPanel extends JButton {
 	/**
 	 * 

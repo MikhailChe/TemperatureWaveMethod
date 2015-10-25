@@ -142,7 +142,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 	File file;
 	Workspace workspace;
 	public Measurement result;
-	SignalIdentifier[] SHIFTS = { null, new BaseSignalID("config/just/newAmp20150910.txt", (ZeroCrossing) null),
+	SignalIdentifier[] SHIFTS = { null, new BaseSignalID(new File("config/just/newAmp20150910.txt")),
 			new DCsignalID() };
 
 	public ExperimentComputer(File filename, Workspace workspace) {

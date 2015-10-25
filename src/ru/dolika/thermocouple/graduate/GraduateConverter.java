@@ -4,11 +4,22 @@ import java.awt.Component;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.swing.JFileChooser;
 
+/**
+ * Преобразователь градуировки из термоЭДС в температуру с помощью файла
+ * градуировки. Используется GUI. <b>Внимание</b>, нет проверки на наличие
+ * графической среды, так что могут быть сбои
+ * 
+ * @author Mikey
+ *
+ */
 public class GraduateConverter {
 
 	JFileChooser fileChooser;
@@ -26,12 +37,10 @@ public class GraduateConverter {
 
 		Graduate graduate = null;
 
-		graduate = GraduateFactory.forBinary(fileChooser.getSelectedFile()
-				.getAbsolutePath());
+		graduate = GraduateFactory.forBinary(fileChooser.getSelectedFile());
 
 		if (graduate == null) {
-			graduate = GraduateFactory.forFile(fileChooser.getSelectedFile()
-					.getAbsolutePath());
+			graduate = GraduateFactory.forFile(fileChooser.getSelectedFile());
 		}
 
 		if (graduate == null)
@@ -47,8 +56,7 @@ public class GraduateConverter {
 		List<String> tVtgLines = null;
 
 		try {
-			tVtgLines = Files.readAllLines(fileChooser.getSelectedFile()
-					.toPath());
+			tVtgLines = Files.readAllLines(fileChooser.getSelectedFile().toPath());
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -57,25 +65,24 @@ public class GraduateConverter {
 			return;
 
 		ArrayList<Double> values = new ArrayList<Double>();
+		NumberFormat numberFormat = NumberFormat.getInstance(Locale.getDefault());
 		for (String line : tVtgLines) {
 			line = line.replaceAll(",", ".");
+			Double voltage = 0d;
 
-			Double voltage = null;
 			try {
-				voltage = Double.valueOf(line);
-			} catch (Exception e) {
-				e.printStackTrace();
-				continue;
+				Number n = numberFormat.parse(line);
+				voltage = n.doubleValue();
+			} catch (ParseException e1) {
+				e1.printStackTrace();
+			} finally {
+				values.add(voltage);
 			}
-			if (voltage == null)
-				continue;
-
-			values.add(graduate.getTemperature(voltage, 273 + 22));
 		}
 
 		try (PrintStream ps = new PrintStream(fileChooser.getSelectedFile())) {
 			for (Double value : values) {
-				ps.println(value);
+				ps.println(String.format(Locale.getDefault(), "%.3f", value));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
