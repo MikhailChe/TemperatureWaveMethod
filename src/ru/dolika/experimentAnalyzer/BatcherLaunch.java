@@ -8,6 +8,7 @@ import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
 import ru.dolika.experiment.workspace.Workspace;
@@ -20,7 +21,8 @@ import ru.dolika.experiment.workspace.Workspace;
 public class BatcherLaunch implements Runnable {
 	static final String LAST_FOLDER = "experiment_storage_lastdirectory";
 
-	static Preferences prefs = Preferences.userNodeForPackage(ExperimentComputer.class);
+	static Preferences prefs = Preferences
+			.userNodeForPackage(ExperimentComputer.class);
 
 	private Workspace workspace = null;
 	private JFrame parent = null;
@@ -33,6 +35,14 @@ public class BatcherLaunch implements Runnable {
 
 	@Override
 	public void run() {
+		if (workspace.sample == null) {
+			JOptionPane
+					.showMessageDialog(
+							parent,
+							"Не был выбран файл образца.\nПожалуйста закройте это окно и выберите образец или создайте новый",
+							"Ошибка образца", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		JFileChooser fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		fileChooser.setMultiSelectionEnabled(true);
@@ -58,7 +68,8 @@ public class BatcherLaunch implements Runnable {
 
 		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
 			File[] folders = fileChooser.getSelectedFiles();
-			ProgressMonitor pm = new ProgressMonitor(parent, "Анализ файлов в папке", "Идёт вычисление измерений", 0,
+			ProgressMonitor pm = new ProgressMonitor(parent,
+					"Анализ файлов в папке", "Идёт вычисление измерений", 0,
 					folders.length);
 			pm.setMillisToDecideToPopup(0);
 			int progress = 0;
@@ -74,7 +85,8 @@ public class BatcherLaunch implements Runnable {
 			}
 			pm.close();
 			if (folders.length > 0) {
-				prefs.put(LAST_FOLDER, folders[folders.length - 1].getAbsolutePath());
+				prefs.put(LAST_FOLDER,
+						folders[folders.length - 1].getAbsolutePath());
 			}
 		}
 		Toolkit.getDefaultToolkit().beep();

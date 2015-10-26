@@ -48,7 +48,8 @@ public class TemperatureConductivity implements Serializable {
 	@Override
 	public String toString() {
 
-		return String.format("%.0f\t%.3f\t%.4e", amplitude, kappa, tCond);
+		return String.format("%.0f\t%.3f\t%.3f\t%.4e", amplitude, phase, kappa,
+				tCond);
 	}
 
 }
