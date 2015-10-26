@@ -28,7 +28,7 @@ public class GraduateConverter {
 		fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-		fileChooser.setDialogTitle("Выберите фалй с градуировкой");
+		fileChooser.setDialogTitle("Выберите файл с градуировкой");
 		int status = fileChooser.showOpenDialog(parent);
 		if (status != JFileChooser.APPROVE_OPTION)
 			return;

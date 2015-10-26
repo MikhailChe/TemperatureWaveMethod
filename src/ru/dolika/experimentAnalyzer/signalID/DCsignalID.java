@@ -21,11 +21,12 @@ public class DCsignalID extends SignalIdentifier {
 
 	double zeroTemperature = 273 + 22;
 
-	double gain = 1;
-	final double ADCgain = 6553.5;
+	double gain = 42;
+	final double ADCgain = 32767.5;
+	final double ADCmaxVoltage = 10;
 
 	public double getVoltage(double ADCvalue) {
-		return (ADCvalue / ADCgain) / gain;
+		return ((ADCvalue / ADCgain) * ADCmaxVoltage) / gain;
 	}
 
 	public double getTemperature(double voltage) {

@@ -142,6 +142,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 	File file;
 	Workspace workspace;
 	public Measurement result;
+
 	SignalIdentifier[] SHIFTS = { null, new BaseSignalID(new File("config/just/newAmp20150910.txt")),
 			new DCsignalID() };
 
@@ -218,20 +219,21 @@ public class ExperimentComputer implements Callable<Measurement> {
 					double A = (omega * workspace.sample.length * workspace.sample.length) / (kappa * kappa);
 
 					TemperatureConductivity tCond = new TemperatureConductivity();
-					tCond.amplitude = params.amplitude;
-					tCond.kappa = kappa;
-					tCond.phase = editedAngle;
-					tCond.tCond = A;
-					result.tCond.add(tCond);
+					if (params.amplitude > 200) {
+						tCond.amplitude = params.amplitude;
+						tCond.kappa = kappa;
+						tCond.phase = editedAngle;
+						tCond.tCond = A;
+						result.tCond.add(tCond);
+					}
 
 				} else if (SHIFTS[currentChannel] instanceof DCsignalID) {
+					DCsignalID signID = (DCsignalID) SHIFTS[currentChannel];
+
 					Temperature t = new Temperature();
-					/*
-					 * t.value = ((DCsignalID) SHIFTS[currentChannel])
-					 * .getTemperature(((DCsignalID) SHIFTS[currentChannel])
-					 * .getVoltage(params.nullOffset));
-					 */
-					t.value = params.nullOffset;
+
+					// t.value = params.nullOffset;
+					t.value = signID.getTemperature(signID.getVoltage(params.nullOffset) * 1000.0);
 					result.temperature.add(t);
 				} else if (SHIFTS[currentChannel] instanceof AdjustmentSignalID) {
 
