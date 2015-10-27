@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer.signalID;
+package ru.dolika.experiment.signalID;
 
 public class SignalIdentifier {
 

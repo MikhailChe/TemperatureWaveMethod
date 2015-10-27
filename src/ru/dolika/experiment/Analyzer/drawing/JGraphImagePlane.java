@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer.drawing;
+package ru.dolika.experiment.Analyzer.drawing;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -71,7 +71,7 @@ public class JGraphImagePlane extends JPanel {
 		public ArraySelectionContextMenu() {
 			items = new JCheckBoxMenuItem[showThisArray.length];
 			for (int i = 0; i < showThisArray.length; i++) {
-				items[i] = new JCheckBoxMenuItem("Ãðàôèê " + i);
+				items[i] = new JCheckBoxMenuItem("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ " + i);
 				items[i].setSelected(showThisArray[i]);
 				final int b = i;
 				items[i].addActionListener(new ActionListener() {

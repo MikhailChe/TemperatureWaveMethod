@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer.signalID.dialog;
+package ru.dolika.experiment.signalID.dialog;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -28,7 +28,8 @@ public class SignalIDAddNewPanel extends JButton {
 	}
 
 	public static Icon getIconImage() {
-		BufferedImage image = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage image = new BufferedImage(32, 32,
+				BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = (Graphics2D) image.getGraphics();
 		g.setColor(Color.GREEN);
 		g.setStroke(new BasicStroke(15f));

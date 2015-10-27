@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer.Angstrem;
+package ru.dolika.experiment.Analyzer.Angstrem;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -23,8 +23,8 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
-import ru.dolika.experimentAnalyzer.ExperimentReader;
-import ru.dolika.experimentAnalyzer.FFT;
+import ru.dolika.experiment.Analyzer.ExperimentReader;
+import ru.dolika.experiment.Analyzer.FFT;
 
 public class AngstremCombinedPlane extends JPanel {
 
@@ -37,32 +37,32 @@ public class AngstremCombinedPlane extends JPanel {
 		super();
 		setLayout(new GridLayout(5, 2, 5, 5));
 
-		// Поле периода
+		// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		JFormattedTextField periodSeconds = new JFormattedTextField(
 				NumberFormat.getInstance());
 		periodSeconds.setText("86400");
-		add(new JLabel("Период волны (секунды)"));
+		add(new JLabel("пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)"));
 		add(periodSeconds);
 
-		// Поле временных интервалов
+		// пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		JFormattedTextField intervalSeconds = new JFormattedTextField(
 				NumberFormat.getInstance());
 		intervalSeconds.setText("1800");
-		add(new JLabel("Интервал измерений (секунды)"));
+		add(new JLabel("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)"));
 		add(intervalSeconds);
 
-		// Расстояние между датчиками
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		JFormattedTextField distanceMilimeters = new JFormattedTextField(
 				NumberFormat.getInstance());
 		distanceMilimeters.setText("200");
-		add(new JLabel("Расстояние между датчиками (мм)"));
+		add(new JLabel("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅ)"));
 		add(distanceMilimeters);
 
-		// Выбор файла
+		// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 		JFileChooser fileChooser = new JFileChooser();
-		JButton fileChooserOpenButton = new JButton("Открыть");
+		JButton fileChooserOpenButton = new JButton("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		JLabel chosenFileName = new JLabel("Выберите файл");
+		JLabel chosenFileName = new JLabel("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ");
 		fileChooserOpenButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -77,9 +77,9 @@ public class AngstremCombinedPlane extends JPanel {
 		add(fileChooserOpenButton);
 		add(chosenFileName);
 
-		// Расчитать
+		// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 		add(new JLabel());
-		JButton calculateButton = new JButton("Расчитать");
+		JButton calculateButton = new JButton("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
 
 		calculateButton.addActionListener(new ActionListener() {
 			@Override
@@ -88,7 +88,7 @@ public class AngstremCombinedPlane extends JPanel {
 					periodSeconds.commitEdit();
 				} catch (ParseException e1) {
 					JOptionPane.showMessageDialog(AngstremCombinedPlane.this,
-							"Ошибка в периоде", "Ошибка входных данных",
+							"пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ", "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ",
 							JOptionPane.ERROR_MESSAGE);
 					e1.printStackTrace();
 				}
@@ -96,7 +96,7 @@ public class AngstremCombinedPlane extends JPanel {
 					intervalSeconds.commitEdit();
 				} catch (ParseException e1) {
 					JOptionPane.showMessageDialog(AngstremCombinedPlane.this,
-							"Ошибка в интервале", "Ошибка входных данных",
+							"пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ",
 							JOptionPane.ERROR_MESSAGE);
 					e1.printStackTrace();
 				}
@@ -104,7 +104,7 @@ public class AngstremCombinedPlane extends JPanel {
 					distanceMilimeters.commitEdit();
 				} catch (ParseException e1) {
 					JOptionPane.showMessageDialog(AngstremCombinedPlane.this,
-							"Ошибка в расстоянии", "Ошибка входных данных",
+							"пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ",
 							JOptionPane.ERROR_MESSAGE);
 					e1.printStackTrace();
 				}
@@ -165,9 +165,9 @@ public class AngstremCombinedPlane extends JPanel {
 		double l = measurementDistance / 1000.0;
 
 		System.out.println();
-		String[] columnNames = { "Датчик", "Период№",
-				"Коэффициент температуропроводности", "Расстояние",
-				"сдвиг фазы", "Фаза1", "Фаза2" };
+		String[] columnNames = { "пїЅпїЅпїЅпїЅпїЅпїЅ", "пїЅпїЅпїЅпїЅпїЅпїЅ",
+				"пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ", "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ",
+				"пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ", "пїЅпїЅпїЅпїЅ1", "пїЅпїЅпїЅпїЅ2" };
 		Vector<Object[]> data = new Vector<Object[]>();
 		for (int channel1 = 0; channel1 < fftVals.length; channel1++) {
 			for (int channel2 = channel1 + 1; channel2 < fftVals.length; channel2++) {
@@ -199,7 +199,7 @@ public class AngstremCombinedPlane extends JPanel {
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
-		JFrame frame = new JFrame("Таблица данных");
+		JFrame frame = new JFrame("пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ");
 		frame.setContentPane(scrollPane);
 		frame.pack();
 		frame.setVisible(true);

@@ -1,9 +1,9 @@
-package ru.dolika.experimentAnalyzer.signalID;
+package ru.dolika.experiment.signalID;
 
 import java.io.File;
 
-import ru.dolika.experimentAnalyzer.zeroCrossing.ZeroCrossing;
-import ru.dolika.experimentAnalyzer.zeroCrossing.ZeroCrossingFactory;
+import ru.dolika.experiment.zeroCrossing.ZeroCrossing;
+import ru.dolika.experiment.zeroCrossing.ZeroCrossingFactory;
 
 /**
  * Класс идентификатора базового сигнала

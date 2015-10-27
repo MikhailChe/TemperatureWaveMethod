@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer.drawing;
+package ru.dolika.experiment.Analyzer.drawing;
 
 import javax.swing.JTabbedPane;
 
@@ -16,19 +16,19 @@ public class JDrawingTabsPlane extends JTabbedPane {
 	public JDrawingTabsPlane(double[][][] data) {
 		this();
 		for (int i = 0; i < data.length; i++) {
-			addTab("Канал №" + (i + 1), new JDrawingPlane(data[i]));
+			addTab("пїЅпїЅпїЅпїЅпїЅ пїЅ" + (i + 1), new JDrawingPlane(data[i]));
 		}
 	}
 
 	public JDrawingTabsPlane(double[][] data) {
 		this();
 		for (int i = 0; i < data.length; i++) {
-			addTab("Канал №" + (i + 1), new JDrawingPlane(data[i]));
+			addTab("пїЅпїЅпїЅпїЅпїЅ пїЅ" + (i + 1), new JDrawingPlane(data[i]));
 		}
 	}
 
 	public void addSignalTab(double[][] data, String name) {
-		addTab((name == null ? ("Канал №" + (getTabCount())) : name),
+		addTab((name == null ? ("пїЅпїЅпїЅпїЅпїЅ пїЅ" + (getTabCount())) : name),
 				new JDrawingPlane(data));
 	}
 }

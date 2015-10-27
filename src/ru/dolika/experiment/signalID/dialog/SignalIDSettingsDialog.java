@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer.signalID.dialog;
+package ru.dolika.experiment.signalID.dialog;
 
 import java.awt.Dialog;
 import java.awt.Frame;

@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer.Angstrem;
+package ru.dolika.experiment.Analyzer.Angstrem;
 
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
@@ -14,7 +14,7 @@ public class AngstremAnalyzer extends JFrame {
 	}
 
 	public AngstremAnalyzer() {
-		super("Анализатор данных по методу ангстрема");
+		super("пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ");
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setContentPane(new AngstremCombinedPlane());
 		pack();

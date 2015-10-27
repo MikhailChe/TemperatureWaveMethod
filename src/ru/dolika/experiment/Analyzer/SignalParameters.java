@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer;
+package ru.dolika.experiment.Analyzer;
 
 public class SignalParameters {
 	public Double phase = null;

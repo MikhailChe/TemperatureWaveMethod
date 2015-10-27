@@ -2,8 +2,8 @@ package ru.dolika.experiment.measurement;
 
 import java.io.Serializable;
 
-import ru.dolika.experimentAnalyzer.signalID.BaseSignalID;
-import ru.dolika.experimentAnalyzer.signalID.SignalIdentifier;
+import ru.dolika.experiment.signalID.BaseSignalID;
+import ru.dolika.experiment.signalID.SignalIdentifier;
 
 /**
  * Класс, хранящий в себе значение температуропроводности
@@ -47,9 +47,12 @@ public class TemperatureConductivity implements Serializable {
 
 	@Override
 	public String toString() {
-
-		return String.format("%.0f\t%.3f\t%.3f\t%.4e", amplitude, phase, kappa,
-				tCond);
+		if (amplitude > 128) {
+			return String.format("%.0f\t%.3f\t%.3f\t%.4e", amplitude, phase,
+					kappa, tCond);
+		} else {
+			return " \t \t \t";
+		}
 	}
 
 }

@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer.drawing;
+package ru.dolika.experiment.Analyzer.drawing;
 
 import java.util.ArrayList;
 

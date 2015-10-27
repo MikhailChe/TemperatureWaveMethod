@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer;
+package ru.dolika.experiment.Analyzer;
 
 import java.awt.Desktop;
 import java.io.BufferedWriter;
@@ -21,12 +21,12 @@ import javax.swing.ProgressMonitor;
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.measurement.Temperature;
 import ru.dolika.experiment.measurement.TemperatureConductivity;
+import ru.dolika.experiment.signalID.AdjustmentSignalID;
+import ru.dolika.experiment.signalID.BaseSignalID;
+import ru.dolika.experiment.signalID.DCsignalID;
+import ru.dolika.experiment.signalID.SignalIdentifier;
 import ru.dolika.experiment.workspace.Workspace;
-import ru.dolika.experimentAnalyzer.signalID.AdjustmentSignalID;
-import ru.dolika.experimentAnalyzer.signalID.BaseSignalID;
-import ru.dolika.experimentAnalyzer.signalID.DCsignalID;
-import ru.dolika.experimentAnalyzer.signalID.SignalIdentifier;
-import ru.dolika.experimentAnalyzer.zeroCrossing.ZeroCrossing;
+import ru.dolika.experiment.zeroCrossing.ZeroCrossing;
 
 public class ExperimentComputer implements Callable<Measurement> {
 
@@ -152,7 +152,8 @@ public class ExperimentComputer implements Callable<Measurement> {
 
 	SignalIdentifier[] SHIFTS = { null,
 			new BaseSignalID(new File("config/just/newAmp20150910.txt")),
-			new DCsignalID() };
+			new DCsignalID(),
+			new BaseSignalID(new File("config/just/newAmp20150910.txt")), };
 
 	public ExperimentComputer(File filename, Workspace workspace) {
 		this.file = filename;
@@ -237,13 +238,13 @@ public class ExperimentComputer implements Callable<Measurement> {
 							/ (kappa * kappa);
 
 					TemperatureConductivity tCond = new TemperatureConductivity();
-					if (params.amplitude > 200) {
-						tCond.amplitude = params.amplitude;
-						tCond.kappa = kappa;
-						tCond.phase = adjustAngle;
-						tCond.tCond = A;
-						result.tCond.add(tCond);
-					}
+
+					tCond.amplitude = params.amplitude;
+					tCond.kappa = kappa;
+					tCond.phase = adjustAngle;
+					tCond.tCond = A;
+
+					result.tCond.add(tCond);
 
 				} else if (SHIFTS[currentChannel] instanceof DCsignalID) {
 					DCsignalID signID = (DCsignalID) SHIFTS[currentChannel];
@@ -251,8 +252,9 @@ public class ExperimentComputer implements Callable<Measurement> {
 					Temperature t = new Temperature();
 
 					// t.value = params.nullOffset;
-					t.value = signID.getTemperature(signID
-							.getVoltage(params.nullOffset) * 1000.0);
+					 t.value = signID.getVoltage(params.nullOffset);
+					//t.value = signID.getTemperature(signID
+					//		.getVoltage(params.nullOffset) * 1000.0);
 					result.temperature.add(t);
 				} else if (SHIFTS[currentChannel] instanceof AdjustmentSignalID) {
 

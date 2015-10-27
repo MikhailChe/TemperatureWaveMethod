@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer.signalID;
+package ru.dolika.experiment.signalID;
 
 import java.io.File;
 
@@ -10,7 +10,8 @@ public class DCsignalID extends SignalIdentifier {
 	Graduate graduate;
 
 	public DCsignalID() {
-		graduate = GraduateFactory.forFile(new File("config/grad/VR5-20.txt"));
+		graduate = GraduateFactory.forFile(new File(
+				"config/grad/VR-5-20-list.txt"));
 	}
 
 	public DCsignalID(Graduate grad) {
@@ -21,7 +22,7 @@ public class DCsignalID extends SignalIdentifier {
 
 	double zeroTemperature = 273 + 22;
 
-	double gain = 42;
+	double gain = 41;
 	final double ADCgain = 32767.5;
 	final double ADCmaxVoltage = 10;
 
@@ -39,11 +40,5 @@ public class DCsignalID extends SignalIdentifier {
 		if (gain != 0) {
 			this.gain = gain;
 		}
-	}
-
-	public static void main(String... args) {
-		DCsignalID sid = new DCsignalID();
-		System.out.println(sid.getVoltage(32766));
-		System.out.println(sid.getTemperature(sid.getVoltage(32766)));
 	}
 }

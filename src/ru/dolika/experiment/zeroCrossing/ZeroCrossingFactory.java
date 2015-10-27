@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer.zeroCrossing;
+package ru.dolika.experiment.zeroCrossing;
 
 import java.io.File;
 import java.util.HashMap;

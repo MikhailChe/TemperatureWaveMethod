@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer;
+package ru.dolika.experiment.Analyzer;
 
 import java.io.IOException;
 import java.nio.file.Files;

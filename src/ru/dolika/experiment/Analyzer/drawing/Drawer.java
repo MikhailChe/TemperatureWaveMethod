@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer.drawing;
+package ru.dolika.experiment.Analyzer.drawing;
 
 import java.awt.Component;
 import java.awt.GridLayout;
@@ -20,8 +20,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import ru.dolika.experimentAnalyzer.ExperimentReader;
-import ru.dolika.experimentAnalyzer.FFT;
+import ru.dolika.experiment.Analyzer.ExperimentReader;
+import ru.dolika.experiment.Analyzer.FFT;
 
 public class Drawer {
 	static final String LAST_FILE = "experiment_storage_lastfile";

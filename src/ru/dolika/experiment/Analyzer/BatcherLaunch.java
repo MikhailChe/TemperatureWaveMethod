@@ -1,4 +1,4 @@
-﻿package ru.dolika.experimentAnalyzer;
+﻿package ru.dolika.experiment.Analyzer;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;

@@ -1,4 +1,4 @@
-package ru.dolika.experimentAnalyzer;
+package ru.dolika.experiment.Analyzer;
 
 import java.util.Locale;
 

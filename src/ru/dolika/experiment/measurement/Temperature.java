@@ -2,8 +2,8 @@ package ru.dolika.experiment.measurement;
 
 import java.io.Serializable;
 
-import ru.dolika.experimentAnalyzer.signalID.DCsignalID;
-import ru.dolika.experimentAnalyzer.signalID.SignalIdentifier;
+import ru.dolika.experiment.signalID.DCsignalID;
+import ru.dolika.experiment.signalID.SignalIdentifier;
 
 /**
  * Объет температуры. Хранит в себе данные о температуре образца, а также
