@@ -252,9 +252,9 @@ public class ExperimentComputer implements Callable<Measurement> {
 					Temperature t = new Temperature();
 
 					// t.value = params.nullOffset;
-					 t.value = signID.getVoltage(params.nullOffset);
-					//t.value = signID.getTemperature(signID
-					//		.getVoltage(params.nullOffset) * 1000.0);
+					t.signalLevel = signID.getVoltage(params.nullOffset);
+					t.value = signID.getTemperature(signID
+							.getVoltage(params.nullOffset) * 1000.0);
 					result.temperature.add(t);
 				} else if (SHIFTS[currentChannel] instanceof AdjustmentSignalID) {
 

@@ -23,6 +23,7 @@ public class Temperature implements Serializable {
 	 * Значение температуры
 	 */
 	public double value;
+	public double signalLevel;
 	/**
 	 * Идентификатор канала данных, с помощью которых была вычислена эта
 	 * температура
