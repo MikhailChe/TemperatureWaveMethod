@@ -1,12 +1,10 @@
 package ru.dolika.experiment.folderWatch;
 
-import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileFilter;
-import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
@@ -19,6 +17,7 @@ import javax.swing.JPanel;
 import ru.dolika.experiment.Analyzer.ExperimentComputer;
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.workspace.Workspace;
+import ru.dolika.ui.MemorableDirectoryChooser;
 
 public class FolderWatch extends JDialog implements Runnable, WindowListener {
 
@@ -26,11 +25,6 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 	 * 
 	 */
 	private static final long serialVersionUID = 1831549678406783975L;
-
-	static final String LAST_FOLDER = "folderWatch.experiment_storage_lastdirectory";
-
-	static Preferences prefs = Preferences
-			.userNodeForPackage(FolderWatch.class);
 
 	private Workspace workspace;
 
@@ -67,25 +61,10 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 							"Ошибка образца", JOptionPane.ERROR_MESSAGE);
 			throw new Exception();
 		}
-		JFileChooser fileChooser = new JFileChooser();
-		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(
+				this.getClass());
 		fileChooser.setMultiSelectionEnabled(false);
-		fileChooser.setPreferredSize(new Dimension(800, 600));
 		fileChooser.setDialogTitle("Выберите папку с данными");
-
-		{
-			String lastFolder = prefs.get(LAST_FOLDER, null);
-			if (lastFolder != null) {
-				try {
-					File dir = new File(new File(lastFolder).getCanonicalPath());
-					fileChooser.setCurrentDirectory(dir);
-					fileChooser.setSelectedFile(dir);
-
-				} catch (Exception e) {
-
-				}
-			}
-		}
 
 		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
 			folder = fileChooser.getSelectedFile();
@@ -94,9 +73,6 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 				this.dispose();
 				throw new Exception();
 			}
-
-			prefs.put(LAST_FOLDER, folder.getAbsolutePath());
-
 		} else {
 			this.setVisible(false);
 			this.dispose();
