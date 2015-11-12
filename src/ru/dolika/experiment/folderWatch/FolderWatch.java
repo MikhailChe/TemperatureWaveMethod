@@ -67,6 +67,7 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 		fileChooser.setDialogTitle("Выберите папку с данными");
 
 		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
+			fileChooser.saveCurrentSelection();
 			folder = fileChooser.getSelectedFile();
 			if (folder == null) {
 				this.setVisible(false);
