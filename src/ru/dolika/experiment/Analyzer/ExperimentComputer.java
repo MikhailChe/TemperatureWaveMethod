@@ -151,9 +151,12 @@ public class ExperimentComputer implements Callable<Measurement> {
 	public Measurement result;
 
 	SignalIdentifier[] SHIFTS = { null,
-			new BaseSignalID(new File("config/just/newAmp20150910.txt")),
-			new DCsignalID(),
-			new BaseSignalID(new File("config/just/newAmp20150910.txt")), };
+			// new BaseSignalID(
+			// new File("config/just/26012016newAmpDCcascade.txt")),
+			new AdjustmentSignalID(),
+			// new BaseSignalID(new File(
+			// "config/just/26012016newAmpLastCascade.txt")),
+			new AdjustmentSignalID(), };
 
 	public ExperimentComputer(File filename, Workspace workspace) {
 		this.file = filename;
@@ -198,7 +201,6 @@ public class ExperimentComputer implements Callable<Measurement> {
 		if (numCol > 1) {
 
 			final double EXPERIMENT_FREQUENCY = reader.getExperimentFrequency();
-			// double[][] singlePeriodSumm = reader.getOnePeriodSumm();
 			double[][] croppedData = reader.getCroppedData();
 			final int FREQ_INDEX = reader.getCroppedDataPeriodsCount() * 2;
 			result.frequency = EXPERIMENT_FREQUENCY;
@@ -216,8 +218,8 @@ public class ExperimentComputer implements Callable<Measurement> {
 						continue;
 
 					double signalAngle = params.phase;
+
 					double targetAngle = -signalAngle;
-					double omega = 2 * Math.PI * EXPERIMENT_FREQUENCY;
 					double currentShift = zc
 							.getCurrentShift(EXPERIMENT_FREQUENCY);
 
@@ -232,8 +234,9 @@ public class ExperimentComputer implements Callable<Measurement> {
 
 					adjustAngle = truncatePositive(adjustAngle);
 
-					kappa = PhysicsModel.searchKappaFor(-adjustAngle, 0.001);
+					// kappa = PhysicsModel.searchKappaFor(-adjustAngle, 0.001);
 
+					double omega = 2 * Math.PI * EXPERIMENT_FREQUENCY;
 					double A = (omega * workspace.sample.length * workspace.sample.length)
 							/ (kappa * kappa);
 
@@ -243,6 +246,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 					tCond.kappa = kappa;
 					tCond.phase = adjustAngle;
 					tCond.tCond = A;
+					tCond.initSignalParams = params;
 
 					result.tCond.add(tCond);
 
@@ -257,7 +261,10 @@ public class ExperimentComputer implements Callable<Measurement> {
 							.getVoltage(params.nullOffset) * 1000.0);
 					result.temperature.add(t);
 				} else if (SHIFTS[currentChannel] instanceof AdjustmentSignalID) {
-
+					TemperatureConductivity tCond = new TemperatureConductivity();
+					tCond.amplitude = params.amplitude;
+					tCond.phase = -params.phase;
+					result.tCond.add(tCond);
 				}
 			}
 			reader = null;

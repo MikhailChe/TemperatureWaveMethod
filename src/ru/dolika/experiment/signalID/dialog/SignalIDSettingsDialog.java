@@ -2,6 +2,7 @@ package ru.dolika.experiment.signalID.dialog;
 
 import java.awt.Dialog;
 import java.awt.Frame;
+import java.util.Arrays;
 
 import javax.swing.JDialog;
 import javax.swing.WindowConstants;
@@ -43,7 +44,6 @@ public class SignalIDSettingsDialog extends JDialog {
 		add(new SignalIDAddNewPanel());
 
 		pack();
-
 	}
 
 }

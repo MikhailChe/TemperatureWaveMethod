@@ -2,6 +2,7 @@ package ru.dolika.experiment.measurement;
 
 import java.io.Serializable;
 
+import ru.dolika.experiment.Analyzer.SignalParameters;
 import ru.dolika.experiment.signalID.BaseSignalID;
 import ru.dolika.experiment.signalID.SignalIdentifier;
 
@@ -41,6 +42,8 @@ public class TemperatureConductivity implements Serializable {
 	 */
 	public double tCond;
 
+	public SignalParameters initSignalParams;
+
 	public TemperatureConductivity() {
 		signalID = null;
 	}
@@ -48,8 +51,12 @@ public class TemperatureConductivity implements Serializable {
 	@Override
 	public String toString() {
 		if (amplitude > 128) {
-			return String.format("%.0f\t%.3f\t%.3f\t%.4e", amplitude, phase,
-					kappa, tCond);
+			return String.format(
+					"%.0f\t%.3f\t%.3f\t%.3f\t%.4e",
+					amplitude,
+					initSignalParams == null ? 0 : Math
+							.toDegrees(initSignalParams.phase), Math
+							.toDegrees(phase), kappa, tCond);
 		} else {
 			return " \t \t \t";
 		}

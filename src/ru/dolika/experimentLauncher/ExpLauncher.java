@@ -81,9 +81,7 @@ public class ExpLauncher extends JFrame {
 		if (workspace.sample == null) {
 			return;
 		}
-		if (workspace.samplefile == null || !workspace.samplefile.exists())
-
-		{
+		if (workspace.samplefile == null || !workspace.samplefile.exists()) {
 			fileChooser.setDialogTitle("Сохранить как...");
 			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			fileChooser.setMultiSelectionEnabled(false);

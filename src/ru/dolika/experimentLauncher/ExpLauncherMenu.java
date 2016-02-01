@@ -19,6 +19,7 @@ import ru.dolika.experiment.folderWatch.FolderWatch;
 import ru.dolika.experiment.sample.Sample;
 import ru.dolika.experiment.sample.SampleFactory;
 import ru.dolika.experiment.sample.SampleSettingsDialog;
+import ru.dolika.experiment.signalID.SignalIdentifier;
 import ru.dolika.experiment.signalID.dialog.SignalIDSettingsDialog;
 import ru.dolika.experiment.workspace.Workspace;
 import ru.dolika.thermocouple.graduate.GraduateConverter;
@@ -199,6 +200,12 @@ public class ExpLauncherMenu extends JMenuBar {
 		chooseChannels.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if (workspace.signalIDs != null) {
+					for (SignalIdentifier sd : workspace.signalIDs) {
+						System.out.println(sd);
+					}
+					System.out.println();
+				}
 				new SignalIDSettingsDialog().setVisible(true);
 			}
 		});
