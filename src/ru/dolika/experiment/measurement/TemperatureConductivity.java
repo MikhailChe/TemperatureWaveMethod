@@ -50,7 +50,7 @@ public class TemperatureConductivity implements Serializable {
 
 	@Override
 	public String toString() {
-		if (amplitude > 128) {
+		if (amplitude > 8) {
 			return String.format(
 					"%.0f\t%.3f\t%.3f\t%.3f\t%.4e",
 					amplitude,
@@ -58,7 +58,7 @@ public class TemperatureConductivity implements Serializable {
 							.toDegrees(initSignalParams.phase), Math
 							.toDegrees(phase), kappa, tCond);
 		} else {
-			return " \t \t \t";
+			return " \t \t \t \t";
 		}
 	}
 

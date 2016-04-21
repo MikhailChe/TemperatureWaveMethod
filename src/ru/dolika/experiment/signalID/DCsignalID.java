@@ -22,7 +22,7 @@ public class DCsignalID extends SignalIdentifier {
 
 	double zeroTemperature = 273 + 22;
 
-	double gain = 41;
+	double gain = 682;
 	final double ADCgain = 32767.5;
 	final double ADCmaxVoltage = 10;
 
