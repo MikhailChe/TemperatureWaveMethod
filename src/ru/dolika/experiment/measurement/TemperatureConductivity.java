@@ -50,7 +50,7 @@ public class TemperatureConductivity implements Serializable {
 
 	@Override
 	public String toString() {
-		if (amplitude > 8) {
+		if (amplitude > 1) {
 			return String.format(
 					"%.0f\t%.3f\t%.3f\t%.3f\t%.4e",
 					amplitude,

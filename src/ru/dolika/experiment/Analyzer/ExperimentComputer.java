@@ -150,18 +150,16 @@ public class ExperimentComputer implements Callable<Measurement> {
 	Workspace workspace;
 	public Measurement result;
 
-	SignalIdentifier[] SHIFTS = { null,
+	SignalIdentifier[] SHIFTS2 = { null,
 			new DCsignalID(),
 			// new AdjustmentSignalID(),
 			new BaseSignalID(new File(
-					"config/just/20160210newAmpLastCascade.txt")),
-			new BaseSignalID(new File("config/just/20160210oldAmp.txt"))
+					"config/just/20160428newAmpChangeTauLastCascade.txt")),
+			new BaseSignalID(new File("config/just/20160427oldAmp.txt"))
 	// new AdjustmentSignalID(),
 	};
 
-	SignalIdentifier[] SHIFTS2 = { null, null,
-			//
-			new AdjustmentSignalID(), null
+	SignalIdentifier[] SHIFTS = { null, null, null, new AdjustmentSignalID()
 	// new AdjustmentSignalID(),
 	};
 

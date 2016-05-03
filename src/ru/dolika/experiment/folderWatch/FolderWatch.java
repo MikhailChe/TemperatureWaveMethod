@@ -1,5 +1,7 @@
 package ru.dolika.experiment.folderWatch;
 
+import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.GridLayout;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -16,6 +18,7 @@ import javax.swing.JPanel;
 
 import ru.dolika.experiment.Analyzer.ExperimentComputer;
 import ru.dolika.experiment.measurement.Measurement;
+import ru.dolika.experiment.measurement.MeasurementViewer;
 import ru.dolika.experiment.workspace.Workspace;
 import ru.dolika.ui.MemorableDirectoryChooser;
 
@@ -30,6 +33,8 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 
 	public File[] filesInFolder;
 	public File folder;
+
+	MeasurementViewer measurementViewer = new MeasurementViewer();
 
 	JPanel signalLevelPanel = new JPanel();
 	JLabel signalLevelLabel = new JLabel("Здесь будет термоЭДС");
@@ -104,14 +109,34 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 				.createTitledBorder("Температуропроводность"));
 		diffusivityPanel.add(diffusivityLabel);
 
-		this.getContentPane().setLayout(new GridLayout(3, 2, 16, 16));
+		Container numbersContainer = new Container();
 
-		this.getContentPane().add(signalLevelPanel);
-		this.getContentPane().add(temperaturePanel);
-		this.getContentPane().add(argumentPanel);
-		this.getContentPane().add(kappaPanel);
-		this.getContentPane().add(amplitudePanel);
-		this.getContentPane().add(diffusivityPanel);
+		numbersContainer.setLayout(new GridLayout(3, 2, 16, 16));
+
+		numbersContainer.add(signalLevelPanel);
+		numbersContainer.add(temperaturePanel);
+		numbersContainer.add(argumentPanel);
+		numbersContainer.add(kappaPanel);
+		numbersContainer.add(amplitudePanel);
+		numbersContainer.add(diffusivityPanel);
+
+		this.getContentPane().setLayout(new BorderLayout(16, 16));
+
+		this.getContentPane().add(numbersContainer, BorderLayout.NORTH);
+
+		this.getContentPane().add(measurementViewer);
+		/*
+		 * for (int i = 0; i < 50; i++) { Measurement m =
+		 * MeasurementFactory.getMeasurement(); Temperature t = new
+		 * Temperature(); t.value = i * 30 + 373; m.temperature.add(t);
+		 * 
+		 * TemperatureConductivity tc = new TemperatureConductivity(); tc.tCond
+		 * = Math.sin(Math.PI * 2.0 * 3.5 * i / 50f) * 3E-6 + 8E-6;
+		 * m.tCond.add(tc); TemperatureConductivity tc2 = new
+		 * TemperatureConductivity(); tc2.tCond = Math.sin(Math.PI * 2.0 * 3.5 *
+		 * i / 50f) * 3E-6 + 7E-6; m.tCond.add(tc2);
+		 * measurementViewer.addMeasurement(m); }
+		 */
 
 		this.pack();
 
@@ -128,14 +153,20 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 		});
 
 		if (filesInFolder == null) {
-			filesInFolder = files;
-			updateValuesForFile(filesInFolder[filesInFolder.length - 1]);
+			if (files.length >= 1) {
+				filesInFolder = files;
+				for (File f : filesInFolder) {
+					updateValuesForFile(f);
+				}
+			}
 			return;
 		}
 
 		if (filesInFolder.length != files.length) {
-			filesInFolder = files;
-			updateValuesForFile(filesInFolder[filesInFolder.length - 1]);
+			if (files.length >= 1) {
+				filesInFolder = files;
+				updateValuesForFile(filesInFolder[filesInFolder.length - 1]);
+			}
 			return;
 		}
 	}
@@ -166,6 +197,8 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 			diffusivityLabel
 					.setText(String.format("%.3e", m.tCond.get(0).tCond));
 		}
+		measurementViewer.addMeasurement(m);
+
 	}
 
 	boolean isClosing = false;
