@@ -145,21 +145,41 @@ public class ExperimentComputer implements Callable<Measurement> {
 
 	}
 
+	public static SignalParameters[] getAllSignalParameters(double[][] signals,
+			int frequency) {
+		SignalParameters[] params = new SignalParameters[signals.length];
+		for (int i = 0; i < signals.length; i++) {
+			double[] signal = signals[i];
+			params[i] = getSignalParameters(signal, frequency);
+		}
+		return params;
+	}
+
+	public static SignalParameters getSignalParameters(double[] signal,
+			int frequency) {
+		double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
+		double phase = FFT.getArgument(fourierForFreq, 0);
+		double amplitude = FFT.getAbs(fourierForFreq, 0) / signal.length;
+		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
+		double nullOffset = FFT.getAbs(nullOffsetFourier, 0) / signal.length;
+
+		SignalParameters params = new SignalParameters(phase, amplitude,
+				nullOffset);
+
+		return params;
+	}
+
 	// Non-static functions
-	File file;
-	Workspace workspace;
+	final private File file;
+	final private Workspace workspace;
 	public Measurement result;
 
-	SignalIdentifier[] SHIFTS2 = { null,
+	SignalIdentifier[] SHIFTS = { null,
 			new DCsignalID(),
 			// new AdjustmentSignalID(),
 			new BaseSignalID(new File(
 					"config/just/20160428newAmpChangeTauLastCascade.txt")),
 			new BaseSignalID(new File("config/just/20160427oldAmp.txt"))
-	// new AdjustmentSignalID(),
-	};
-
-	SignalIdentifier[] SHIFTS = { null, null, null, new AdjustmentSignalID()
 	// new AdjustmentSignalID(),
 	};
 
@@ -173,19 +193,6 @@ public class ExperimentComputer implements Callable<Measurement> {
 								.size()]);
 			}
 		}
-	}
-
-	public SignalParameters getSignalParameters(double[] signal, int frequency) {
-		double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
-		double phase = FFT.getArgument(fourierForFreq, 0);
-		double amplitude = FFT.getAbs(fourierForFreq, 0) / signal.length;
-		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
-		double nullOffset = FFT.getAbs(nullOffsetFourier, 0) / signal.length;
-
-		SignalParameters params = new SignalParameters(phase, amplitude,
-				nullOffset);
-
-		return params;
 	}
 
 	public Measurement call() {
@@ -209,20 +216,20 @@ public class ExperimentComputer implements Callable<Measurement> {
 			double[][] croppedData = reader.getCroppedData();
 			final int FREQ_INDEX = reader.getCroppedDataPeriodsCount() * 2;
 			result.frequency = EXPERIMENT_FREQUENCY;
+			SignalParameters[] params = getAllSignalParameters(croppedData,
+					FREQ_INDEX);
 			for (int currentChannel = 1; currentChannel < Math.min(numCol,
 					SHIFTS.length); currentChannel++) {
 				if (SHIFTS[currentChannel] == null)
 					continue;
-				SignalParameters params = getSignalParameters(
-						croppedData[currentChannel], FREQ_INDEX);
+				SignalParameters param = params[currentChannel];
 				if (SHIFTS[currentChannel] instanceof BaseSignalID) {
-
 					BaseSignalID id = (BaseSignalID) SHIFTS[currentChannel];
 					ZeroCrossing zc = id.zc;
 					if (zc == null)
 						continue;
 
-					double signalAngle = params.phase;
+					double signalAngle = param.phase;
 
 					double targetAngle = -signalAngle;
 					double currentShift = zc
@@ -247,11 +254,11 @@ public class ExperimentComputer implements Callable<Measurement> {
 
 					TemperatureConductivity tCond = new TemperatureConductivity();
 
-					tCond.amplitude = params.amplitude;
+					tCond.amplitude = param.amplitude;
 					tCond.kappa = kappa;
 					tCond.phase = adjustAngle;
 					tCond.tCond = A;
-					tCond.initSignalParams = params;
+					tCond.initSignalParams = param;
 
 					result.tCond.add(tCond);
 
@@ -261,14 +268,14 @@ public class ExperimentComputer implements Callable<Measurement> {
 					Temperature t = new Temperature();
 
 					// t.value = params.nullOffset;
-					t.signalLevel = signID.getVoltage(params.nullOffset);
+					t.signalLevel = signID.getVoltage(param.nullOffset);
 					t.value = signID.getTemperature(signID
-							.getVoltage(params.nullOffset) * 1000.0);
+							.getVoltage(param.nullOffset) * 1000.0);
 					result.temperature.add(t);
 				} else if (SHIFTS[currentChannel] instanceof AdjustmentSignalID) {
 					TemperatureConductivity tCond = new TemperatureConductivity();
-					tCond.amplitude = params.amplitude;
-					tCond.phase = -params.phase;
+					tCond.amplitude = param.amplitude;
+					tCond.phase = -param.phase;
 					result.tCond.add(tCond);
 				}
 			}

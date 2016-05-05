@@ -39,13 +39,11 @@ public class ExperimentReader {
 		headerInfo = header.split("\t");
 		if (headerInfo.length != 2) {
 			System.err.println("Invalid header format");
-			System.exit(3);
 			return;
 		}
 		int sizeToValidate = Integer.parseInt(headerInfo[0]);
 		if (strings.size() - 1 != sizeToValidate) {
 			System.err.println("Size in the header doesn't match size of file");
-			System.exit(4);
 			return;
 		}
 

@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
+import ru.dolika.experiment.Analyzer.AdjustFileCreator;
 import ru.dolika.experiment.Analyzer.BatcherLaunch;
 import ru.dolika.experiment.folderWatch.FolderWatch;
 import ru.dolika.experiment.sample.Sample;
@@ -154,6 +155,12 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenu toolsMenu = new JMenu("Инструменты");
 		this.add(toolsMenu);
 		JMenuItem prepareZeroCrossing = new JMenuItem("Подготовить юстировку");
+		prepareZeroCrossing.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new Thread(new AdjustFileCreator(parent)).start();
+			}
+		});
 		toolsMenu.add(prepareZeroCrossing);
 		JMenuItem prepareGrads = new JMenuItem("Подготовить градуировку");
 		toolsMenu.add(prepareGrads);
