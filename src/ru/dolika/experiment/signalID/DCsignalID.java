@@ -10,8 +10,7 @@ public class DCsignalID extends SignalIdentifier {
 	Graduate graduate;
 
 	public DCsignalID() {
-		graduate = GraduateFactory.forFile(new File(
-				"config/grad/VR-5-20-list.txt"));
+		graduate = GraduateFactory.forFile(new File("config/grad/VR-5-20-list.txt"));
 	}
 
 	public DCsignalID(Graduate grad) {
@@ -22,9 +21,9 @@ public class DCsignalID extends SignalIdentifier {
 
 	double zeroTemperature = 273 + 22;
 
-	//gain for 1100 = 682
-	//gain for 0100 = 271
-	double gain = 270;  //  /2.51
+	// gain for 1100 = 682
+	// gain for 0100 = 271
+	double gain = 270; // /2.51
 	final double ADCgain = 32767.5;
 	final double ADCmaxVoltage = 10;
 
@@ -42,5 +41,14 @@ public class DCsignalID extends SignalIdentifier {
 		if (gain != 0) {
 			this.gain = gain;
 		}
+	}
+
+	public Graduate getGraduate() {
+		return graduate;
+	}
+
+	public Graduate setGraduate(Graduate newgrad) {
+		this.graduate = newgrad;
+		return this.graduate;
 	}
 }

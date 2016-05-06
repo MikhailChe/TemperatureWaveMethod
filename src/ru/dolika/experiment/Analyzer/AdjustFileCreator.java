@@ -31,16 +31,18 @@ public class AdjustFileCreator implements Runnable {
 	@Override
 	public void run() {
 
-		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(
-				ExperimentComputer.class);
+		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(ExperimentComputer.class);
 		fileChooser.setDialogTitle("Выберите папку для обработки юстировки");
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-		int channelNumber = (int) JOptionPane.showInputDialog(parent,
-				"Выберите номер канала для выполнения юстировки",
-				"Каналы юстировки", JOptionPane.QUESTION_MESSAGE, null,
-				new Integer[] { 1, 2, 3, 4, 5 }, new Integer(1));
+		Integer channelNumber = (Integer) JOptionPane.showInputDialog(parent,
+				"Выберите номер канала для выполнения юстировки", "Каналы юстировки", JOptionPane.QUESTION_MESSAGE,
+				null, new Integer[] { 1, 2, 3, 4, 5 }, new Integer(1));
+
+		if (channelNumber == null) {
+			return;
+		}
 
 		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
 			fileChooser.saveCurrentSelection();
@@ -53,44 +55,34 @@ public class AdjustFileCreator implements Runnable {
 				}
 			});
 			fileChooser = new MemorableDirectoryChooser(this.getClass());
-			fileChooser
-					.setDialogTitle("Выберите папку для сохранения юстировочных данных");
+			fileChooser.setDialogTitle("Выберите папку для сохранения юстировочных данных");
 			fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			fileChooser.setMultiSelectionEnabled(false);
 			if (fileChooser.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION) {
 				fileChooser.saveCurrentSelection();
 				File resultFolder = fileChooser.getSelectedFile();
-				File resultFile = new File(resultFolder,
-						System.currentTimeMillis() + "ch" + channelNumber
-								+ ".txt");
+				File resultFile = new File(resultFolder, System.currentTimeMillis() + "ch" + channelNumber + "."
+						+ ZeroCrossing.extensionFilter.getExtensions()[0]);
 				try {
-					BufferedWriter bw = Files.newBufferedWriter(
-							resultFile.toPath(), StandardOpenOption.CREATE_NEW,
+					BufferedWriter bw = Files.newBufferedWriter(resultFile.toPath(), StandardOpenOption.CREATE_NEW,
 							StandardOpenOption.WRITE);
-					ProgressMonitor pm = new ProgressMonitor(parent,
-							"Папка обрабатывается слишком долго", "", 0,
+					ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0,
 							files.length);
 					for (int i = 0; i < files.length; i++) {
 						File file = files[i];
 
-						ExperimentReader reader = new ExperimentReader(
-								file.toPath());
+						ExperimentReader reader = new ExperimentReader(file.toPath());
 						double[][] croppedData = reader.getCroppedData();
 						if (channelNumber >= croppedData.length) {
-							JOptionPane
-									.showMessageDialog(
-											parent,
-											"Выбранного канала не существует в одном или нескольких файлах",
-											"Ошибка", JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(parent,
+									"Выбранного канала не существует в одном или нескольких файлах", "Ошибка",
+									JOptionPane.ERROR_MESSAGE);
 							return;
 						}
-						final int FREQ_INDEX = reader
-								.getCroppedDataPeriodsCount() * 2;
-						SignalParameters param = ExperimentComputer
-								.getSignalParameters(
-										croppedData[channelNumber], FREQ_INDEX);
-						bw.write(String.format("%.1f\t%.3f\r\n",
-								reader.getExperimentFrequency(),
+						final int FREQ_INDEX = reader.getCroppedDataPeriodsCount() * 2;
+						SignalParameters param = ExperimentComputer.getSignalParameters(croppedData[channelNumber],
+								FREQ_INDEX);
+						bw.write(String.format("%.1f\t%.3f\r\n", reader.getExperimentFrequency(),
 								Math.toDegrees(-param.phase)));
 						pm.setProgress(i);
 					}
@@ -104,7 +96,7 @@ public class AdjustFileCreator implements Runnable {
 				}
 				ZeroCrossing zc = ZeroCrossingFactory.forFile(resultFile);
 				ZeroCrossingViewerPanel zcvp = new ZeroCrossingViewerPanel(zc);
-				JDialog dialog = new JDialog(parent, "Файл градуировки");
+				JDialog dialog = new JDialog(parent, "Файл юстировки");
 				dialog.getContentPane().add(zcvp);
 				dialog.pack();
 				dialog.setModal(true);

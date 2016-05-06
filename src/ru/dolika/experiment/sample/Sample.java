@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import ru.dolika.experiment.measurement.Measurement;
 
 public class Sample implements Serializable {
@@ -15,6 +17,9 @@ public class Sample implements Serializable {
 	public String name;
 	public double length;
 	public String comments;
+
+	public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter("Файл образца (*.smpl)",
+			"smpl");
 
 	public ArrayList<Measurement> measurements;
 

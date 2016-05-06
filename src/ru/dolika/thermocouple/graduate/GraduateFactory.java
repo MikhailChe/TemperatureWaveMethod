@@ -18,7 +18,11 @@ public class GraduateFactory {
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
 			Object o = ois.readObject();
 			if (o instanceof Graduate) {
-				return (Graduate) o;
+				Graduate g = (Graduate) o;
+				if (g != null) {
+					g.fromFile = file;
+				}
+				return g;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

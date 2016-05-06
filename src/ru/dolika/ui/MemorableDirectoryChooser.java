@@ -29,6 +29,7 @@ public class MemorableDirectoryChooser extends JFileChooser {
 		try {
 			prefs = Preferences.userNodeForPackage(classname);
 		} catch (Exception e) {
+			e.printStackTrace();
 			return;
 		}
 
@@ -39,12 +40,10 @@ public class MemorableDirectoryChooser extends JFileChooser {
 					File dir = new File(new File(lastFolder).getCanonicalPath());
 					if (dir.isDirectory()) {
 						setCurrentDirectory(dir);
-						setSelectedFile(dir);
-						setCurrentDirectory(dir);
-						setSelectedFile(dir);
+						//setSelectedFile(dir);
 					}
 				} catch (Exception e) {
-
+					e.printStackTrace();
 				}
 			}
 		}
@@ -53,6 +52,11 @@ public class MemorableDirectoryChooser extends JFileChooser {
 	public void saveCurrentSelection() {
 		if (prefs != null) {
 			File f = getSelectedFile();
+			System.out.println("saving directory. current file: " + f);
+			if (!f.isDirectory()) {
+				f = f.getParentFile();
+				System.out.println("It's not a directory, so file is " + f);
+			}
 			if (f != null) {
 				try {
 					prefs.put(LAST_FOLDER, f.getCanonicalPath());

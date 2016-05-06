@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 /**
  * 
  * Класс градуировки термопары. Предполагается, что значение термо-ЭДС вводится
@@ -22,12 +24,15 @@ import java.util.TreeMap;
  */
 
 public class Graduate implements Serializable {
-	/**
-	 * 
-	 */
+
+	public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+			"Файл градуировки бинарный (*.gradbin)", "gradbin");
+
 	private static final long serialVersionUID = 1347461243070602565L;
 	private NavigableMap<Double, Double> grads;
 	private HashMap<Double, Double> answerMap;
+
+	public File fromFile;
 
 	/**
 	 * Конструктор градуировки
@@ -77,6 +82,7 @@ public class Graduate implements Serializable {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		fromFile = file;
 	}
 
 	/**

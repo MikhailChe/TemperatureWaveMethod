@@ -37,7 +37,9 @@ public class ZeroCrossingFactory {
 				try {
 					System.out.println("Actually opening a file " + file);
 					ZeroCrossing crossing = new ZeroCrossing(file);
+					
 					cache.put(file, crossing);
+					
 					return crossing;
 				} catch (IllegalArgumentException e) {
 					return null;

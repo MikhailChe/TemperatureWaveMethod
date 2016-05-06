@@ -2,7 +2,7 @@ package ru.dolika.experiment.sample;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.GridLayout;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.util.Locale;
 
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
@@ -51,9 +52,11 @@ public class SampleSettingsDialog extends JDialog {
 		length = new JFormattedTextField(formatter);
 
 		Container pane = this.getContentPane();
-		GridLayout layout = new GridLayout(4, 1, 8, 8);
+		BoxLayout layout = new BoxLayout(pane, BoxLayout.Y_AXIS);
 
 		pane.setLayout(layout);
+		pane.setMinimumSize(new Dimension(400, 200));
+		pane.setPreferredSize(new Dimension(400, 200));
 
 		JPanel namePanel = new JPanel(new BorderLayout(8, 8));
 		namePanel.setBorder(BorderFactory.createTitledBorder("Название образца"));

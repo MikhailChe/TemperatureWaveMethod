@@ -18,8 +18,7 @@ public class Workspace implements Serializable {
 
 	/**
 	 * @author Mikey
-	 * @serialField
-	 *                  serialVersionUID
+	 * @serialField serialVersionUID
 	 */
 	private static final long serialVersionUID = -2757711622043028895L;
 	private static Workspace instance = null;
@@ -37,41 +36,33 @@ public class Workspace implements Serializable {
 	}
 
 	public synchronized static Workspace open() {
+		if (debug)
+			System.out.println("Opening default workspace [static Workspace.open()]");
 		Workspace opened = open(defaultWorkspace);
+
 		if (opened == null) {
 			if (debug)
-				System.out
-						.println("There was no workspace file, creating new one");
+				System.out.println("There was no workspace file, creating new one");
 			opened = new Workspace();
+			opened.save();
 		}
 		return opened;
 
 	}
 
 	public synchronized static Workspace open(String filename) {
+		if (debug)
+			System.out.println("Opening workspace [static Workspace.open(" + filename + ")]");
+
 		File f = new File(filename);
 		if (!f.exists())
 			return null;
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
-				f))) {
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
 			Object o = ois.readObject();
 			if (o instanceof Workspace) {
 				Workspace wspace = (Workspace) o;
 				if (debug)
 					System.out.println("Opened workspace " + filename);
-
-				if (debug)
-					System.out.println("Workspace samplefile "
-							+ wspace.samplefile);
-				if (wspace.samplefile != null) {
-					wspace.sample = SampleFactory.forBinary(wspace.samplefile
-							.getAbsolutePath());
-					if (wspace.sample == null)
-						wspace.samplefile = null;
-					if (debug)
-						System.out.println("Opened samplefile");
-				}
-
 				return wspace;
 			}
 
@@ -92,12 +83,13 @@ public class Workspace implements Serializable {
 		w.save(filename);
 	}
 
-	public transient Sample sample = null;
-	public File samplefile = null;
-	public ArrayList<SignalIdentifier> signalIDs = null;
+	private transient Sample sample = null;
+	private File samplefile = null;
+	private ArrayList<SignalIdentifier> signalIDs = null;
 
 	private Workspace() {
-
+		if (debug)
+			System.out.println("Workpsace contructor called");
 	}
 
 	public synchronized void save() {
@@ -108,8 +100,8 @@ public class Workspace implements Serializable {
 		if (debug) {
 			System.out.println("Сохраняю рабочее пространство " + filename);
 		}
-		try (ObjectOutputStream oos = new ObjectOutputStream(
-				new FileOutputStream(filename))) {
+
+		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
 			oos.writeObject(this);
 			oos.flush();
 			oos.close();
@@ -120,4 +112,38 @@ public class Workspace implements Serializable {
 		}
 	}
 
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+		in.defaultReadObject();
+		System.out.println("Deserializing workspace");
+	}
+
+	public Sample getSample() {
+		if (sample == null) {
+			if (samplefile != null) {
+				if (debug)
+					System.out.println("Opening sample binary " + samplefile);
+				sample = SampleFactory.forBinary(samplefile.toString());
+			}
+		}
+		return sample;
+	}
+
+	public Sample setSample(Sample newsample) {
+		sample = newsample;
+		return sample;
+	}
+
+	public ArrayList<SignalIdentifier> getSignalIDs() {
+		return signalIDs;
+	}
+
+	public File getSampleFile() {
+		return samplefile;
+	}
+
+	public File setSampleFile(File newsamplefile) {
+		samplefile = newsamplefile;
+		save();
+		return samplefile;
+	}
 }

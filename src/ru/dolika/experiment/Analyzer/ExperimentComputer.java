@@ -7,6 +7,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -21,6 +22,7 @@ import javax.swing.ProgressMonitor;
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.measurement.Temperature;
 import ru.dolika.experiment.measurement.TemperatureConductivity;
+import ru.dolika.experiment.sample.Sample;
 import ru.dolika.experiment.signalID.AdjustmentSignalID;
 import ru.dolika.experiment.signalID.BaseSignalID;
 import ru.dolika.experiment.signalID.DCsignalID;
@@ -40,8 +42,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		return value;
 	}
 
-	public static Measurement computeFolder(File folder, Workspace workspace,
-			JFrame parent) {
+	public static Measurement computeFolder(File folder, Workspace workspace, JFrame parent) {
 		if (!folder.isDirectory())
 			return null;
 		if (!folder.exists())
@@ -67,11 +68,9 @@ public class ExperimentComputer implements Callable<Measurement> {
 						Files.delete(resultFile.toPath());
 					} catch (java.nio.file.FileSystemException e) {
 						exception = true;
-						JOptionPane.showMessageDialog(null,
-								resultFile.toString(), "Close the file!!!",
+						JOptionPane.showMessageDialog(null, resultFile.toString(), "Close the file!!!",
 								JOptionPane.ERROR_MESSAGE);
-						System.err.println("Please, close the file: "
-								+ resultFile.toString());
+						System.err.println("Please, close the file: " + resultFile.toString());
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e1) {
@@ -80,22 +79,18 @@ public class ExperimentComputer implements Callable<Measurement> {
 					}
 				} while (exception);
 			}
-			bw = Files.newBufferedWriter(resultFile.toPath(),
-					StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+			bw = Files.newBufferedWriter(resultFile.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
 
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
 		}
-		ExecutorService pool = Executors.newFixedThreadPool(Runtime
-				.getRuntime().availableProcessors() * 2);
+		ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 		Vector<Future<Measurement>> set = new Vector<Future<Measurement>>();
-		ProgressMonitor pm = new ProgressMonitor(parent,
-				"Папка обрабатывается слишком долго", "", 0, 1);
+		ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
 		pm.setMaximum(files.length);
 		for (File f : files) {
-			Callable<Measurement> callable = new ExperimentComputer(f,
-					workspace);
+			Callable<Measurement> callable = new ExperimentComputer(f, workspace);
 			Future<Measurement> future = pool.submit(callable);
 			set.add(future);
 		}
@@ -113,9 +108,10 @@ public class ExperimentComputer implements Callable<Measurement> {
 			try {
 				Measurement answer = future.get();
 				if (answer != null) {
-					if (workspace.sample != null) {
-						if (workspace.sample.measurements != null) {
-							workspace.sample.measurements.add(answer);
+					Sample sample;
+					if ((sample = workspace.getSample()) != null) {
+						if (sample.measurements != null) {
+							sample.measurements.add(answer);
 						}
 					}
 					bw.write(String.format("%s%n", answer));
@@ -145,8 +141,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 
 	}
 
-	public static SignalParameters[] getAllSignalParameters(double[][] signals,
-			int frequency) {
+	public static SignalParameters[] getAllSignalParameters(double[][] signals, int frequency) {
 		SignalParameters[] params = new SignalParameters[signals.length];
 		for (int i = 0; i < signals.length; i++) {
 			double[] signal = signals[i];
@@ -155,16 +150,14 @@ public class ExperimentComputer implements Callable<Measurement> {
 		return params;
 	}
 
-	public static SignalParameters getSignalParameters(double[] signal,
-			int frequency) {
+	public static SignalParameters getSignalParameters(double[] signal, int frequency) {
 		double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
 		double phase = FFT.getArgument(fourierForFreq, 0);
 		double amplitude = FFT.getAbs(fourierForFreq, 0) / signal.length;
 		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
 		double nullOffset = FFT.getAbs(nullOffsetFourier, 0) / signal.length;
 
-		SignalParameters params = new SignalParameters(phase, amplitude,
-				nullOffset);
+		SignalParameters params = new SignalParameters(phase, amplitude, nullOffset);
 
 		return params;
 	}
@@ -174,23 +167,20 @@ public class ExperimentComputer implements Callable<Measurement> {
 	final private Workspace workspace;
 	public Measurement result;
 
-	SignalIdentifier[] SHIFTS = { null,
-			new DCsignalID(),
+	SignalIdentifier[] SHIFTS = { null, new DCsignalID(),
 			// new AdjustmentSignalID(),
-			new BaseSignalID(new File(
-					"config/just/20160428newAmpChangeTauLastCascade.txt")),
+			new BaseSignalID(new File("config/just/20160428newAmpChangeTauLastCascade.txt")),
 			new BaseSignalID(new File("config/just/20160427oldAmp.txt"))
-	// new AdjustmentSignalID(),
+			// new AdjustmentSignalID(),
 	};
 
 	public ExperimentComputer(File filename, Workspace workspace) {
 		this.file = filename;
 		this.workspace = workspace;
-		if (workspace.signalIDs != null) {
-			if (workspace.signalIDs.size() > 0) {
-				this.SHIFTS = (SignalIdentifier[]) workspace.signalIDs
-						.toArray(new SignalIdentifier[workspace.signalIDs
-								.size()]);
+		ArrayList<SignalIdentifier> signalIDs;
+		if ((signalIDs = workspace.getSignalIDs()) != null) {
+			if (signalIDs.size() > 0) {
+				this.SHIFTS = (SignalIdentifier[]) signalIDs.toArray(new SignalIdentifier[signalIDs.size()]);
 			}
 		}
 	}
@@ -216,10 +206,8 @@ public class ExperimentComputer implements Callable<Measurement> {
 			double[][] croppedData = reader.getCroppedData();
 			final int FREQ_INDEX = reader.getCroppedDataPeriodsCount() * 2;
 			result.frequency = EXPERIMENT_FREQUENCY;
-			SignalParameters[] params = getAllSignalParameters(croppedData,
-					FREQ_INDEX);
-			for (int currentChannel = 1; currentChannel < Math.min(numCol,
-					SHIFTS.length); currentChannel++) {
+			SignalParameters[] params = getAllSignalParameters(croppedData, FREQ_INDEX);
+			for (int currentChannel = 1; currentChannel < Math.min(numCol, SHIFTS.length); currentChannel++) {
 				if (SHIFTS[currentChannel] == null)
 					continue;
 				SignalParameters param = params[currentChannel];
@@ -232,13 +220,10 @@ public class ExperimentComputer implements Callable<Measurement> {
 					double signalAngle = param.phase;
 
 					double targetAngle = -signalAngle;
-					double currentShift = zc
-							.getCurrentShift(EXPERIMENT_FREQUENCY);
+					double currentShift = zc.getCurrentShift(EXPERIMENT_FREQUENCY);
 
-					double adjustAngle = targetAngle
-							- Math.toRadians(currentShift);
-					double editedAngle = truncatePositive(adjustAngle - Math.PI
-							/ 4.0);
+					double adjustAngle = targetAngle - Math.toRadians(currentShift);
+					double editedAngle = truncatePositive(adjustAngle - Math.PI / 4.0);
 
 					targetAngle = truncatePositive(targetAngle);
 
@@ -249,8 +234,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 					// kappa = PhysicsModel.searchKappaFor(-adjustAngle, 0.001);
 
 					double omega = 2 * Math.PI * EXPERIMENT_FREQUENCY;
-					double A = (omega * workspace.sample.length * workspace.sample.length)
-							/ (kappa * kappa);
+					double A = (omega * workspace.getSample().length * workspace.getSample().length) / (kappa * kappa);
 
 					TemperatureConductivity tCond = new TemperatureConductivity();
 
@@ -269,8 +253,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 
 					// t.value = params.nullOffset;
 					t.signalLevel = signID.getVoltage(param.nullOffset);
-					t.value = signID.getTemperature(signID
-							.getVoltage(param.nullOffset) * 1000.0);
+					t.value = signID.getTemperature(signID.getVoltage(param.nullOffset) * 1000.0);
 					result.temperature.add(t);
 				} else if (SHIFTS[currentChannel] instanceof AdjustmentSignalID) {
 					TemperatureConductivity tCond = new TemperatureConductivity();

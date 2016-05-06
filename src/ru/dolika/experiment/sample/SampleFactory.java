@@ -7,53 +7,15 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import javax.swing.JFileChooser;
 import javax.swing.ProgressMonitorInputStream;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
-import ru.dolika.experiment.measurement.Measurement;
-import ru.dolika.experiment.measurement.MeasurementFactory;
-import ru.dolika.experiment.measurement.Temperature;
-import ru.dolika.experiment.measurement.TemperatureConductivity;
+import ru.dolika.ui.MemorableDirectoryChooser;
 
 public class SampleFactory {
 
 	static boolean debug = true;
-
-	public static void main(String... args) {
-		String filename = "Samplebinary.smpl";
-		Sample sample = null;
-		if (new File(filename).exists()) {
-			sample = SampleFactory.forBinary(filename);
-
-		}
-
-		if (sample == null) {
-			sample = SampleFactory.getSample();
-			sample.comments = "Рандомный комент";
-			sample.length = 0.962E-3;
-			sample.name = "Припой Ag82Fe12Al6";
-
-			for (int i = 1; i < 4; i++) {
-				Measurement m = MeasurementFactory.getMeasurement();
-				m.frequency = i;
-				TemperatureConductivity tCond = new TemperatureConductivity();
-				tCond.amplitude = 100 + Math.random();
-				tCond.phase = 3.1;
-				tCond.kappa = Math.sqrt(2) * (tCond.phase - Math.PI / 4.0);
-
-				tCond.tCond = ((2.0 * Math.PI * m.frequency) * (sample.length)) / (tCond.kappa * tCond.kappa);
-				m.tCond.add(tCond);
-
-				Temperature temp = new Temperature();
-				temp.value = 300 + Math.random() * 100;
-				m.temperature.add(temp);
-
-				sample.measurements.add(m);
-			}
-		}
-		sample.sort();
-		System.out.println(sample);
-		SampleFactory.saveSample(filename, sample);
-	}
 
 	public static Sample getSample() {
 		return new Sample();
@@ -88,13 +50,33 @@ public class SampleFactory {
 		return null;
 	}
 
-	public static boolean saveSample(String filename, Sample sample) {
-		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
-			oos.writeObject(sample);
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
+	public static File saveSample(String filename, final Sample sample) {
+		if (filename == null) {
+			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(SampleFactory.class);
+			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			chooser.setMultiSelectionEnabled(false);
+			chooser.resetChoosableFileFilters();
+			FileNameExtensionFilter filter = Sample.extensionFilter;
+			chooser.setFileFilter(filter);
+			chooser.addChoosableFileFilter(filter);
+			if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+				chooser.saveCurrentSelection();
+				filename = chooser.getSelectedFile().toString();
+				if (!filename.toLowerCase().endsWith(".smpl")) {
+					filename += ".smpl";
+				}
+			}
+
 		}
-		return false;
+		if (filename != null) {
+			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
+				oos.writeObject(sample);
+				return new File(filename);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
 	}
+
 }

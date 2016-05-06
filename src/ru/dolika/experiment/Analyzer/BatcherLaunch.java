@@ -28,24 +28,20 @@ public class BatcherLaunch implements Runnable {
 
 	@Override
 	public void run() {
-		if (workspace.sample == null) {
-			JOptionPane
-					.showMessageDialog(
-							parent,
-							"Не был выбран файл образца.\nПожалуйста закройте это окно и выберите образец или создайте новый",
-							"Ошибка образца", JOptionPane.ERROR_MESSAGE);
+		if (workspace.getSample() == null) {
+			JOptionPane.showMessageDialog(parent,
+					"Не был выбран файл образца.\nПожалуйста закройте это окно и выберите образец или создайте новый",
+					"Ошибка образца", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(
-				this.getClass());
+		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(this.getClass());
 		fileChooser.setDialogTitle("Выберите папку с данными");
 
 		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
 			fileChooser.saveCurrentSelection();
 
 			File[] folders = fileChooser.getSelectedFiles();
-			ProgressMonitor pm = new ProgressMonitor(parent,
-					"Анализ файлов в папке", "Идёт вычисление измерений", 0,
+			ProgressMonitor pm = new ProgressMonitor(parent, "Анализ файлов в папке", "Идёт вычисление измерений", 0,
 					folders.length);
 			pm.setMillisToDecideToPopup(0);
 			int progress = 0;

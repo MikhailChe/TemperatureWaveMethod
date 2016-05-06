@@ -58,16 +58,13 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 		super(parent, false);
 		this.setTitle("Я смотрю за тобой!");
 		this.workspace = workspace;
-		if (workspace.sample == null) {
-			JOptionPane
-					.showMessageDialog(
-							parent,
-							"Не был выбран файл образца.\nПожалуйста закройте это окно и выберите образец или создайте новый",
-							"Ошибка образца", JOptionPane.ERROR_MESSAGE);
+		if (workspace.getSample() == null) {
+			JOptionPane.showMessageDialog(parent,
+					"Не был выбран файл образца.\nПожалуйста закройте это окно и выберите образец или создайте новый",
+					"Ошибка образца", JOptionPane.ERROR_MESSAGE);
 			throw new Exception();
 		}
-		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(
-				this.getClass());
+		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(this.getClass());
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.setDialogTitle("Выберите папку с данными");
 
@@ -87,12 +84,10 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 
 		this.setTitle("Я смотрю за " + folder.getAbsolutePath());
 
-		signalLevelPanel.setBorder(BorderFactory
-				.createTitledBorder("Уровень сигнала"));
+		signalLevelPanel.setBorder(BorderFactory.createTitledBorder("Уровень сигнала"));
 		signalLevelPanel.add(signalLevelLabel);
 
-		temperaturePanel.setBorder(BorderFactory
-				.createTitledBorder("Температура"));
+		temperaturePanel.setBorder(BorderFactory.createTitledBorder("Температура"));
 		temperaturePanel.add(temperatureLabel);
 
 		argumentPanel.setBorder(BorderFactory.createTitledBorder("Фаза"));
@@ -101,12 +96,10 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 		kappaPanel.setBorder(BorderFactory.createTitledBorder("kappa"));
 		kappaPanel.add(kappaLabel);
 
-		amplitudePanel.setBorder(BorderFactory
-				.createTitledBorder("Амплитуда сигнала"));
+		amplitudePanel.setBorder(BorderFactory.createTitledBorder("Амплитуда сигнала"));
 		amplitudePanel.add(amplitudeLabel);
 
-		diffusivityPanel.setBorder(BorderFactory
-				.createTitledBorder("Температуропроводность"));
+		diffusivityPanel.setBorder(BorderFactory.createTitledBorder("Температуропроводность"));
 		diffusivityPanel.add(diffusivityLabel);
 
 		Container numbersContainer = new Container();
@@ -178,10 +171,8 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 			signalLevelLabel.setText("Температура неизвестна");
 			temperatureLabel.setText("Температура неизвестна");
 		} else {
-			signalLevelLabel.setText(String.format("%+.3f мВ",
-					m.temperature.get(0).signalLevel * 1000));
-			temperatureLabel.setText(String.format("%+.0f K",
-					m.temperature.get(0).value));
+			signalLevelLabel.setText(String.format("%+.3f мВ", m.temperature.get(0).signalLevel * 1000));
+			temperatureLabel.setText(String.format("%+.0f K", m.temperature.get(0).value));
 		}
 		if (m.tCond == null || m.tCond.isEmpty()) {
 			argumentLabel.setText("Фаза неизвестна");
@@ -192,10 +183,8 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 		} else {
 			argumentLabel.setText(String.format("%+.3f", m.tCond.get(0).phase));
 			kappaLabel.setText(String.format("%+.3f", m.tCond.get(0).kappa));
-			amplitudeLabel.setText(String.format("%.0f",
-					m.tCond.get(0).amplitude));
-			diffusivityLabel
-					.setText(String.format("%.3e", m.tCond.get(0).tCond));
+			amplitudeLabel.setText(String.format("%.0f", m.tCond.get(0).amplitude));
+			diffusivityLabel.setText(String.format("%.3e", m.tCond.get(0).tCond));
 		}
 		measurementViewer.addMeasurement(m);
 

@@ -10,6 +10,8 @@ import java.util.NavigableMap;
 import java.util.Scanner;
 import java.util.TreeMap;
 
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 /**
  * Класс юстировки. Хранит в себе информацию о юстировке нулевой фазы
  * 
@@ -17,6 +19,9 @@ import java.util.TreeMap;
  *
  */
 public class ZeroCrossing {
+	public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+			"Файл юстировки текстовы (*.zc)", "zc");
+	public File forFile;
 
 	private NavigableMap<Double, Double> shifts;
 
@@ -26,8 +31,7 @@ public class ZeroCrossing {
 	 * Защищенный конструктор юстировки.
 	 */
 	protected ZeroCrossing() {
-		shifts = Collections
-				.synchronizedNavigableMap(new TreeMap<Double, Double>());
+		shifts = Collections.synchronizedNavigableMap(new TreeMap<Double, Double>());
 		answerMap = new HashMap<Double, Double>();
 	}
 
@@ -42,8 +46,7 @@ public class ZeroCrossing {
 		this();
 		Scanner s;
 		try {
-			s = new Scanner(new BufferedInputStream(new FileInputStream(
-					filename)));
+			s = new Scanner(new BufferedInputStream(new FileInputStream(filename)));
 			while (s.hasNext()) {
 
 				double key = 0;
@@ -65,7 +68,7 @@ public class ZeroCrossing {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-
+		this.forFile = filename;
 	}
 
 	/**
@@ -125,8 +128,7 @@ public class ZeroCrossing {
 				double higherDiff = nearestHigherKey - frequency;
 				double lowerK = 1 - (lowerDiff / diff);
 				double higherK = 1 - (higherDiff / diff);
-				double value = nearestLowerValue * lowerK + nearestHigherValue
-						* higherK;
+				double value = nearestLowerValue * lowerK + nearestHigherValue * higherK;
 				answerMap.put(frequency, value);
 				return value;
 			}
