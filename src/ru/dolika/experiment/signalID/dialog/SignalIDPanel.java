@@ -10,6 +10,10 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
 import ru.dolika.experiment.signalID.SignalIdentifier;
 
@@ -21,12 +25,18 @@ public class SignalIDPanel extends JPanel {
 	protected JButton fileOpenButtton;
 	protected JPanel channelInfoPanel;
 
+	protected JButton deleteButton;
+
 	public SignalIDPanel(SignalIdentifier id) {
 		super();
+		setBorder(new CompoundBorder(new EmptyBorder(16, 16, 16, 16),
+				new TitledBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null),
+						"Канал без сигнала", TitledBorder.LEADING, TitledBorder.TOP, null,
+						new Color(0, 0, 0))));
 
 		setToolTipText("Канал");
 		setLayout(new BorderLayout(16, 16));
-		Dimension size = new Dimension(640, 128);
+		Dimension size = new Dimension(800, 128);
 		setPreferredSize(size);
 		setMaximumSize(size);
 
@@ -48,7 +58,7 @@ public class SignalIDPanel extends JPanel {
 		editButton.setBackground(Color.ORANGE);
 		editDeletePanel.add(editButton);
 
-		JButton deleteButton = new JButton("Удалить");
+		deleteButton = new JButton("Удалить");
 		deleteButton.setBackground(Color.RED);
 		editDeletePanel.add(deleteButton);
 

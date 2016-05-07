@@ -14,7 +14,7 @@ public class AngstremAnalyzer extends JFrame {
 	}
 
 	public AngstremAnalyzer() {
-		super("���������� ������ �� ������ ���������");
+		super("Анализатор температуропроводности по методу Ангстрема");
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setContentPane(new AngstremCombinedPlane());
 		pack();

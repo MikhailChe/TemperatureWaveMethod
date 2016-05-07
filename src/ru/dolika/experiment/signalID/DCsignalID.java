@@ -1,16 +1,15 @@
 package ru.dolika.experiment.signalID;
 
-import java.io.File;
-
 import ru.dolika.thermocouple.graduate.Graduate;
-import ru.dolika.thermocouple.graduate.GraduateFactory;
 
 public class DCsignalID extends SignalIdentifier {
+	private static final long serialVersionUID = 8360006961756985177L;
 
 	Graduate graduate;
 
 	public DCsignalID() {
-		graduate = GraduateFactory.forFile(new File("config/grad/VR-5-20-list.txt"));
+		// graduate = GraduateFactory.forFile(new
+		// File("config/grad/VR-5-20-list.txt"));
 	}
 
 	public DCsignalID(Graduate grad) {

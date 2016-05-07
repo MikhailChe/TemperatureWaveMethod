@@ -210,17 +210,16 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenu settingsMenu = new JMenu("Настройки");
 		this.add(settingsMenu);
 		JMenuItem chooseChannels = new JMenuItem("Выбрать каналы");
-		chooseChannels.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (workspace.getSignalIDs() != null) {
-					for (SignalIdentifier sd : workspace.getSignalIDs()) {
-						System.out.println(sd);
-					}
-					System.out.println();
+		chooseChannels.addActionListener(e -> {
+			if (workspace.getSignalIDs() != null) {
+				for (SignalIdentifier sd : workspace.getSignalIDs()) {
+					System.out.println(sd);
 				}
-				new SignalIDSettingsDialog().setVisible(true);
+				System.out.println();
 			}
+			SignalIDSettingsDialog sidsd = new SignalIDSettingsDialog(parent);
+			sidsd.setModal(true);
+			sidsd.setVisible(true);
 		});
 		settingsMenu.add(chooseChannels);
 		JMenuItem sampleSettings = new JMenuItem("Настройки образца");

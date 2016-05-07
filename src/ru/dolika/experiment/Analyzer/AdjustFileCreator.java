@@ -86,6 +86,7 @@ public class AdjustFileCreator implements Runnable {
 								Math.toDegrees(-param.phase)));
 						pm.setProgress(i);
 					}
+
 					pm.close();
 					bw.flush();
 					bw.close();

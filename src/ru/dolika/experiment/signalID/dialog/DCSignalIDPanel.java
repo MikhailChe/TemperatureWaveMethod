@@ -24,7 +24,9 @@ public class DCSignalIDPanel extends SignalIDPanel {
 				new TitledBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null),
 						"Канал постоянной составляющей", TitledBorder.LEADING, TitledBorder.TOP, null,
 						new Color(0, 0, 0))));
-		this.fileNameField.setText(id.getGraduate().fromFile.toString());
+		if (id.getGraduate() != null) {
+			this.fileNameField.setText(id.getGraduate().fromFile.toString());
+		}
 		this.fileOpenButtton.addActionListener(e -> {
 			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(DCSignalIDPanel.class);
 			chooser.setDialogTitle("Выберите файл градуировки");

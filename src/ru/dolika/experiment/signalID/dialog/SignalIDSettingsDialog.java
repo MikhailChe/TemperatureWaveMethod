@@ -3,15 +3,18 @@ package ru.dolika.experiment.signalID.dialog;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Frame;
-import java.io.File;
+import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 import ru.dolika.experiment.signalID.BaseSignalID;
 import ru.dolika.experiment.signalID.DCsignalID;
 import ru.dolika.experiment.signalID.SignalIdentifier;
+import ru.dolika.experiment.workspace.Workspace;
 
 /**
  * Диалог настроек каналов
@@ -46,25 +49,65 @@ public class SignalIDSettingsDialog extends JDialog {
 	private void initDialog() {
 		if (initialized)
 			return;
-		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
 		Container contentPane = getContentPane();
-		SignalIdentifier[] SHIFTS = { null, new DCsignalID(),
-				// new AdjustmentSignalID(),
-				new BaseSignalID(new File("config/just/20160428newAmpChangeTauLastCascade.txt")),
-				new BaseSignalID(new File("config/just/20160427oldAmp.txt"))
-				// new AdjustmentSignalID(),
-		};
-		for (SignalIdentifier shift : SHIFTS) {
-			if (shift instanceof BaseSignalID) {
-				contentPane.add(new BaseSignalIDPanel((BaseSignalID) shift));
-			} else if (shift instanceof DCsignalID) {
-				contentPane.add(new DCSignalIDPanel((DCsignalID) shift));
+
+		contentPane.removeAll();
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
+		ArrayList<SignalIdentifier> sigids = Workspace.getInstance().getSignalIDs();
+		if (Workspace.getInstance().getSignalIDs() != null) {
+			for (int i = 0; i < sigids.size(); i++) {
+				SignalIdentifier sigid = sigids.get(i);
+				SignalIDPanel panel;
+				if (sigid instanceof BaseSignalID) {
+					panel = new BaseSignalIDPanel((BaseSignalID) sigid);
+				} else if (sigid instanceof DCsignalID) {
+					panel = new DCSignalIDPanel((DCsignalID) sigid);
+				} else {
+					panel = new SignalIDPanel(null);
+				}
+				final int thiIDindex = i;
+				panel.deleteButton.addActionListener(e -> {
+					Workspace.getInstance().getSignalIDs().remove(thiIDindex);
+					getParent().remove(this);
+					SwingUtilities.invokeLater(() -> {
+						initialized = false;
+						initDialog();
+					});
+				});
+				contentPane.add(panel);
 			}
 		}
-		contentPane.add(new SignalIDAddNewPanel());
+		SignalIDAddNewPanel addNewPanel = new SignalIDAddNewPanel();
+		addNewPanel.addActionListener(e -> {
+
+			String[] options = new String[] { "Постоянка", "Переменка", "Пустой канал" };
+			int optionNumber = JOptionPane.showOptionDialog(SignalIDSettingsDialog.this, "Какой тип канала добавить?",
+					"Выберите тип канала", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
+					SignalIDAddNewPanel.getIconImage(), options, options[0]);
+			if (optionNumber >= 0) {
+				Workspace space = Workspace.getInstance();
+				switch (optionNumber) {
+				case 0:
+					space.getSignalIDs().add(new DCsignalID());
+					break;
+				case 1:
+					space.getSignalIDs().add(new BaseSignalID());
+					break;
+				case 2:
+					space.getSignalIDs().add(null);
+					break;
+				}
+				SwingUtilities.invokeLater(() -> {
+					initialized = false;
+					initDialog();
+				});
+			}
+		});
+		contentPane.add(addNewPanel);
 
 		pack();
+		initialized = true;
 	}
 
 }

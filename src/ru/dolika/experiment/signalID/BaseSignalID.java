@@ -13,6 +13,10 @@ import ru.dolika.experiment.zeroCrossing.ZeroCrossingFactory;
  */
 public class BaseSignalID extends SignalIdentifier {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5580000396824926562L;
 	public ZeroCrossing zc;
 
 	public BaseSignalID() {

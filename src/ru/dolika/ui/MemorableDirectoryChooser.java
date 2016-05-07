@@ -1,5 +1,6 @@
 package ru.dolika.ui;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class MemorableDirectoryChooser extends JFileChooser {
 					File dir = new File(new File(lastFolder).getCanonicalPath());
 					if (dir.isDirectory()) {
 						setCurrentDirectory(dir);
-						//setSelectedFile(dir);
+						// setSelectedFile(dir);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -65,6 +66,15 @@ public class MemorableDirectoryChooser extends JFileChooser {
 				}
 			}
 		}
+	}
+
+	@Override
+	public int showDialog(Component parent, String approveButtonText) {
+		int status = super.showDialog(parent, approveButtonText);
+		if (status == APPROVE_OPTION) {
+			saveCurrentSelection();
+		}
+		return status;
 	}
 
 }

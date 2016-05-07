@@ -85,7 +85,7 @@ public class Workspace implements Serializable {
 
 	private transient Sample sample = null;
 	private File samplefile = null;
-	private ArrayList<SignalIdentifier> signalIDs = null;
+	private ArrayList<SignalIdentifier> signalIDs;
 
 	private Workspace() {
 		if (debug)
@@ -134,6 +134,10 @@ public class Workspace implements Serializable {
 	}
 
 	public ArrayList<SignalIdentifier> getSignalIDs() {
+		if (signalIDs == null) {
+			signalIDs = new ArrayList<SignalIdentifier>();
+		}
+
 		return signalIDs;
 	}
 

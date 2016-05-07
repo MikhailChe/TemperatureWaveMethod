@@ -209,8 +209,6 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 
 	@Override
 	public void windowActivated(WindowEvent e) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

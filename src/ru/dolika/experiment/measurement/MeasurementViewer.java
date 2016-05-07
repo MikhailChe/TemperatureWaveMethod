@@ -18,6 +18,7 @@ public class MeasurementViewer extends JPanel {
 	ArrayList<Measurement> measurements;
 
 	public MeasurementViewer() {
+		super();
 		measurements = new ArrayList<Measurement>();
 		Dimension d = new Dimension(640, 480);
 		setPreferredSize(d);

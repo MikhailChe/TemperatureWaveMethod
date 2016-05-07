@@ -24,12 +24,10 @@ public class SignalIDAddNewPanel extends JButton {
 	public SignalIDAddNewPanel() {
 
 		super("Добавить канал", getIconImage());
-
 	}
 
 	public static Icon getIconImage() {
-		BufferedImage image = new BufferedImage(32, 32,
-				BufferedImage.TYPE_INT_ARGB);
+		BufferedImage image = new BufferedImage(32, 32, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g = (Graphics2D) image.getGraphics();
 		g.setColor(Color.GREEN);
 		g.setStroke(new BasicStroke(15f));

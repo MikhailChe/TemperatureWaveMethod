@@ -85,42 +85,32 @@ public class JGraphImagePlane extends JPanel {
 			}
 			JMenuItem playMenu = new JMenuItem("Play waveform");
 			add(playMenu);
-			playMenu.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					new Thread(new Runnable() {
-						public void run() {
-							System.out.println("Sound is gonna play");
-							byte[] wave = new byte[arrays[0].length];
-							for (int i = 0; i < wave.length; i++) {
-								wave[i] = (byte) map(arrays[0][i],
-										stats.minValue, stats.maxValue,
-										Byte.MIN_VALUE / 2.0,
-										Byte.MAX_VALUE / 2.0);
-							}
-							AudioFormat format = new AudioFormat(44100, 8, 1,
-									true, false);
-							try {
-								SourceDataLine line = AudioSystem
-										.getSourceDataLine(format);
-								line.open();
-								line.start();
-								System.out.println("Playing wave");
-								line.write(wave, 0, wave.length);
-								line.drain();
-								line.flush();
-								System.out.println("Drained");
-								line.stop();
-								line.close();
-								System.out.println("Closed");
-							} catch (LineUnavailableException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-
-						}
-					}).start();
-				}
+			playMenu.addActionListener(e -> {
+				new Thread(() -> {
+					System.out.println("Sound is gonna play");
+					byte[] wave = new byte[arrays[0].length];
+					for (int i = 0; i < wave.length; i++) {
+						wave[i] = (byte) map(arrays[0][i], stats.minValue, stats.maxValue, Byte.MIN_VALUE / 2.0,
+								Byte.MAX_VALUE / 2.0);
+					}
+					AudioFormat format = new AudioFormat(44100, 8, 1, true, false);
+					try {
+						SourceDataLine line = AudioSystem.getSourceDataLine(format);
+						line.open();
+						line.start();
+						System.out.println("Playing wave");
+						line.write(wave, 0, wave.length);
+						line.drain();
+						line.flush();
+						System.out.println("Drained");
+						line.stop();
+						line.close();
+						System.out.println("Closed");
+					} catch (LineUnavailableException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}).start();
 			});
 		}
 	}
@@ -182,23 +172,19 @@ public class JGraphImagePlane extends JPanel {
 				Dimension newSize = null;
 				if (Math.abs(e.getWheelRotation()) > 0) {
 					if (e.getWheelRotation() > 0) {
-						if (width / ZOOM_AMOUNT > (getParent() == null ? 1024
-								: getParent().getWidth())) {
-							newSize = new Dimension(
-									(int) (width / ZOOM_AMOUNT), height);
+						if (width / ZOOM_AMOUNT > (getParent() == null ? 1024 : getParent().getWidth())) {
+							newSize = new Dimension((int) (width / ZOOM_AMOUNT), height);
 						}
 					} else {
-						newSize = new Dimension((int) (width * ZOOM_AMOUNT),
-								height);
+						newSize = new Dimension((int) (width * ZOOM_AMOUNT), height);
 					}
 					if (newSize != null) {
 						JGraphImagePlane.this.setSize(newSize);
 						JGraphImagePlane.this.setPreferredSize(newSize);
 						if (getParent() instanceof JViewport) {
 							JViewport vp = (JViewport) getParent();
-							vp.setViewPosition(new Point((int) map(
-									vp.getViewPosition().x, 0,
-									oldSize.getWidth(), 0, newSize.getWidth()),
+							vp.setViewPosition(new Point(
+									(int) map(vp.getViewPosition().x, 0, oldSize.getWidth(), 0, newSize.getWidth()),
 									vp.getViewPosition().y));
 						}
 					}
@@ -210,24 +196,17 @@ public class JGraphImagePlane extends JPanel {
 
 	@Override
 	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-				RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
-		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
-		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
-				RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-		g2.setRenderingHint(RenderingHints.KEY_DITHERING,
-				RenderingHints.VALUE_DITHER_DISABLE);
-		g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-				RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-				RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-		g2.setRenderingHint(RenderingHints.KEY_RENDERING,
-				RenderingHints.VALUE_RENDER_QUALITY);
-		g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-				RenderingHints.VALUE_STROKE_PURE);
+		g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+		g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
+		g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+		g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
 		Rectangle view = new Rectangle();
 		if (getParent() instanceof JViewport) {
@@ -245,8 +224,7 @@ public class JGraphImagePlane extends JPanel {
 				continue;
 			double[] array = arrays[i];
 			for (int j = 1; j < array.length; j++) {
-				g2.setColor(Color.getHSBColor(
-						(float) i / (float) arrays.length, 1f, 1f));
+				g2.setColor(Color.getHSBColor((float) i / (float) arrays.length, 1f, 1f));
 				if (array.length < getWidth()) {
 					g2.setStroke(new BasicStroke(2f));
 				} else {
@@ -256,19 +234,15 @@ public class JGraphImagePlane extends JPanel {
 					}
 					g2.setStroke(new BasicStroke(val));
 				}
-				int y1 = (int) Math.round(map(array[j - 1], stats.minValue,
-						stats.maxValue, getHeight(), 0));
-				int y2 = (int) Math.round(map(array[j], stats.minValue,
-						stats.maxValue, getHeight(), 0));
-				int x1 = (int) Math.round(map(j - 1, 0, array.length, 0,
-						getWidth()));
-				int x2 = (int) Math
-						.round(map(j, 0, array.length, 0, getWidth()));
+				int y1 = (int) Math.round(map(array[j - 1], stats.minValue, stats.maxValue, getHeight(), 0));
+				int y2 = (int) Math.round(map(array[j], stats.minValue, stats.maxValue, getHeight(), 0));
+				int x1 = (int) Math.round(map(j - 1, 0, array.length, 0, getWidth()));
+				int x2 = (int) Math.round(map(j, 0, array.length, 0, getWidth()));
 
-				if (((x1 >= view.x) && (x1 <= (view.x + view.width))
-						&& (y1 >= view.y) && (y1 <= (view.y + view.height)))
-						|| ((x2 >= view.x) && (x2 <= (view.x + view.width))
-								&& (y2 >= view.y) && (y2 <= (view.y + view.height)))) {
+				if (((x1 >= view.x) && (x1 <= (view.x + view.width)) && (y1 >= view.y)
+						&& (y1 <= (view.y + view.height)))
+						|| ((x2 >= view.x) && (x2 <= (view.x + view.width)) && (y2 >= view.y)
+								&& (y2 <= (view.y + view.height)))) {
 					g2.drawLine(x1, y1, x2, y2);
 					drawAdditionalData(g2, x1, y1, x2, y2, j - 1, j);
 				}
@@ -277,10 +251,8 @@ public class JGraphImagePlane extends JPanel {
 		g2.dispose();
 	}
 
-	public void drawAdditionalData(Graphics2D g, int x1, int y1, int x2,
-			int y2, int index1, int index2) {
+	public void drawAdditionalData(Graphics2D g, int x1, int y1, int x2, int y2, int index1, int index2) {
 		if (shouldShowIndicies) {
-
 			final double i1fwidth = g.getFontMetrics().stringWidth("9999") * 1.1;
 			if (i1fwidth < Math.abs(x2 - x1)) {
 				int ny1 = y1;
@@ -295,8 +267,7 @@ public class JGraphImagePlane extends JPanel {
 
 	}
 
-	private double map(double val, double min1, double max1, double min2,
-			double max2) {
+	private double map(double val, double min1, double max1, double min2, double max2) {
 		return (val - min1) / (max1 - min1) * (max2 - min2) + min2;
 	}
 }

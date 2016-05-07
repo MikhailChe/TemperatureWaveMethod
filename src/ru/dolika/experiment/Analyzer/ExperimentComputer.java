@@ -90,8 +90,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
 		pm.setMaximum(files.length);
 		for (File f : files) {
-			Callable<Measurement> callable = new ExperimentComputer(f, workspace);
-			Future<Measurement> future = pool.submit(callable);
+			Future<Measurement> future = pool.submit(new ExperimentComputer(f, workspace));
 			set.add(future);
 		}
 		try {
@@ -167,12 +166,15 @@ public class ExperimentComputer implements Callable<Measurement> {
 	final private Workspace workspace;
 	public Measurement result;
 
-	SignalIdentifier[] SHIFTS = { null, new DCsignalID(),
-			// new AdjustmentSignalID(),
-			new BaseSignalID(new File("config/just/20160428newAmpChangeTauLastCascade.txt")),
-			new BaseSignalID(new File("config/just/20160427oldAmp.txt"))
-			// new AdjustmentSignalID(),
-	};
+	SignalIdentifier[] SHIFTS;/*
+								 * = { null, new DCsignalID(), // new
+								 * AdjustmentSignalID(), new BaseSignalID(new
+								 * File(
+								 * "config/just/20160428newAmpChangeTauLastCascade.txt"
+								 * )), new BaseSignalID(new
+								 * File("config/just/20160427oldAmp.txt")) //
+								 * new AdjustmentSignalID(), };
+								 */
 
 	public ExperimentComputer(File filename, Workspace workspace) {
 		this.file = filename;

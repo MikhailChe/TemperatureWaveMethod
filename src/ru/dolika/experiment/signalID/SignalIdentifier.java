@@ -1,9 +1,7 @@
 package ru.dolika.experiment.signalID;
 
-public class SignalIdentifier {
+import java.io.Serializable;
 
-	public SignalIdentifier() {
-		// TODO Auto-generated constructor stub
-	}
-
+public class SignalIdentifier implements Serializable {
+	private static final long serialVersionUID = 3649178817602291964L;
 }

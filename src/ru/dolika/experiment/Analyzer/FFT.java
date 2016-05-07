@@ -4,7 +4,6 @@ public class FFT {
 
 	public static double[] getFourierForIndex(double[] realData, int index) {
 		double real = 0, imag = 0;
-
 		double N = realData.length;
 		double twoPiIndexDivN = (2 * Math.PI * index) / N;
 		for (int i = 0; i < realData.length; i++) {

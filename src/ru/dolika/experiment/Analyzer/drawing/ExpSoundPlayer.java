@@ -11,26 +11,23 @@ import javax.sound.sampled.SourceDataLine;
 import javax.swing.JFileChooser;
 
 import ru.dolika.experiment.Analyzer.ExperimentReader;
+import ru.dolika.ui.MemorableDirectoryChooser;
 
 public class ExpSoundPlayer {
 
 	public static void main(String[] args) {
-		JFileChooser fileChooser = new JFileChooser();
+		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(ExpSoundPlayer.class);
 		if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 			if (fileChooser.getSelectedFile() != null) {
 				try {
-					ExperimentReader ereader = new ExperimentReader(fileChooser
-							.getSelectedFile().toPath());
+					ExperimentReader ereader = new ExperimentReader(fileChooser.getSelectedFile().toPath());
 					double[][] data = ereader.getOnePeriodSumm();
 					int dataColumnIndex = 1;
 					double[] dataAtColumn = data[dataColumnIndex];
-					AudioFormat format = new AudioFormat(44100, 8, 1, true,
-							false);
+					AudioFormat format = new AudioFormat(44100, 8, 1, true, false);
 					try {
-						SourceDataLine sdl = AudioSystem
-								.getSourceDataLine(format);
-						byte[] dataForSDL = doubleArrayToByteArray(
-								dataAtColumn, 2, format.isBigEndian());
+						SourceDataLine sdl = AudioSystem.getSourceDataLine(format);
+						byte[] dataForSDL = doubleArrayToByteArray(dataAtColumn, 2, format.isBigEndian());
 						while (System.in.available() <= 0) {
 							sdl.write(dataForSDL, 0, dataForSDL.length);
 						}
@@ -46,8 +43,7 @@ public class ExpSoundPlayer {
 
 	}
 
-	public static byte[] doubleArrayToByteArray(double[] arr,
-			int bytesInSample, boolean bigEndian) {
+	public static byte[] doubleArrayToByteArray(double[] arr, int bytesInSample, boolean bigEndian) {
 		if (arr == null) {
 			return null;
 		}
@@ -58,8 +54,7 @@ public class ExpSoundPlayer {
 			return new byte[0];
 		}
 
-		java.nio.ByteBuffer bb = ByteBuffer.allocate(arr.length
-				* bytesInSample);
+		ByteBuffer bb = ByteBuffer.allocate(arr.length * bytesInSample);
 		if (bigEndian) {
 			bb.order(ByteOrder.BIG_ENDIAN);
 		} else {
@@ -76,7 +71,7 @@ public class ExpSoundPlayer {
 
 			}
 		}
-		
+
 		return bb.array();
 	}
 }

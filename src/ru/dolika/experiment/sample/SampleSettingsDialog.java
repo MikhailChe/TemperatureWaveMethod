@@ -3,8 +3,6 @@ package ru.dolika.experiment.sample;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
@@ -25,7 +23,6 @@ public class SampleSettingsDialog extends JDialog {
 	 */
 	private static final long serialVersionUID = -6024215129687729185L;
 	Sample sample = null;
-
 	JTextField name = new JTextField();
 	JTextField comment = new JTextField();
 	JFormattedTextField length = null;
@@ -85,27 +82,22 @@ public class SampleSettingsDialog extends JDialog {
 		comment.setText(sample.comments);
 		length.setValue(sample.length);
 
-		okButton.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				sample.name = name.getText();
-				sample.comments = comment.getText();
-				try {
-					length.commitEdit();
-					Object o = length.getValue();
-					if (o instanceof Double) {
-						Double val = (Double) o;
-						sample.length = val.doubleValue();
-					}
-				} catch (ParseException e1) {
-					e1.printStackTrace();
+		okButton.addActionListener(e -> {
+			sample.name = name.getText();
+			sample.comments = comment.getText();
+			try {
+				length.commitEdit();
+				Object o = length.getValue();
+				if (o instanceof Double) {
+					Double val = (Double) o;
+					sample.length = val.doubleValue();
 				}
-				status = OK_BUTTON;
-				setVisible(false);
-				dispose();
-
+			} catch (ParseException e1) {
+				e1.printStackTrace();
 			}
+			status = OK_BUTTON;
+			setVisible(false);
+			dispose();
 		});
 	}
 

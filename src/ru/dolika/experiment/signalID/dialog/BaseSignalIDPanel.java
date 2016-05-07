@@ -1,9 +1,14 @@
 package ru.dolika.experiment.signalID.dialog;
 
 import java.awt.Color;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -26,7 +31,8 @@ public class BaseSignalIDPanel extends SignalIDPanel {
 				new TitledBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null),
 						"Канал переменного сигнала", TitledBorder.LEADING, TitledBorder.TOP, null,
 						new Color(0, 0, 0))));
-		this.fileNameField.setText(id.zc.forFile.toString());
+		if (id.zc != null)
+			this.fileNameField.setText(id.zc.forFile.toString());
 		this.fileOpenButtton.addActionListener(e -> {
 			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(DCSignalIDPanel.class);
 			chooser.setDialogTitle("Выберите файл юстировки");
@@ -46,6 +52,18 @@ public class BaseSignalIDPanel extends SignalIDPanel {
 		});
 
 		zcPanel = new ZeroCrossingViewerPanel(id.zc);
+		zcPanel.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JDialog zcDialog = new JDialog((JDialog) SwingUtilities.getWindowAncestor(BaseSignalIDPanel.this),
+						id.zc.forFile.toString(), true);
+				zcDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+				zcDialog.getContentPane().add(new ZeroCrossingViewerPanel(id.zc));
+				zcDialog.pack();
+				zcDialog.setSize(640, 480);
+				zcDialog.setVisible(true);
+			}
+		});
 		this.channelInfoPanel.add(zcPanel);
 
 	}

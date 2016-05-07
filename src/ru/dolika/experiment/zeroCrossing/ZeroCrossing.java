@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.NavigableMap;
@@ -18,7 +19,9 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * @author Mikey
  *
  */
-public class ZeroCrossing {
+public class ZeroCrossing implements Serializable {
+
+	private static final long serialVersionUID = 3683913050629661757L;
 	public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
 			"Файл юстировки текстовы (*.zc)", "zc");
 	public File forFile;
