@@ -45,15 +45,25 @@ public class Measurement implements Serializable {
 		tCond = new ArrayList<TemperatureConductivity>();
 	}
 
+	public String getHeader() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Частота\t");
+		for (Temperature t : temperature) {
+			sb.append(t.getHeader() + "\t");
+		}
+		for (TemperatureConductivity t : tCond) {
+			sb.append(t.getHeader() + "\t");
+		}
+		return sb.toString();
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(String.format(Locale.getDefault(), "%4.1f\t", frequency));
-		sb.append("Temperature\t");
 		for (Temperature t : temperature) {
 			sb.append(t.toString() + "\t");
 		}
-		sb.append("T-cond\t");
 		for (TemperatureConductivity t : tCond) {
 			sb.append(t.toString() + "\t");
 		}

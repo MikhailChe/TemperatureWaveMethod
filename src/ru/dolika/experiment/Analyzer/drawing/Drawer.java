@@ -14,8 +14,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import ru.dolika.experiment.Analyzer.ExperimentReader;
 import ru.dolika.experiment.Analyzer.FFT;
@@ -137,23 +135,19 @@ public class Drawer {
 		frame.setVisible(true);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
-		showIndiciesMenuItem.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent e) {
+		showIndiciesMenuItem.addChangeListener(e -> {
 
-				Object o = e.getSource();
-				if (o instanceof JCheckBoxMenuItem) {
-					JCheckBoxMenuItem i = (JCheckBoxMenuItem) o;
-					if (i.isSelected()) {
-						JGraphImagePlane.shouldShowIndicies = true;
-					} else {
-						JGraphImagePlane.shouldShowIndicies = false;
-					}
-					SwingUtilities.invokeLater(() -> {
-						main.repaint();
-					});
-
+			Object o = e.getSource();
+			if (o instanceof JCheckBoxMenuItem) {
+				JCheckBoxMenuItem i = (JCheckBoxMenuItem) o;
+				if (i.isSelected()) {
+					JGraphImagePlane.shouldShowIndicies = true;
+				} else {
+					JGraphImagePlane.shouldShowIndicies = false;
 				}
+				SwingUtilities.invokeLater(() -> {
+					main.repaint();
+				});
 
 			}
 		});

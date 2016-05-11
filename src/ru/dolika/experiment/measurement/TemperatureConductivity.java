@@ -29,6 +29,8 @@ public class TemperatureConductivity implements Serializable {
 	 * Фаза сигнала
 	 */
 	public double phase;
+
+	public double frequency;
 	/**
 	 * Амплитуда сигнала
 	 */
@@ -51,15 +53,16 @@ public class TemperatureConductivity implements Serializable {
 	@Override
 	public String toString() {
 		if (amplitude > 1) {
-			return String.format(
-					"%.0f\t%.3f\t%.3f\t%.3f\t%.4e",
-					amplitude,
-					initSignalParams == null ? 0 : Math
-							.toDegrees(initSignalParams.phase), Math
-							.toDegrees(phase), kappa, tCond);
+			return String.format("%.0f\t%.3f\t%.3f\t%.3f\t%.3f\t%.4e", amplitude,
+					initSignalParams == null ? 0 : Math.toDegrees(initSignalParams.phase),
+					signalID == null ? 0 : signalID.zc.getCurrentShift(frequency), Math.toDegrees(phase), kappa, tCond);
 		} else {
 			return " \t \t \t \t";
 		}
+	}
+
+	public String getHeader() {
+		return "Амплитуда\tНачальная фаза\tНулеваая фаза\tСкорректированная фаза\tКаппа\tТемпературопроводность";
 	}
 
 }

@@ -3,7 +3,6 @@ package ru.dolika.ui;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
-import java.io.IOException;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFileChooser;
@@ -54,16 +53,19 @@ public class MemorableDirectoryChooser extends JFileChooser {
 		if (prefs != null) {
 			File f = getSelectedFile();
 			System.out.println("saving directory. current file: " + f);
+			if (!f.exists()) {
+				f = null;
+			}
 			if (!f.isDirectory()) {
 				f = f.getParentFile();
 				System.out.println("It's not a directory, so file is " + f);
 			}
 			if (f != null) {
-				try {
-					prefs.put(LAST_FOLDER, f.getCanonicalPath());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				// try {
+				prefs.put(LAST_FOLDER, f.toString());
+				// } catch (IOException e) {
+				// e.printStackTrace();
+				// }
 			}
 		}
 	}

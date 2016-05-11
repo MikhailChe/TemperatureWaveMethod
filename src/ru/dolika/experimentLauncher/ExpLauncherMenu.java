@@ -16,6 +16,7 @@ import javax.swing.SwingConstants;
 
 import ru.dolika.experiment.Analyzer.AdjustFileCreator;
 import ru.dolika.experiment.Analyzer.BatcherLaunch;
+import ru.dolika.experiment.folderWatch.FilterTunerGUI;
 import ru.dolika.experiment.folderWatch.FolderWatch;
 import ru.dolika.experiment.sample.Sample;
 import ru.dolika.experiment.sample.SampleFactory;
@@ -195,6 +196,21 @@ public class ExpLauncherMenu extends JMenuBar {
 			}
 		});
 		toolsMenu.add(toolsWatchFolder);
+
+		JMenuItem toolsFilterTuner = new JMenuItem("Настроить фильтр");
+		toolsFilterTuner.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				try {
+					FilterTunerGUI fw = new FilterTunerGUI(parent);
+					fw.setVisible(true);
+				} catch (Exception exception) {
+
+				}
+			}
+		});
+		toolsMenu.add(toolsFilterTuner);
 
 		toolsMenu.add(new JSeparator(SwingConstants.HORIZONTAL));
 

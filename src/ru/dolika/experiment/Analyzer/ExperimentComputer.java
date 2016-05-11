@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -93,16 +94,9 @@ public class ExperimentComputer implements Callable<Measurement> {
 			Future<Measurement> future = pool.submit(new ExperimentComputer(f, workspace));
 			set.add(future);
 		}
-		try {
-			bw.write("f\t");
-			for (int i = 0; i < 4; i++) {
-				bw.write("K\tA\tUmax\tphiEdited\t");
-			}
-			bw.write("\r\n");
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+
 		int currentProgress = 0;
+		boolean header = true;
 		for (Future<Measurement> future : set) {
 			try {
 				Measurement answer = future.get();
@@ -112,6 +106,10 @@ public class ExperimentComputer implements Callable<Measurement> {
 						if (sample.measurements != null) {
 							sample.measurements.add(answer);
 						}
+					}
+					if (header) {
+						header = false;
+						bw.write(String.format("%s%n", answer.getHeader()));
 					}
 					bw.write(String.format("%s%n", answer));
 				}
@@ -166,15 +164,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 	final private Workspace workspace;
 	public Measurement result;
 
-	SignalIdentifier[] SHIFTS;/*
-								 * = { null, new DCsignalID(), // new
-								 * AdjustmentSignalID(), new BaseSignalID(new
-								 * File(
-								 * "config/just/20160428newAmpChangeTauLastCascade.txt"
-								 * )), new BaseSignalID(new
-								 * File("config/just/20160427oldAmp.txt")) //
-								 * new AdjustmentSignalID(), };
-								 */
+	SignalIdentifier[] SHIFTS;
 
 	public ExperimentComputer(File filename, Workspace workspace) {
 		this.file = filename;
@@ -184,7 +174,10 @@ public class ExperimentComputer implements Callable<Measurement> {
 			if (signalIDs.size() > 0) {
 				this.SHIFTS = (SignalIdentifier[]) signalIDs.toArray(new SignalIdentifier[signalIDs.size()]);
 			}
+			System.out.println("Adding signal IDs" + Arrays.toString(this.SHIFTS));
+
 		}
+
 	}
 
 	public Measurement call() {
@@ -245,6 +238,8 @@ public class ExperimentComputer implements Callable<Measurement> {
 					tCond.phase = adjustAngle;
 					tCond.tCond = A;
 					tCond.initSignalParams = param;
+					tCond.frequency = EXPERIMENT_FREQUENCY;
+					tCond.signalID = id;
 
 					result.tCond.add(tCond);
 

@@ -16,12 +16,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.Arrays;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.SourceDataLine;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JViewport;
@@ -62,9 +57,6 @@ public class JGraphImagePlane extends JPanel {
 	}
 
 	class ArraySelectionContextMenu extends JPopupMenu {
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 8708433669119770570L;
 		JCheckBoxMenuItem[] items = null;
 
@@ -83,35 +75,6 @@ public class JGraphImagePlane extends JPanel {
 				});
 				add(items[i]);
 			}
-			JMenuItem playMenu = new JMenuItem("Play waveform");
-			add(playMenu);
-			playMenu.addActionListener(e -> {
-				new Thread(() -> {
-					System.out.println("Sound is gonna play");
-					byte[] wave = new byte[arrays[0].length];
-					for (int i = 0; i < wave.length; i++) {
-						wave[i] = (byte) map(arrays[0][i], stats.minValue, stats.maxValue, Byte.MIN_VALUE / 2.0,
-								Byte.MAX_VALUE / 2.0);
-					}
-					AudioFormat format = new AudioFormat(44100, 8, 1, true, false);
-					try {
-						SourceDataLine line = AudioSystem.getSourceDataLine(format);
-						line.open();
-						line.start();
-						System.out.println("Playing wave");
-						line.write(wave, 0, wave.length);
-						line.drain();
-						line.flush();
-						System.out.println("Drained");
-						line.stop();
-						line.close();
-						System.out.println("Closed");
-					} catch (LineUnavailableException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				}).start();
-			});
 		}
 	}
 
@@ -199,14 +162,21 @@ public class JGraphImagePlane extends JPanel {
 		super.paintComponent(g);
 
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+		// g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
+		// RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-		g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_DISABLE);
-		g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-		g2.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-		g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+		// g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
+		// RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+		// g2.setRenderingHint(RenderingHints.KEY_DITHERING,
+		// RenderingHints.VALUE_DITHER_DISABLE);
+		// g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
+		// RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		// g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+		// RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		// g2.setRenderingHint(RenderingHints.KEY_RENDERING,
+		// RenderingHints.VALUE_RENDER_QUALITY);
+		// g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+		// RenderingHints.VALUE_STROKE_PURE);
 
 		Rectangle view = new Rectangle();
 		if (getParent() instanceof JViewport) {

@@ -13,10 +13,7 @@ public class ExperimentReader {
 	private double[][] initialData;
 	private double[][] croppedData;
 	private int croppedDataPeriods = 0;
-	private double[][] onePeriodData;
-	private double onePeriodLength;
-	private long onePeriodLengthSumm = 0;
-	private int onePeriodLengthCount = 0;
+
 	private double[] maxValues;
 	private double[] minValues;
 	private Vector<Integer> indicies = null;
@@ -56,7 +53,6 @@ public class ExperimentReader {
 		minValues = new double[colNum];
 		Arrays.fill(maxValues, Double.MIN_VALUE);
 		Arrays.fill(minValues, Double.MAX_VALUE);
-		onePeriodData = null;
 		croppedData = null;
 		for (int i = 1; i < strings.size(); i++) {
 			String line = strings.get(i);
@@ -79,6 +75,7 @@ public class ExperimentReader {
 	}
 
 	public synchronized double[][] getCroppedData() {
+		//TODO: Legacy code. It depends on fixed distance between pulses
 		if (croppedData == null) {
 			croppedData = new double[initialData.length][];
 			int[] indicies = getPulseIndicies();
@@ -94,8 +91,7 @@ public class ExperimentReader {
 
 			for (int i = 0; i < croppedData.length; i++) {
 
-				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex,
-						stopIndex);
+				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex, stopIndex);
 			}
 		}
 		return croppedData;
@@ -124,34 +120,6 @@ public class ExperimentReader {
 		return initialData.length;
 	}
 
-	public double getOnePeriodLength() {
-		if (onePeriodData == null) {
-			getOnePeriodSumm();
-		}
-		return onePeriodLength;
-	}
-
-	public double[][] getOnePeriodSumm() {
-		if (onePeriodData != null) {
-			return onePeriodData;
-		}
-
-		onePeriodLength = (double) onePeriodLengthSumm
-				/ (double) onePeriodLengthCount;
-
-		onePeriodData = new double[initialData.length][leastSpace];
-		for (int pulseArrayIndex = 0; pulseArrayIndex < indicies.size() - 1; pulseArrayIndex++) {
-			int curIndex = indicies.get(pulseArrayIndex);
-			for (int channel = 0; channel < initialData.length; channel++) {
-				for (int summIndex = 0; summIndex < onePeriodData[channel].length; summIndex++) {
-					onePeriodData[channel][summIndex] += initialData[channel][summIndex
-							+ curIndex];
-				}
-			}
-		}
-		return onePeriodData;
-	}
-
 	public int[] getPulseIndicies() {
 		if (indicies == null) {
 			indicies = new Vector<Integer>(100);
@@ -168,8 +136,6 @@ public class ExperimentReader {
 						if (lastIndex >= 0) {
 							if (i - lastIndex < leastSpace) {
 								leastSpace = (i - lastIndex);
-								onePeriodLengthSumm += (i - lastIndex);
-								onePeriodLengthCount++;
 							}
 						}
 					}
@@ -181,8 +147,7 @@ public class ExperimentReader {
 				}
 			}
 		}
-		Integer[] inds = (Integer[]) indicies.toArray(new Integer[indicies
-				.size()]);
+		Integer[] inds = (Integer[]) indicies.toArray(new Integer[indicies.size()]);
 		int[] outinds = new int[inds.length];
 		int i = 0;
 		for (int value : inds) {
