@@ -79,48 +79,46 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenu fileOpen = new JMenu("Открыть");
 		fileMenu.add(fileOpen);
 		JMenuItem fileOpenProject = new JMenuItem("Образец...");
-		fileOpenProject.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Sample sample;
-				if ((sample = workspace.getSample()) != null) {
-					int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
-							"Хотите сохранить изменения в образце перед открытием нового?", "Не забудь сохраниться",
-							JOptionPane.YES_NO_CANCEL_OPTION);
-					if (shouldSaveOption == JOptionPane.NO_OPTION) {
-						sample = null;
-						System.gc();
-					}
-					if (shouldSaveOption == JOptionPane.YES_OPTION) {
-						SampleFactory.saveSample(workspace.getSampleFile().toString(), sample);
-						sample = null;
-						System.gc();
-					}
+		fileOpenProject.addActionListener(e -> {
+			Sample sample;
+			if ((sample = workspace.getSample()) != null) {
+				int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
+						"Хотите сохранить изменения в образце перед открытием нового?", "Не забудь сохраниться",
+						JOptionPane.YES_NO_CANCEL_OPTION);
+				if (shouldSaveOption == JOptionPane.NO_OPTION) {
+					sample = null;
+					System.gc();
 				}
-				if (sample == null) {
-					MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(this.getClass());
-
-					fileChooser.setDialogTitle("Отркыть...");
-					fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-					fileChooser.setMultiSelectionEnabled(false);
-					fileChooser.resetChoosableFileFilters();
-					fileChooser.addChoosableFileFilter(Sample.extensionFilter);
-					fileChooser.setFileFilter(Sample.extensionFilter);
-
-					int option = fileChooser.showOpenDialog(parent);
-					if (option == JFileChooser.APPROVE_OPTION) {
-						if (fileChooser.getSelectedFile() != null) {
-							sample = SampleFactory.forBinary(fileChooser.getSelectedFile().getAbsolutePath());
-							workspace.setSampleFile(fileChooser.getSelectedFile());
-							workspace.setSample(null);
-							System.out.println(sample);
-							parent.setTitle(sample.name);
-							parent.statusBar.setText(String.format("%.6f", sample.length));
-						}
-					}
-
+				if (shouldSaveOption == JOptionPane.YES_OPTION) {
+					SampleFactory.saveSample(workspace.getSampleFile().toString(), sample);
+					sample = null;
+					System.gc();
 				}
 			}
+			if (sample == null) {
+				MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(this.getClass());
+
+				fileChooser.setDialogTitle("Отркыть...");
+				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				fileChooser.setMultiSelectionEnabled(false);
+				fileChooser.resetChoosableFileFilters();
+				fileChooser.addChoosableFileFilter(Sample.extensionFilter);
+				fileChooser.setFileFilter(Sample.extensionFilter);
+
+				int option = fileChooser.showOpenDialog(parent);
+				if (option == JFileChooser.APPROVE_OPTION) {
+					if (fileChooser.getSelectedFile() != null) {
+						sample = SampleFactory.forBinary(fileChooser.getSelectedFile().getAbsolutePath());
+						workspace.setSampleFile(fileChooser.getSelectedFile());
+						workspace.setSample(null);
+						System.out.println(sample);
+						parent.setTitle(sample.name);
+						parent.statusBar.setText(String.format("%.6f", sample.length));
+					}
+				}
+
+			}
+
 		});
 		fileOpen.add(fileOpenProject);
 
