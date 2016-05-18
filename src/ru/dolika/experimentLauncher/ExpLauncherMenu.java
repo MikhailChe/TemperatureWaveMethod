@@ -39,43 +39,40 @@ public class ExpLauncherMenu extends JMenuBar {
 	 * 
 	 */
 
-	public ExpLauncherMenu(Workspace workspace, ExpLauncher parent) {
+	public ExpLauncherMenu(ExpLauncher parent) {
+		Workspace workspace = Workspace.getInstance();
 		JMenu fileMenu = new JMenu("Файл");
 		this.add(fileMenu);
 
 		JMenuItem fileNewSample = new JMenuItem("Новый образец");
-		fileNewSample.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Sample sample = workspace.getSample();
-				if (sample != null) {
-					int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
-							"Хотите сохранить изменения в образце перед созданием нового?", "Не забудь сохраниться",
-							JOptionPane.YES_NO_CANCEL_OPTION);
-					if (shouldSaveOption == JOptionPane.NO_OPTION) {
-						sample = null;
-						System.gc();
-					}
-					if (shouldSaveOption == JOptionPane.YES_OPTION) {
-						SampleFactory.saveSample(workspace.getSampleFile().toString(), workspace.getSample());
-						sample = null;
-						System.gc();
-					}
+		fileNewSample.addActionListener(e -> {
+			Sample sample = workspace.getSample();
+			if (sample != null) {
+				int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
+						"Хотите сохранить изменения в образце перед созданием нового?", "Не забудь сохраниться",
+						JOptionPane.YES_NO_CANCEL_OPTION);
+				if (shouldSaveOption == JOptionPane.NO_OPTION) {
+					sample = null;
+					System.gc();
 				}
-				if (sample == null) {
-					Sample s = SampleFactory.getSample();
-					int status = SampleSettingsDialog.showSampleSettings(parent, s);
-					if (status == SampleSettingsDialog.OK_BUTTON) {
-						workspace.setSample(s);
-						parent.setTitle(workspace.getSample().name);
-						parent.statusBar.setText(String.format("%.6f", workspace.getSample().length));
-						workspace.setSampleFile(null);
-					} else {
-						/* Добавить обработчик отказа */;
-					}
-
+				if (shouldSaveOption == JOptionPane.YES_OPTION) {
+					SampleFactory.saveSample(workspace.getSampleFile().toString(), workspace.getSample());
+					sample = null;
+					System.gc();
 				}
+			}
+			if (sample == null) {
+				Sample s = SampleFactory.getSample();
+				int status = SampleSettingsDialog.showSampleSettings(parent, s);
+				if (status == SampleSettingsDialog.OK_BUTTON) {
+					workspace.setSample(s);
+					parent.setTitle(workspace.getSample().name);
+					parent.statusBar.setText(String.format("%.6f", workspace.getSample().length));
+					workspace.setSampleFile(null);
+				} else {
+					/* Добавить обработчик отказа */;
+				}
+
 			}
 		});
 		fileMenu.add(fileNewSample);
@@ -191,7 +188,7 @@ public class ExpLauncherMenu extends JMenuBar {
 					FolderWatch fw = new FolderWatch(parent, workspace);
 					fw.setVisible(true);
 				} catch (Exception exception) {
-
+					exception.printStackTrace();
 				}
 			}
 		});

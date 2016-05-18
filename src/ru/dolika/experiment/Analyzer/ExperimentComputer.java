@@ -67,6 +67,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 					try {
 						Files.delete(resultFile.toPath());
 					} catch (java.nio.file.FileSystemException e) {
+						e.printStackTrace();
 						exception = true;
 						JOptionPane.showMessageDialog(null, resultFile.toString(), "Close the file!!!",
 								JOptionPane.ERROR_MESSAGE);

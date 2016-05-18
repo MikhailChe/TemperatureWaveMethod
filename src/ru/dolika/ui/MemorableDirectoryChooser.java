@@ -61,11 +61,16 @@ public class MemorableDirectoryChooser extends JFileChooser {
 				System.out.println("It's not a directory, so file is " + f);
 			}
 			if (f != null) {
-				// try {
-				prefs.put(LAST_FOLDER, f.toString());
-				// } catch (IOException e) {
-				// e.printStackTrace();
-				// }
+				try {
+					prefs.put(LAST_FOLDER, f.toString());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				try {
+					prefs.flush();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}

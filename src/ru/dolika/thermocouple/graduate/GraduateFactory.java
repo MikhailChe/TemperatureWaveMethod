@@ -51,6 +51,7 @@ public class GraduateFactory {
 					cache.put(file, grads);
 					return grads;
 				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
 					return null;
 				}
 			}

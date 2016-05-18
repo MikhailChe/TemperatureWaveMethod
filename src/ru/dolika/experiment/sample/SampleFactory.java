@@ -1,5 +1,6 @@
 package ru.dolika.experiment.sample;
 
+import static ru.dolika.debug.Debug.debug;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,8 +15,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import ru.dolika.ui.MemorableDirectoryChooser;
 
 public class SampleFactory {
-
-	static boolean debug = true;
 
 	public static Sample getSample() {
 		return new Sample();

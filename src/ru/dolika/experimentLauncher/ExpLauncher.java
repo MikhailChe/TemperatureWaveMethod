@@ -1,5 +1,7 @@
 ﻿package ru.dolika.experimentLauncher;
 
+import static ru.dolika.debug.Debug.debug;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
@@ -28,15 +30,14 @@ public class ExpLauncher extends JFrame {
 	JPanel contentPanel;
 
 	public void createAndShowGUI() {
-
 		SwingUtilities.invokeLater(() -> {
 			if (debug)
-				System.out.println("creating gui");
+				System.out.println("Creating gui");
 			statusBar = new JLabel();
 			contentPanel = new JPanel();
 			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-			JMenuBar menuBar = new ExpLauncherMenu(workspace, ExpLauncher.this);
+			JMenuBar menuBar = new ExpLauncherMenu(ExpLauncher.this);
 			ExpLauncher.this.setJMenuBar(menuBar);
 
 			getContentPane().setLayout(new BorderLayout(16, 16));
@@ -60,8 +61,6 @@ public class ExpLauncher extends JFrame {
 		});
 	}
 
-	public static boolean debug = true;
-
 	ExpLauncher() {
 		super("Обработчик данных");
 
@@ -73,7 +72,7 @@ public class ExpLauncher extends JFrame {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
-
+			e.printStackTrace();
 		}
 		createAndShowGUI();
 	}
