@@ -162,7 +162,7 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenuItem toolsWatchFolder = new JMenuItem("Следить за папкой");
 		toolsWatchFolder.addActionListener(e -> {
 			try {
-				FolderWatch fw = new FolderWatch(parent, workspace);
+				FolderWatch fw = new FolderWatch(parent);
 				fw.setVisible(true);
 			} catch (Exception exception) {
 				exception.printStackTrace();

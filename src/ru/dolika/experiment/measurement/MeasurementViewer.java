@@ -38,7 +38,6 @@ public class MeasurementViewer extends JPanel {
 		if (m.temperature.get(0).value < minTemp) {
 			minTemp = m.temperature.get(0).value;
 		}
-
 		for (TemperatureConductivity tc : m.tCond) {
 			if (tc.tCond > maxTcond)
 				maxTcond = tc.tCond;

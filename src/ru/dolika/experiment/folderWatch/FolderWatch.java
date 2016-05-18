@@ -54,15 +54,15 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 	JPanel diffusivityPanel = new JPanel();
 	JLabel diffusivityLabel = new JLabel("Здесь будет температуропроводность");
 
-	public FolderWatch(JFrame parent, Workspace workspace) throws Exception {
+	public FolderWatch(JFrame parent) throws Exception {
 		super(parent, false);
 		this.setTitle("Я смотрю за тобой!");
-		this.workspace = workspace;
+		this.workspace = Workspace.getInstance();
 		if (workspace.getSample() == null) {
 			JOptionPane.showMessageDialog(parent,
 					"Не был выбран файл образца.\nПожалуйста закройте это окно и выберите образец или создайте новый",
 					"Ошибка образца", JOptionPane.ERROR_MESSAGE);
-			throw new Exception();
+			throw new Exception("No sample file chosen");
 		}
 		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(this.getClass());
 		fileChooser.setMultiSelectionEnabled(false);
