@@ -123,41 +123,30 @@ public class ExpLauncherMenu extends JMenuBar {
 		fileOpen.add(fileOpenProject);
 
 		JMenuItem fileSave = new JMenuItem("Сохранить...");
-		fileSave.addActionListener(new ActionListener() {
+		fileSave.addActionListener(e -> {
+			workspace.save();
+			if (workspace.getSampleFile() != null) {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				workspace.save();
-				if (workspace.getSampleFile() != null) {
-
-					SampleFactory.saveSample(workspace.getSampleFile().toString(), workspace.getSample());
-				} else {
-					SampleFactory.saveSample(null, workspace.getSample());
-				}
+				SampleFactory.saveSample(workspace.getSampleFile().toString(), workspace.getSample());
+			} else {
+				SampleFactory.saveSample(null, workspace.getSample());
 			}
 		});
 		fileMenu.add(fileSave);
 
 		JMenuItem fileSaveAs = new JMenuItem("Сохранить как...");
-		fileSaveAs.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Workspace w = Workspace.getInstance();
-				w.save();
-				w.setSampleFile(SampleFactory.saveSample(null, w.getSample()));
-			}
+		fileSaveAs.addActionListener(e -> {
+			Workspace w = Workspace.getInstance();
+			w.save();
+			w.setSampleFile(SampleFactory.saveSample(null, w.getSample()));
 		});
 		fileMenu.add(fileSaveAs);
 
 		JMenu toolsMenu = new JMenu("Инструменты");
 		this.add(toolsMenu);
 		JMenuItem prepareZeroCrossing = new JMenuItem("Подготовить юстировку");
-		prepareZeroCrossing.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				new Thread(new AdjustFileCreator(parent)).start();
-			}
+		prepareZeroCrossing.addActionListener(e -> {
+			new Thread(new AdjustFileCreator(parent)).start();
 		});
 		toolsMenu.add(prepareZeroCrossing);
 
@@ -168,41 +157,29 @@ public class ExpLauncherMenu extends JMenuBar {
 		toolsMenu.add(prepareGrads);
 
 		JMenuItem toolsDofiles = new JMenuItem("Произвести измерения");
-		toolsDofiles.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				new Thread(new BatcherLaunch(parent, workspace)).start();
-			}
+		toolsDofiles.addActionListener(e -> {
+			new Thread(new BatcherLaunch(parent, workspace)).start();
 		});
 		toolsMenu.add(toolsDofiles);
 
 		JMenuItem toolsWatchFolder = new JMenuItem("Следить за папкой");
-		toolsWatchFolder.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					FolderWatch fw = new FolderWatch(parent, workspace);
-					fw.setVisible(true);
-				} catch (Exception exception) {
-					exception.printStackTrace();
-				}
+		toolsWatchFolder.addActionListener(e -> {
+			try {
+				FolderWatch fw = new FolderWatch(parent, workspace);
+				fw.setVisible(true);
+			} catch (Exception exception) {
+				exception.printStackTrace();
 			}
 		});
 		toolsMenu.add(toolsWatchFolder);
 
 		JMenuItem toolsFilterTuner = new JMenuItem("Настроить фильтр");
-		toolsFilterTuner.addActionListener(new ActionListener() {
+		toolsFilterTuner.addActionListener(e -> {
+			try {
+				FilterTunerGUI fw = new FilterTunerGUI(parent);
+				fw.setVisible(true);
+			} catch (Exception exception) {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					FilterTunerGUI fw = new FilterTunerGUI(parent);
-					fw.setVisible(true);
-				} catch (Exception exception) {
-
-				}
 			}
 		});
 		toolsMenu.add(toolsFilterTuner);
@@ -210,11 +187,8 @@ public class ExpLauncherMenu extends JMenuBar {
 		toolsMenu.add(new JSeparator(SwingConstants.HORIZONTAL));
 
 		JMenuItem convertTemperature = new JMenuItem("Преобразовать температуру");
-		convertTemperature.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				new GraduateConverter(parent);
-			}
+		convertTemperature.addActionListener(e -> {
+			new GraduateConverter(parent);
 		});
 		toolsMenu.add(convertTemperature);
 
@@ -234,22 +208,20 @@ public class ExpLauncherMenu extends JMenuBar {
 		});
 		settingsMenu.add(chooseChannels);
 		JMenuItem sampleSettings = new JMenuItem("Настройки образца");
-		sampleSettings.addActionListener(new ActionListener() {
+		sampleSettings.addActionListener(e -> {
+			try {
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
+				int status = SampleSettingsDialog.showSampleSettings(parent, workspace.getSample());
 
-					int status = SampleSettingsDialog.showSampleSettings(parent, workspace.getSample());
-
-					if (status == SampleSettingsDialog.OK_BUTTON) {
-						parent.setTitle(workspace.getSample().name);
-						parent.statusBar.setText("" + workspace.getSample().length);
-					}
-
-				} catch (IllegalArgumentException e1) {
+				if (status == SampleSettingsDialog.OK_BUTTON) {
+					parent.setTitle(workspace.getSample().name);
+					parent.statusBar.setText("" + workspace.getSample().length);
 				}
+
+			} catch (IllegalArgumentException e1) {
+				// TODO: add exception handler
 			}
+
 		});
 		settingsMenu.add(sampleSettings);
 
