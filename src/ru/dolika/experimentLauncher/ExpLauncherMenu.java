@@ -3,9 +3,6 @@
  */
 package ru.dolika.experimentLauncher;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -219,12 +216,10 @@ public class ExpLauncherMenu extends JMenuBar {
 				}
 
 			} catch (IllegalArgumentException e1) {
-				// TODO: add exception handler
+				e1.printStackTrace();
 			}
 
 		});
 		settingsMenu.add(sampleSettings);
-
-		// TODO Auto-generated constructor stub
 	}
 }
