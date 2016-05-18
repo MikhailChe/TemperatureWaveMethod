@@ -1,7 +1,5 @@
 package ru.dolika.experiment.Analyzer;
 
-import java.util.Locale;
-
 public class PhysicsModel {
 
 	static double Bio = 0.4;
@@ -16,10 +14,9 @@ public class PhysicsModel {
 		b3 = Math.cosh(kappaOverSqrt2) * Math.cos(kappaOverSqrt2);
 		b4 = Math.sinh(kappaOverSqrt2) * Math.sin(kappaOverSqrt2);
 
-		double nominator = Bio * Bio * (b1 - b2) - 2.0 * kappaOverSqrt2
-				* (2.0 * Bio) * b4 - kappa * kappa * (b1 + b2);
-		double denominator = Bio * Bio * (b1 + b2) + 2.0 * kappaOverSqrt2
-				* (2.0 * Bio) * b3 + kappa * kappa * (b1 - b2);
+		double nominator = Bio * Bio * (b1 - b2) - 2.0 * kappaOverSqrt2 * (2.0 * Bio) * b4 - kappa * kappa * (b1 + b2);
+		double denominator = Bio * Bio * (b1 + b2) + 2.0 * kappaOverSqrt2 * (2.0 * Bio) * b3
+				+ kappa * kappa * (b1 - b2);
 
 		double val = Math.atan2(nominator, denominator);
 		if (val > 0) {
@@ -53,14 +50,12 @@ public class PhysicsModel {
 			iterator++;
 		}
 
-
 		return kappa;
 	}
 
 	public static void main(String[] args) {
 		for (double i = 0.01; i < 3; i += 0.01) {
-			System.out.println(String.format(Locale.getDefault(), "%.3f\t%.3f",
-					searchKappaFor(-i, 0.00001), -i));
+			System.out.printf("%.3f\t%.3f", searchKappaFor(-i, 0.00001), -i);
 		}
 	}
 }

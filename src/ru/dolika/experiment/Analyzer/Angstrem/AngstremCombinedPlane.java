@@ -129,17 +129,8 @@ public class AngstremCombinedPlane extends JPanel {
 		double[][][] subdividedData = subdivideData(data, totalAmountOfPeriods, samplesInOnePeriod);
 		double[][][] fftVals = new double[subdividedData.length][subdividedData[0].length][2];
 		fillInFftVals(subdividedData, samplesInOnePeriod, fftVals);
-		System.out.println();
-		// outputCalculatedSineWave(subdividedData, totalAmountOfPeriods,
-		// fftVals);
-		/*
-		 * System.out.println("Amount of period: " +
-		 * (subdividedData[0][0].length / samplesInOnePeriod));
-		 * System.out.println("#\tday\tphase\tamplitude");
-		 */
 
 		calculateDiffusivity(measurementPeriod, measurementDistance, fftVals);
-		System.out.println("\r\n\r\n");
 	}
 
 	/**
@@ -152,7 +143,6 @@ public class AngstremCombinedPlane extends JPanel {
 		double omega = 2.0 * Math.PI * frequency;
 		double l = measurementDistance / 1000.0;
 
-		System.out.println();
 		String[] columnNames = { "������", "������", "����������� ����������������������", "����������", "����� ����",
 				"����1", "����2" };
 		Vector<Object[]> data = new Vector<Object[]>();
@@ -238,20 +228,10 @@ public class AngstremCombinedPlane extends JPanel {
 				double[] fftSample = FFT.getFourierForIndex(subdividedData[channel][periodNumber],
 						subdividedData[channel][periodNumber].length / samplesInOnePeriod);
 
-				/*
-				 * System.out.print((i + 1)); System.out.print("\t");
-				 * System.out.print((j + 1)); System.out.print("\t");
-				 */
-
 				fftVals[channel][periodNumber][ARG] = NormalizePhase(FFT.getArgument(fftSample, 0));
-				/*
-				 * System.out.print(fftVals[i][j][0]); System.out.print("\t");
-				 */
+
 				fftVals[channel][periodNumber][AMP] = 2.0 * FFT.getAbs(fftSample, 0)
 						/ subdividedData[channel][periodNumber].length;
-				/*
-				 * System.out.print(fftVals[i][j][1]); System.out.print("\r\n");
-				 */
 			}
 		}
 	}

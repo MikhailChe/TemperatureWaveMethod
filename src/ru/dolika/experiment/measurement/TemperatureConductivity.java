@@ -52,17 +52,14 @@ public class TemperatureConductivity implements Serializable {
 
 	@Override
 	public String toString() {
-		if (amplitude > 1) {
-			return String.format("%.0f\t%.3f\t%.3f\t%.3f\t%.3f\t%.4e", amplitude,
-					initSignalParams == null ? 0 : Math.toDegrees(initSignalParams.phase),
-					signalID == null ? 0 : signalID.zc.getCurrentShift(frequency), Math.toDegrees(phase), kappa, tCond);
-		} else {
-			return " \t \t \t \t";
-		}
+
+		return String.format("%.0f;%.3f;%.3f;%.3f;%.3f;%.4e", amplitude,
+				initSignalParams == null ? 0 : Math.toDegrees(initSignalParams.phase),
+				signalID == null ? 0 : signalID.zc.getCurrentShift(frequency), Math.toDegrees(phase), kappa, tCond);
 	}
 
 	public String getHeader() {
-		return "Амплитуда\tНачальная фаза\tНулеваая фаза\tСкорректированная фаза\tКаппа\tТемпературопроводность";
+		return "Амплитуда;Начальная фаза;Нулеваая фаза;Скорректированная фаза;Каппа;Температуропроводность";
 	}
 
 }

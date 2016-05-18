@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -109,6 +108,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 					}
 					if (header) {
 						header = false;
+						bw.write(new String(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF }));
 						bw.write(String.format("%s%n", answer.getHeader()));
 					}
 					bw.write(String.format("%s%n", answer));
@@ -174,8 +174,6 @@ public class ExperimentComputer implements Callable<Measurement> {
 			if (signalIDs.size() > 0) {
 				this.SHIFTS = (SignalIdentifier[]) signalIDs.toArray(new SignalIdentifier[signalIDs.size()]);
 			}
-			System.out.println("Adding signal IDs" + Arrays.toString(this.SHIFTS));
-
 		}
 
 	}

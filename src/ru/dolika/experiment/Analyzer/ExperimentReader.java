@@ -1,6 +1,7 @@
 package ru.dolika.experiment.Analyzer;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -22,10 +23,10 @@ public class ExperimentReader {
 	public ExperimentReader(Path filepath) throws IOException {
 		List<String> strings = null;
 
-		strings = Files.readAllLines(filepath);
+		strings = Files.readAllLines(filepath, StandardCharsets.UTF_8);
 
 		if (strings == null) {
-			System.err.println("couldn't load file content or file is empty");
+			System.err.println("Couldn't load file content or file is empty");
 			return;
 		}
 		if (strings.size() <= 1) {
@@ -75,7 +76,7 @@ public class ExperimentReader {
 	}
 
 	public synchronized double[][] getCroppedData() {
-		//TODO: Legacy code. It depends on fixed distance between pulses
+		// TODO: Legacy code. It depends on fixed distance between pulses
 		if (croppedData == null) {
 			croppedData = new double[initialData.length][];
 			int[] indicies = getPulseIndicies();

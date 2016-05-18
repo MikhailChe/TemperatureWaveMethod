@@ -144,23 +144,24 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 				return pathname.getName().matches("^[0-9]+.txt$");
 			}
 		});
-
-		if (filesInFolder == null) {
-			if (files.length >= 1) {
-				filesInFolder = files;
-				for (File f : filesInFolder) {
-					updateValuesForFile(f);
+		if (files != null) {
+			if (filesInFolder == null) {
+				if (files.length >= 1) {
+					filesInFolder = files;
+					for (File f : filesInFolder) {
+						updateValuesForFile(f);
+					}
 				}
+				return;
 			}
-			return;
-		}
 
-		if (filesInFolder.length != files.length) {
-			if (files.length >= 1) {
-				filesInFolder = files;
-				updateValuesForFile(filesInFolder[filesInFolder.length - 1]);
+			if (filesInFolder.length != files.length) {
+				if (files.length >= 1) {
+					filesInFolder = files;
+					updateValuesForFile(filesInFolder[filesInFolder.length - 1]);
+				}
+				return;
 			}
-			return;
 		}
 	}
 

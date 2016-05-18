@@ -2,7 +2,6 @@ package ru.dolika.experiment.measurement;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Locale;
 
 /**
  * Класс измерений. Хранит в себе одну точку измерения. Каждой точке присвоено
@@ -47,12 +46,12 @@ public class Measurement implements Serializable {
 
 	public String getHeader() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("Частота\t");
+		sb.append("Частота;");
 		for (Temperature t : temperature) {
-			sb.append(t.getHeader() + "\t");
+			sb.append(t.getHeader() + ";");
 		}
 		for (TemperatureConductivity t : tCond) {
-			sb.append(t.getHeader() + "\t");
+			sb.append(t.getHeader() + ";");
 		}
 		return sb.toString();
 	}
@@ -60,12 +59,12 @@ public class Measurement implements Serializable {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format(Locale.getDefault(), "%4.1f\t", frequency));
+		sb.append(String.format("%4.1f;", frequency));
 		for (Temperature t : temperature) {
-			sb.append(t.toString() + "\t");
+			sb.append(t.toString() + ";");
 		}
 		for (TemperatureConductivity t : tCond) {
-			sb.append(t.toString() + "\t");
+			sb.append(t.toString() + ";");
 		}
 		return sb.toString();
 	}
