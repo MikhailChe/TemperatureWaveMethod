@@ -3,17 +3,17 @@ package ru.dolika.experiment.Analyzer;
 import java.awt.Desktop;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Vector;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -42,67 +42,47 @@ public class ExperimentComputer implements Callable<Measurement> {
 		return value;
 	}
 
-	public static Measurement computeFolder(File folder, Workspace workspace, JFrame parent) {
+	public static ArrayList<Measurement> computeFolder(File folder, Workspace workspace, JFrame parent) {
 		if (!folder.isDirectory())
 			return null;
 		if (!folder.exists())
 			return null;
 
-		File[] files = folder.listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File pathname) {
-				return pathname.getName().matches("^[0-9]+.txt$");
-			}
-		});
-		if (files.length <= 0)
+		ArrayList<File> files = new ArrayList<File>();
+		files.addAll(Arrays.asList(folder.listFiles(pathname -> {
+			return pathname.getName().matches("^[0-9]+.txt$");
+		})));
+		files.removeAll(null);
+		if (files.size() <= 0)
 			return null;
-		BufferedWriter bw;
-		File resultFile;
+		BufferedWriter bw = null;
+		File resultFile = tryToCreateResultFile(folder);
+		if (resultFile == null)
+			return null;
 		try {
-			resultFile = new File(folder, "result-" + folder.getName() + ".tsv");
-			if (resultFile.exists()) {
-				boolean exception = false;
-				do {
-					exception = false;
-					try {
-						Files.delete(resultFile.toPath());
-					} catch (java.nio.file.FileSystemException e) {
-						e.printStackTrace();
-						exception = true;
-						JOptionPane.showMessageDialog(null, resultFile.toString(), "Close the file!!!",
-								JOptionPane.ERROR_MESSAGE);
-						System.err.println("Please, close the file: " + resultFile.toString());
-						try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
-						}
-					}
-				} while (exception);
-			}
 			bw = Files.newBufferedWriter(resultFile.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
-
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		if (bw == null)
 			return null;
-		}
+
 		ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
-		Vector<Future<Measurement>> set = new Vector<Future<Measurement>>();
+		ArrayList<Future<Measurement>> futuresSet = new ArrayList<Future<Measurement>>();
 		ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
-		pm.setMaximum(files.length);
-		for (File f : files) {
-			Future<Measurement> future = pool.submit(new ExperimentComputer(f, workspace));
-			set.add(future);
-		}
+		pm.setMaximum(files.size());
+		files.forEach(f -> futuresSet.add(pool.submit(new ExperimentComputer(f, workspace))));
 
 		int currentProgress = 0;
 		boolean header = true;
-		for (Future<Measurement> future : set) {
+		ArrayList<Measurement> measurements = new ArrayList<Measurement>();
+		for (Future<Measurement> future : futuresSet) {
 			try {
 				Measurement answer = future.get();
 				if (answer != null) {
 					Sample sample;
 					if ((sample = workspace.getSample()) != null) {
+						measurements.add(answer);
 						if (sample.measurements != null) {
 							sample.measurements.add(answer);
 						}
@@ -135,8 +115,44 @@ public class ExperimentComputer implements Callable<Measurement> {
 				e.printStackTrace();
 			}
 		}
-		return null;
+		return measurements;
+	}
 
+	public static File tryToCreateResultFile(File folder) {
+		File resultFile;
+		final String formatStringOfReulstFile = "result-%s.tsv";
+		try {
+			resultFile = new File(folder, String.format(formatStringOfReulstFile, folder.getName()));
+			if (resultFile.exists()) {
+				boolean exception = false;
+				do {
+					exception = false;
+					try {
+						Files.delete(resultFile.toPath());
+					} catch (java.nio.file.FileSystemException e) {
+						e.printStackTrace();
+						exception = true;
+
+						JOptionPane.showMessageDialog(null, resultFile.toString(),
+								"Пожалуйста, закройте файл с результатами.\n"
+										+ "Иначе я не смогу записать туда новые результаты.\n"
+										+ "При необходимости Вы можете сохранить копию файла вручную\n"
+										+ "Я подожду и не буду трогать этот файл, пока Вы не закроете это окно\n",
+								JOptionPane.ERROR_MESSAGE);
+						System.err.printf("Пожалуйста, закройте файл: %s", resultFile.toString());
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+					}
+				} while (exception);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return resultFile;
 	}
 
 	public static SignalParameters[] getAllSignalParameters(double[][] signals, int frequency) {
