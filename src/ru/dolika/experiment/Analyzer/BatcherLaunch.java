@@ -43,13 +43,13 @@ public class BatcherLaunch implements Runnable {
 			File[] folders = fileChooser.getSelectedFiles();
 			ProgressMonitor pm = new ProgressMonitor(parent, "Анализ файлов в папке", "Идёт вычисление измерений", 0,
 					folders.length);
-			pm.setMillisToDecideToPopup(0);
+			pm.setMillisToDecideToPopup(1000);
 			int progress = 0;
 			pm.setProgress(progress++);
 
-			for (File f : folders) {
-				pm.setNote(f.getName());
-				ExperimentComputer.computeFolder(f, workspace, parent);
+			for (File folder : folders) {
+				pm.setNote(folder.getName());
+				ExperimentComputer.computeFolder(folder, workspace, parent);
 				pm.setProgress(progress++);
 				if (pm.isCanceled()) {
 					break;

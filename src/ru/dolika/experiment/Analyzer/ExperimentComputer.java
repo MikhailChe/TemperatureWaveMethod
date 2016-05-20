@@ -13,7 +13,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -70,6 +69,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
 		ArrayList<Future<Measurement>> futuresSet = new ArrayList<Future<Measurement>>();
 		ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
+		pm.setMillisToDecideToPopup(1000);
 		pm.setMaximum(files.size());
 		files.forEach(f -> futuresSet.add(pool.submit(new ExperimentComputer(f, workspace))));
 
