@@ -37,6 +37,7 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 	public File folder;
 
 	MeasurementViewer measurementViewer = new MeasurementViewer();
+	Container numbersContainer = new Container();
 
 	JPanel signalLevelPanel = new JPanel();
 	JLabel signalLevelLabel = new JLabel("Здесь будет термоЭДС");
@@ -82,8 +83,6 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 		temperaturePanel.setBorder(BorderFactory.createTitledBorder("Температура"));
 		temperaturePanel.add(temperatureLabel);
 
-		Container numbersContainer = new Container();
-
 		numbersContainer.setLayout(new GridLayout(3, 2, 16, 16));
 
 		numbersContainer.add(signalLevelPanel);
@@ -114,6 +113,9 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 					filesInFolder = files;
 					for (File f : filesInFolder) {
 						updateValuesForFile(f);
+						if (isClosing) {
+							return;
+						}
 					}
 				}
 				return;
@@ -141,13 +143,15 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 		}
 		ArrayList<TemperatureConductivity> tConds = m.tCond;
 		if (tConds.size() != tCondPanels.size()) {
+			System.out.println("Sizes differ");
 			for (JTDiffLabelSet set : tCondPanels) {
-				this.remove(set);
+				numbersContainer.remove(set);
 			}
 			tCondPanels.clear();
 			for (int i = 0; i < tConds.size(); i++) {
 				JTDiffLabelSet set = new JTDiffLabelSet(i);
 				tCondPanels.add(set);
+				numbersContainer.add(set);
 			}
 		}
 		for (int i = 0; i < tConds.size(); i++) {

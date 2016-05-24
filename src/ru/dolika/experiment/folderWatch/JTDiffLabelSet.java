@@ -5,13 +5,13 @@ import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 
 import ru.dolika.experiment.measurement.TemperatureConductivity;
 
 public class JTDiffLabelSet extends JPanel {
 
 	private static final long serialVersionUID = -3740896947551054147L;
-	final private int channelNumber;
 
 	JPanel argumentPanel = new JPanel();
 	JLabel argumentLabel = new JLabel("Здесь будет угол");
@@ -27,7 +27,6 @@ public class JTDiffLabelSet extends JPanel {
 
 	public JTDiffLabelSet(int channelNumber) {
 		super(new GridLayout(2, 2));
-		this.channelNumber = channelNumber;
 
 		argumentPanel.setBorder(BorderFactory.createTitledBorder("Фаза"));
 		argumentPanel.add(argumentLabel);
@@ -40,6 +39,12 @@ public class JTDiffLabelSet extends JPanel {
 
 		diffusivityPanel.setBorder(BorderFactory.createTitledBorder("Температуропроводность"));
 		diffusivityPanel.add(diffusivityLabel);
+
+		setBorder(new TitledBorder("Канал " + channelNumber));
+		add(argumentPanel);
+		add(kappaPanel);
+		add(amplitudePanel);
+		add(diffusivityPanel);
 	}
 
 	public void updateValues(TemperatureConductivity tCond) {
