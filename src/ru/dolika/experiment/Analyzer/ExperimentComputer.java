@@ -51,7 +51,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		files.addAll(Arrays.asList(folder.listFiles(pathname -> {
 			return pathname.getName().matches("^[0-9]+.txt$");
 		})));
-		files.removeAll(null);
+		
 		if (files.size() <= 0)
 			return null;
 		BufferedWriter bw = null;

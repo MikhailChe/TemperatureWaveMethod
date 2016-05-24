@@ -7,6 +7,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
@@ -19,6 +20,7 @@ import javax.swing.JPanel;
 import ru.dolika.experiment.Analyzer.ExperimentComputer;
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.measurement.MeasurementViewer;
+import ru.dolika.experiment.measurement.TemperatureConductivity;
 import ru.dolika.experiment.workspace.Workspace;
 import ru.dolika.ui.MemorableDirectoryChooser;
 
@@ -42,17 +44,7 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 	JPanel temperaturePanel = new JPanel();
 	JLabel temperatureLabel = new JLabel("Здесь будет температура");
 
-	JPanel argumentPanel = new JPanel();
-	JLabel argumentLabel = new JLabel("Здесь будет угол");
-
-	JPanel kappaPanel = new JPanel();
-	JLabel kappaLabel = new JLabel("Здесь будет каппа");
-
-	JPanel amplitudePanel = new JPanel();
-	JLabel amplitudeLabel = new JLabel("Здесь будет амплитуда сигнала");
-
-	JPanel diffusivityPanel = new JPanel();
-	JLabel diffusivityLabel = new JLabel("Здесь будет температуропроводность");
+	ArrayList<JTDiffLabelSet> tCondPanels = new ArrayList<JTDiffLabelSet>();
 
 	public FolderWatch(JFrame parent) throws Exception {
 		super(parent, false);
@@ -90,46 +82,18 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 		temperaturePanel.setBorder(BorderFactory.createTitledBorder("Температура"));
 		temperaturePanel.add(temperatureLabel);
 
-		argumentPanel.setBorder(BorderFactory.createTitledBorder("Фаза"));
-		argumentPanel.add(argumentLabel);
-
-		kappaPanel.setBorder(BorderFactory.createTitledBorder("kappa"));
-		kappaPanel.add(kappaLabel);
-
-		amplitudePanel.setBorder(BorderFactory.createTitledBorder("Амплитуда сигнала"));
-		amplitudePanel.add(amplitudeLabel);
-
-		diffusivityPanel.setBorder(BorderFactory.createTitledBorder("Температуропроводность"));
-		diffusivityPanel.add(diffusivityLabel);
-
 		Container numbersContainer = new Container();
 
 		numbersContainer.setLayout(new GridLayout(3, 2, 16, 16));
 
 		numbersContainer.add(signalLevelPanel);
 		numbersContainer.add(temperaturePanel);
-		numbersContainer.add(argumentPanel);
-		numbersContainer.add(kappaPanel);
-		numbersContainer.add(amplitudePanel);
-		numbersContainer.add(diffusivityPanel);
 
 		this.getContentPane().setLayout(new BorderLayout(16, 16));
 
 		this.getContentPane().add(numbersContainer, BorderLayout.NORTH);
 
 		this.getContentPane().add(measurementViewer);
-		/*
-		 * for (int i = 0; i < 50; i++) { Measurement m =
-		 * MeasurementFactory.getMeasurement(); Temperature t = new
-		 * Temperature(); t.value = i * 30 + 373; m.temperature.add(t);
-		 * 
-		 * TemperatureConductivity tc = new TemperatureConductivity(); tc.tCond
-		 * = Math.sin(Math.PI * 2.0 * 3.5 * i / 50f) * 3E-6 + 8E-6;
-		 * m.tCond.add(tc); TemperatureConductivity tc2 = new
-		 * TemperatureConductivity(); tc2.tCond = Math.sin(Math.PI * 2.0 * 3.5 *
-		 * i / 50f) * 3E-6 + 7E-6; m.tCond.add(tc2);
-		 * measurementViewer.addMeasurement(m); }
-		 */
 
 		this.pack();
 
@@ -175,17 +139,20 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 			signalLevelLabel.setText(String.format("%+.3f мВ", m.temperature.get(0).signalLevel * 1000));
 			temperatureLabel.setText(String.format("%+.0f K", m.temperature.get(0).value));
 		}
-		if (m.tCond == null || m.tCond.isEmpty()) {
-			argumentLabel.setText("Фаза неизвестна");
-			kappaLabel.setText("kappa неизвестна");
-			amplitudeLabel.setText("Амплитуда неизвестна");
-			diffusivityLabel.setText("Температуропроводность неизвестна");
-
-		} else {
-			argumentLabel.setText(String.format("%+.3f", m.tCond.get(0).phase));
-			kappaLabel.setText(String.format("%+.3f", m.tCond.get(0).kappa));
-			amplitudeLabel.setText(String.format("%.0f", m.tCond.get(0).amplitude));
-			diffusivityLabel.setText(String.format("%.3e", m.tCond.get(0).tCond));
+		ArrayList<TemperatureConductivity> tConds = m.tCond;
+		if (tConds.size() != tCondPanels.size()) {
+			for (JTDiffLabelSet set : tCondPanels) {
+				this.remove(set);
+			}
+			tCondPanels.clear();
+			for (int i = 0; i < tConds.size(); i++) {
+				JTDiffLabelSet set = new JTDiffLabelSet(i);
+				tCondPanels.add(set);
+			}
+		}
+		for (int i = 0; i < tConds.size(); i++) {
+			TemperatureConductivity tCond = tConds.get(i);
+			tCondPanels.get(i).updateValues(tCond);
 		}
 		measurementViewer.addMeasurement(m);
 
