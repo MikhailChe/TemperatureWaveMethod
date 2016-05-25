@@ -136,7 +136,7 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 	}
 
 	public void updateValuesForFile(File f) {
-		TWMComputer exc = new TWMComputer(f, workspace);
+		TWMComputer exc = new TWMComputer(f);
 		Measurement m = exc.call();
 		if (m.temperature == null || m.temperature.isEmpty()) {
 			signalLevelLabel.setText("Температура неизвестна");
