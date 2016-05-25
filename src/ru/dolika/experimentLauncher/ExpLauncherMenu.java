@@ -157,7 +157,7 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		JMenuItem toolsDirectoryDiffusivity = new JMenuItem("Произвести вычисления");
 		toolsDirectoryDiffusivity.addActionListener(e -> {
-			new Thread(new BatcherLaunch(parent, workspace)).start();
+			new Thread(new BatcherLaunch(parent)).start();
 		});
 		toolsMenu.add(toolsDirectoryDiffusivity);
 
@@ -192,7 +192,7 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		JMenu settingsMenu = new JMenu("Настройки");
 		this.add(settingsMenu);
-		
+
 		JMenuItem chooseChannels = new JMenuItem("Выбрать каналы");
 		chooseChannels.addActionListener(e -> {
 			if (workspace.getSignalIDs() != null) {
@@ -208,7 +208,7 @@ public class ExpLauncherMenu extends JMenuBar {
 			sidsd.setVisible(true);
 		});
 		settingsMenu.add(chooseChannels);
-		
+
 		JMenuItem sampleSettings = new JMenuItem("Настройки образца");
 		sampleSettings.addActionListener(e -> {
 			try {

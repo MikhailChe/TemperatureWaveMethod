@@ -21,18 +21,15 @@ import ru.dolika.experiment.zeroCrossing.ZeroCrossingViewerPanel;
 import ru.dolika.ui.MemorableDirectoryChooser;
 
 public class AdjustFileCreator implements Runnable {
-	// final private Workspace workspace;
 	final private JFrame parent;
 
 	public AdjustFileCreator(JFrame parent) {
-		// this.workspace = workspace;
 		this.parent = parent;
 	}
 
 	@Override
 	public void run() {
-
-		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(ExperimentComputer.class);
+		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(TWMComputer.class);
 		fileChooser.setDialogTitle("Выберите папку для обработки юстировки");
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -81,7 +78,7 @@ public class AdjustFileCreator implements Runnable {
 							return;
 						}
 						final int FREQ_INDEX = reader.getCroppedDataPeriodsCount() * 2;
-						SignalParameters param = ExperimentComputer.getSignalParameters(croppedData[channelNumber],
+						SignalParameters param = TWMComputer.getSignalParameters(croppedData[channelNumber],
 								FREQ_INDEX);
 						bw.write(String.format("%.1f\t%.3f\r\n", reader.getExperimentFrequency(),
 								Math.toDegrees(-param.phase)));
@@ -97,8 +94,10 @@ public class AdjustFileCreator implements Runnable {
 					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 					e.printStackTrace();
 				}
+				
 				ZeroCrossing zc = ZeroCrossingFactory.forFile(resultFile);
 				ZeroCrossingViewerPanel zcvp = new ZeroCrossingViewerPanel(zc);
+				
 				JDialog dialog = new JDialog(parent, "Файл юстировки");
 				dialog.getContentPane().add(zcvp);
 				dialog.pack();

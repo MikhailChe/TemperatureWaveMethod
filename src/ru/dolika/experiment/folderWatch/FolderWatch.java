@@ -20,7 +20,7 @@ import javax.swing.JPanel;
 
 import ru.dolika.debug.Debug;
 import ru.dolika.debug.JExceptionHandler;
-import ru.dolika.experiment.Analyzer.ExperimentComputer;
+import ru.dolika.experiment.Analyzer.TWMComputer;
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.measurement.MeasurementViewer;
 import ru.dolika.experiment.measurement.TemperatureConductivity;
@@ -136,7 +136,7 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 	}
 
 	public void updateValuesForFile(File f) {
-		ExperimentComputer exc = new ExperimentComputer(f, workspace);
+		TWMComputer exc = new TWMComputer(f, workspace);
 		Measurement m = exc.call();
 		if (m.temperature == null || m.temperature.isEmpty()) {
 			signalLevelLabel.setText("Температура неизвестна");

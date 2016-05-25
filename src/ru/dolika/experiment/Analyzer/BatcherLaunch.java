@@ -1,6 +1,7 @@
 ﻿package ru.dolika.experiment.Analyzer;
 
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.io.File;
 
 import javax.swing.JFileChooser;
@@ -17,23 +18,23 @@ import ru.dolika.ui.MemorableDirectoryChooser;
  * 
  */
 public class BatcherLaunch implements Runnable {
-	private Workspace workspace = null;
-	private JFrame parent = null;
+	private Window parent = null;
 
-	public BatcherLaunch(JFrame parent, Workspace ws) {
-
+	public BatcherLaunch(JFrame parent) {
 		this.parent = parent;
-		workspace = ws;
 	}
 
 	@Override
 	public void run() {
+		Workspace workspace = Workspace.getInstance();
+
 		if (workspace.getSample() == null) {
 			JOptionPane.showMessageDialog(parent,
 					"Не был выбран файл образца.\nПожалуйста закройте это окно и выберите образец или создайте новый",
 					"Ошибка образца", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
+
 		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(this.getClass());
 		fileChooser.setDialogTitle("Выберите папку с данными");
 
@@ -49,15 +50,15 @@ public class BatcherLaunch implements Runnable {
 
 			for (File folder : folders) {
 				pm.setNote(folder.getName());
-				ExperimentComputer.computeFolder(folder, workspace, parent);
+				TWMComputer.computeFolder(folder, workspace, parent);
 				pm.setProgress(progress++);
 				if (pm.isCanceled()) {
 					break;
 				}
 			}
 			pm.close();
+
+			Toolkit.getDefaultToolkit().beep();
 		}
-		Toolkit.getDefaultToolkit().beep();
-		workspace = null;
 	}
 }

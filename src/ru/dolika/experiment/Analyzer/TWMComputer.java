@@ -1,6 +1,7 @@
 package ru.dolika.experiment.Analyzer;
 
 import java.awt.Desktop;
+import java.awt.Window;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +15,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
@@ -30,7 +30,7 @@ import ru.dolika.experiment.signalID.SignalIdentifier;
 import ru.dolika.experiment.workspace.Workspace;
 import ru.dolika.experiment.zeroCrossing.ZeroCrossing;
 
-public class ExperimentComputer implements Callable<Measurement> {
+public class TWMComputer implements Callable<Measurement> {
 
 	public double truncatePositive(double value) {
 		while (value < 0) {
@@ -42,7 +42,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		return value;
 	}
 
-	public static ArrayList<Measurement> computeFolder(File folder, Workspace workspace, JFrame parent) {
+	public static ArrayList<Measurement> computeFolder(File folder, Workspace workspace, Window parent) {
 		if (!folder.isDirectory())
 			return null;
 		if (!folder.exists())
@@ -73,7 +73,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
 		pm.setMillisToDecideToPopup(1000);
 		pm.setMaximum(files.size());
-		files.forEach(f -> futuresSet.add(pool.submit(new ExperimentComputer(f, workspace))));
+		files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f, workspace))));
 
 		int currentProgress = 0;
 		boolean header = true;
@@ -191,7 +191,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 
 	SignalIdentifier[] SHIFTS;
 
-	public ExperimentComputer(File filename, Workspace workspace) {
+	public TWMComputer(File filename, Workspace workspace) {
 		this.file = filename;
 		this.workspace = workspace;
 		ArrayList<SignalIdentifier> signalIDs;
