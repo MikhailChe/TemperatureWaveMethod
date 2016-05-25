@@ -87,7 +87,7 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 		temperaturePanel.setBorder(BorderFactory.createTitledBorder("Температура"));
 		temperaturePanel.add(temperatureLabel);
 
-		numbersContainer.setLayout(new GridLayout(3, 2, 16, 16));
+		numbersContainer.setLayout(new GridLayout(0, 2, 16, 16));
 
 		numbersContainer.add(signalLevelPanel);
 		numbersContainer.add(temperaturePanel);
