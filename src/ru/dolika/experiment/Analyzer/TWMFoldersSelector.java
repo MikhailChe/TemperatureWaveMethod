@@ -51,7 +51,7 @@ public class TWMFoldersSelector implements Runnable {
 
 			for (File folder : folders) {
 				pm.setNote(folder.getName());
-				TWMComputer.computeFolder(folder, workspace, parent);
+				TWMComputer.computeFolder(folder, parent);
 				pm.setProgress(progress++);
 				if (pm.isCanceled()) {
 					break;

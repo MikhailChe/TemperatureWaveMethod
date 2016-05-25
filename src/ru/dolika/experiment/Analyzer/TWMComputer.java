@@ -32,6 +32,10 @@ import ru.dolika.experiment.zeroCrossing.ZeroCrossing;
 
 public class TWMComputer implements Callable<Measurement> {
 
+	/**
+	 * @param value
+	 * @return positive angle (from 0 to 2 * Pi)
+	 */
 	public double truncatePositive(double value) {
 		while (value < 0) {
 			value += Math.PI * 2.0;
@@ -42,7 +46,7 @@ public class TWMComputer implements Callable<Measurement> {
 		return value;
 	}
 
-	public static ArrayList<Measurement> computeFolder(File folder, Workspace workspace, Window parent) {
+	public static ArrayList<Measurement> computeFolder(File folder, Window parent) {
 		if (!folder.isDirectory())
 			return null;
 		if (!folder.exists())
@@ -73,7 +77,7 @@ public class TWMComputer implements Callable<Measurement> {
 		ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
 		pm.setMillisToDecideToPopup(1000);
 		pm.setMaximum(files.size());
-		files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f, workspace))));
+		files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f))));
 
 		int currentProgress = 0;
 		boolean header = true;
@@ -82,6 +86,7 @@ public class TWMComputer implements Callable<Measurement> {
 			try {
 				Measurement answer = future.get();
 				if (answer != null) {
+					Workspace workspace = Workspace.getInstance();
 					Sample sample;
 					if ((sample = workspace.getSample()) != null) {
 						measurements.add(answer);
@@ -191,9 +196,9 @@ public class TWMComputer implements Callable<Measurement> {
 
 	SignalIdentifier[] SHIFTS;
 
-	public TWMComputer(File filename, Workspace workspace) {
+	public TWMComputer(File filename) {
 		this.file = filename;
-		this.workspace = workspace;
+		this.workspace = Workspace.getInstance();
 		ArrayList<SignalIdentifier> signalIDs;
 		if ((signalIDs = workspace.getSignalIDs()) != null) {
 			if (signalIDs.size() > 0) {
