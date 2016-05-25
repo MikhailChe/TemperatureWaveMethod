@@ -25,7 +25,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import ru.dolika.debug.JExceptionHandler;
-import ru.dolika.experiment.Analyzer.ExperimentReader;
+import ru.dolika.experiment.Analyzer.ExperimentFileReader;
 import ru.dolika.experiment.Analyzer.FFT;
 
 public class AngstremCombinedPlane extends JPanel {
@@ -114,9 +114,9 @@ public class AngstremCombinedPlane extends JPanel {
 	}
 
 	public void calculateResult(long measurementPeriod, long mesaurementInterval, long measurementDistance, Path file) {
-		ExperimentReader ereader = null;
+		ExperimentFileReader ereader = null;
 		try {
-			ereader = new ExperimentReader(file);
+			ereader = new ExperimentFileReader(file);
 		} catch (IOException e) {
 			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();

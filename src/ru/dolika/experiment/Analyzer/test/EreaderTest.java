@@ -9,14 +9,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import ru.dolika.experiment.Analyzer.ExperimentReader;
+import ru.dolika.experiment.Analyzer.ExperimentFileReader;
 
 public class EreaderTest {
-	static ExperimentReader reader;
+	static ExperimentFileReader reader;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		reader = new ExperimentReader(
+		reader = new ExperimentFileReader(
 				new File(EreaderTest.class.getResource("temperatureWaveTestSignal.txt").getFile()).toPath());
 	}
 

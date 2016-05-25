@@ -204,13 +204,13 @@ public class TWMComputer implements Callable<Measurement> {
 	}
 
 	public Measurement call() {
-		ExperimentReader reader = null;
+		ExperimentFileReader reader = null;
 		result = new Measurement();
 
 		// Set high priority to read the file
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		try {
-			reader = new ExperimentReader(file.toPath());
+			reader = new ExperimentFileReader(file.toPath());
 		} catch (Exception e) {
 			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();

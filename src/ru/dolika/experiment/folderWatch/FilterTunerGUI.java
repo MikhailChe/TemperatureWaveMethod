@@ -15,7 +15,7 @@ import javax.swing.SwingUtilities;
 
 import ru.dolika.debug.Debug;
 import ru.dolika.debug.JExceptionHandler;
-import ru.dolika.experiment.Analyzer.ExperimentReader;
+import ru.dolika.experiment.Analyzer.ExperimentFileReader;
 import ru.dolika.experiment.Analyzer.FFT;
 import ru.dolika.ui.MemorableDirectoryChooser;
 
@@ -107,7 +107,7 @@ public class FilterTunerGUI extends JDialog implements Runnable, WindowListener 
 		try {
 			if (Debug.debug)
 				System.out.println("Updating values for file " + f.toString());
-			ExperimentReader reader = new ExperimentReader(f.toPath());
+			ExperimentFileReader reader = new ExperimentFileReader(f.toPath());
 			double[] data = reader.getCroppedData()[selectedChannel];
 			int minIndex = FFT.getIndex(0, reader.getExperimentFrequency() * 1000, data.length);
 			int maxIndex = FFT.getIndex(400, reader.getExperimentFrequency() * 1000, data.length);

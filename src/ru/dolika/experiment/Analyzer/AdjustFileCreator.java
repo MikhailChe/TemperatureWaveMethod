@@ -69,7 +69,7 @@ public class AdjustFileCreator implements Runnable {
 					for (int i = 0; i < files.length; i++) {
 						File file = files[i];
 
-						ExperimentReader reader = new ExperimentReader(file.toPath());
+						ExperimentFileReader reader = new ExperimentFileReader(file.toPath());
 						double[][] croppedData = reader.getCroppedData();
 						if (channelNumber >= croppedData.length) {
 							JOptionPane.showMessageDialog(parent,

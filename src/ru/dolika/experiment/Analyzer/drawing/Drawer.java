@@ -15,7 +15,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
-import ru.dolika.experiment.Analyzer.ExperimentReader;
+import ru.dolika.experiment.Analyzer.ExperimentFileReader;
 import ru.dolika.experiment.Analyzer.FFT;
 import ru.dolika.ui.MemorableDirectoryChooser;
 
@@ -37,10 +37,10 @@ public class Drawer {
 		return selectedFile;
 	}
 
-	public static ExperimentReader getEreader(Path selectedFile) {
-		ExperimentReader ereader;
+	public static ExperimentFileReader getEreader(Path selectedFile) {
+		ExperimentFileReader ereader;
 		try {
-			ereader = new ExperimentReader(selectedFile);
+			ereader = new ExperimentFileReader(selectedFile);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
@@ -48,7 +48,7 @@ public class Drawer {
 		return ereader;
 	}
 
-	public static void openNewTabs(ExperimentReader reader, JDrawingTabsPlane plane) {
+	public static void openNewTabs(ExperimentFileReader reader, JDrawingTabsPlane plane) {
 		if (reader == null) {
 			return;
 		}
@@ -89,7 +89,7 @@ public class Drawer {
 			if (selectedFile == null) {
 				System.exit(0);
 			}
-			ExperimentReader ereader = getEreader(selectedFile);
+			ExperimentFileReader ereader = getEreader(selectedFile);
 			if (ereader == null) {
 				System.exit(0);
 			}
@@ -113,7 +113,7 @@ public class Drawer {
 		fileOpenMenuItem.addActionListener(e -> {
 			Path selectedFile = fileOpen(args, frame);
 			if (selectedFile != null) {
-				ExperimentReader ereader = getEreader(selectedFile);
+				ExperimentFileReader ereader = getEreader(selectedFile);
 				openNewTabs(ereader, main);
 			}
 		});

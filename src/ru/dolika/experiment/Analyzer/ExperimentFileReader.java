@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
-public class ExperimentReader {
+public class ExperimentFileReader {
 	private String[] headerInfo;
 	private double experimentFrequecny;
 	private double[][] initialData;
@@ -20,7 +20,7 @@ public class ExperimentReader {
 	private Vector<Integer> indicies = null;
 	private int leastSpace = Integer.MAX_VALUE;
 
-	public ExperimentReader(Path filepath) throws IOException {
+	public ExperimentFileReader(Path filepath) throws IOException {
 		List<String> strings = null;
 
 		strings = Files.readAllLines(filepath, StandardCharsets.UTF_8);
