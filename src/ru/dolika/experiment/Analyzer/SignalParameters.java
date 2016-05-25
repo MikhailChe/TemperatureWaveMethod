@@ -10,11 +10,11 @@ public class SignalParameters implements Serializable, Cloneable {
 	final public double nullOffset;
 
 	public SignalParameters() {
-		this(0, 0, 0);
+		this(0);
 	}
 
 	public SignalParameters(double phase) {
-		this(phase, 0, 0);
+		this(phase, 0);
 	}
 
 	public SignalParameters(double phase, double amplitude) {
