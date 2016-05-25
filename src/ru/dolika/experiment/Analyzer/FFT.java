@@ -1,5 +1,13 @@
 package ru.dolika.experiment.Analyzer;
 
+/**
+ * @author Mikhail
+ *
+ */
+/**
+ * @author Mikhail
+ *
+ */
 public class FFT {
 
 	public static double[] getFourierForIndex(double[] realData, int index) {
@@ -13,52 +21,94 @@ public class FFT {
 		return new double[] { real, imag };
 	}
 
-	public static double[] getReal(double[] array) {
-		double[] real = new double[array.length / 2];
+	/**
+	 * @param fftdata
+	 * @return array of real parts of fftdata array
+	 */
+	public static double[] getReal(double[] fftdata) {
+		double[] real = new double[fftdata.length / 2];
 		for (int i = 0; i < real.length; i++) {
-			real[i] = array[2 * i];
+			real[i] = fftdata[2 * i];
 
 		}
 		return real;
 	}
 
-	public static double[] getImag(double[] array) {
-		double[] imag = new double[array.length / 2];
+	/**
+	 * @param fftdata
+	 * @return array of imaginary parts of fftdata array
+	 */
+	public static double[] getImag(double[] fftdata) {
+		double[] imag = new double[fftdata.length / 2];
 		for (int i = 0; i < imag.length; i++) {
-			imag[i] = array[2 * i + 1];
+			imag[i] = fftdata[2 * i + 1];
 		}
 		return imag;
 	}
 
-	public static double getArgument(double[] input, int index) {
-		return Math.atan2(input[index * 2 + 1], input[index * 2]);
+	/**
+	 * @param fftdata
+	 * @param index
+	 * @return argument (phase) for <b>index</b>th element of fftdata
+	 */
+	public static double getArgument(double[] fftdata, int index) {
+		if (fftdata == null)
+			return 0;
+		return Math.atan2(fftdata[index * 2 + 1], fftdata[index * 2]);
 	}
 
-	public static double getAbs(double[] input, int index) {
-		if (input == null)
+	/**
+	 * @param fftdata
+	 * @param index
+	 * @return abs (absolute value) for <b>index</b>th element of fftdata
+	 */
+	public static double getAbs(double[] fftdata, int index) {
+		if (fftdata == null)
 			return 0;
 
-		return Math.sqrt(input[index * 2] * input[index * 2]
-				+ input[index * 2 + 1] * input[index * 2 + 1]);
+		return Math.sqrt(fftdata[index * 2] * fftdata[index * 2] + fftdata[index * 2 + 1] * fftdata[index * 2 + 1]);
 	}
 
-	public static double[] getAbs(double[] input) {
-		double[] output = new double[input.length / 2];
+	/**
+	 * @param fftdata
+	 * @return array of absolute values for fftdata
+	 */
+	public static double[] getAbs(double[] fftdata) {
+		double[] output = new double[fftdata.length / 2];
 		for (int i = 0; i < output.length; i++) {
-			output[i] = Math.sqrt(input[i * 2] * input[i * 2]
-					+ input[i * 2 + 1] * input[i * 2 + 1]);
+			output[i] = Math.sqrt(fftdata[i * 2] * fftdata[i * 2] + fftdata[i * 2 + 1] * fftdata[i * 2 + 1]);
 		}
 		return output;
 	}
 
-	public static double getFreqency(int index, double sampleRate, int maxIndex) {
-		return sampleRate * index / maxIndex;
+	/**
+	 * @param fftindex
+	 * @param sampleRate
+	 * @param maxIndex
+	 *            maximum index of FFT, meaning that at this index frequency
+	 *            should be equal to sampleRate
+	 * @return frequency of fftindex according to sampleRate and maxIndex;
+	 */
+	public static double getFreqency(int fftindex, double sampleRate, int maxIndex) {
+		return sampleRate * fftindex / maxIndex;
 	}
 
+	/**
+	 * @param freq
+	 * @param sampleRate
+	 * @param maxIndex
+	 * @return fft index for particular <b>freq</b>uency at a particular sample
+	 *         rate
+	 */
 	public static int getIndex(double freq, double sampleRate, int maxIndex) {
 		return (int) Math.round(freq * maxIndex / sampleRate);
 	}
 
+	/**
+	 * @param input
+	 * @return array of some sort of fft data (like absolute values) without
+	 *         mirroring effect
+	 */
 	public static double[] normalizeArray(double[] input) {
 		double[] output = new double[input.length / 2];
 		output[0] = input[0] / input.length;
