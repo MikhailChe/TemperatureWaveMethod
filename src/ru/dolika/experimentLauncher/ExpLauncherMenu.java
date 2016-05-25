@@ -14,7 +14,7 @@ import javax.swing.SwingConstants;
 import ru.dolika.debug.Debug;
 import ru.dolika.debug.JExceptionHandler;
 import ru.dolika.experiment.Analyzer.AdjustFileCreator;
-import ru.dolika.experiment.Analyzer.BatcherLaunch;
+import ru.dolika.experiment.Analyzer.TWMFoldersSelector;
 import ru.dolika.experiment.folderWatch.FilterTunerGUI;
 import ru.dolika.experiment.folderWatch.FolderWatch;
 import ru.dolika.experiment.sample.Sample;
@@ -157,7 +157,7 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		JMenuItem toolsDirectoryDiffusivity = new JMenuItem("Произвести вычисления");
 		toolsDirectoryDiffusivity.addActionListener(e -> {
-			new Thread(new BatcherLaunch(parent)).start();
+			new Thread(new TWMFoldersSelector(parent)).start();
 		});
 		toolsMenu.add(toolsDirectoryDiffusivity);
 

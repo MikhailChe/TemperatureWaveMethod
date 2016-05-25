@@ -17,10 +17,10 @@ import ru.dolika.ui.MemorableDirectoryChooser;
  * @author Mikey
  * 
  */
-public class BatcherLaunch implements Runnable {
+public class TWMFoldersSelector implements Runnable {
 	private Window parent = null;
 
-	public BatcherLaunch(JFrame parent) {
+	public TWMFoldersSelector(JFrame parent) {
 		this.parent = parent;
 	}
 
@@ -44,6 +44,7 @@ public class BatcherLaunch implements Runnable {
 			File[] folders = fileChooser.getSelectedFiles();
 			ProgressMonitor pm = new ProgressMonitor(parent, "Анализ файлов в папке", "Идёт вычисление измерений", 0,
 					folders.length);
+
 			pm.setMillisToDecideToPopup(1000);
 			int progress = 0;
 			pm.setProgress(progress++);
