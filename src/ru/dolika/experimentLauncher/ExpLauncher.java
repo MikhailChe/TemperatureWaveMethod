@@ -28,7 +28,6 @@ public class ExpLauncher extends JFrame {
 
 	final private Workspace workspace;
 	JLabel statusBar;
-
 	JPanel contentPanel;
 
 	public void createAndShowGUI() {
