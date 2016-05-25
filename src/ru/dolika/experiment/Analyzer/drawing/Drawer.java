@@ -26,7 +26,6 @@ public class Drawer {
 		if (args.length == 0) {
 			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(Drawer.class);
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-
 			if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
 				selectedFile = chooser.getSelectedFile().toPath();
 			} else {

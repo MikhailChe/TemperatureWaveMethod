@@ -1,5 +1,6 @@
 package ru.dolika.experiment.workspace;
 
+import static ru.dolika.debug.Debug.debug;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,8 +24,6 @@ public class Workspace implements Serializable {
 	private static final long serialVersionUID = -2757711622043028895L;
 	private static Workspace instance = null;
 	final static String defaultWorkspace = "workspace.expws";
-
-	public static boolean debug = true;
 
 	public synchronized static Workspace getInstance() {
 		if (instance == null) {

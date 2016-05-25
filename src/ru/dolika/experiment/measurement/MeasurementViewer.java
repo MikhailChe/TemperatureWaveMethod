@@ -11,11 +11,8 @@ import javax.swing.JPanel;
 import javax.swing.border.SoftBevelBorder;
 
 public class MeasurementViewer extends JPanel {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 3555290921726804677L;
-	ArrayList<Measurement> measurements;
+	final ArrayList<Measurement> measurements;
 
 	public MeasurementViewer() {
 		super();
@@ -41,7 +38,6 @@ public class MeasurementViewer extends JPanel {
 		if (m.temperature.get(0).value < minTemp) {
 			minTemp = m.temperature.get(0).value;
 		}
-
 		for (TemperatureConductivity tc : m.tCond) {
 			if (tc.tCond > maxTcond)
 				maxTcond = tc.tCond;
@@ -55,11 +51,11 @@ public class MeasurementViewer extends JPanel {
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		Graphics2D g2d = (Graphics2D)g;
+		Graphics2D g2d = (Graphics2D) g;
 		g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		
+
 		paintComponent(g2d);
 	}
 
@@ -68,8 +64,7 @@ public class MeasurementViewer extends JPanel {
 
 	double minTemp = 9999, maxTemp = 0, minTcond = 1E-4, maxTcond = 0;
 
-	private double map(double val, double min1, double max1, double min2,
-			double max2) {
+	private double map(double val, double min1, double max1, double min2, double max2) {
 		return (val - min1) / (max1 - min1) * (max2 - min2) + min2;
 	}
 
@@ -79,14 +74,12 @@ public class MeasurementViewer extends JPanel {
 		double scMinTcond = Math.max(sanityMinTcond, minTcond);
 		double scMaxTcond = Math.min(sanityMaxTcond, maxTcond);
 		for (Measurement mes : measurements) {
-			int xScreen = (int) map(mes.temperature.get(0).value, minTemp,
-					maxTemp, 0.1 * componentWidth, 0.9 * componentWidth);
+			int xScreen = (int) map(mes.temperature.get(0).value, minTemp, maxTemp, 0.1 * componentWidth,
+					0.9 * componentWidth);
 			for (int i = 0; i < mes.tCond.size(); i++) {
 				TemperatureConductivity tc = mes.tCond.get(i);
-				int yScreen = (int) map(tc.tCond, scMinTcond, scMaxTcond,
-						0.9 * componentHeight, 0.1 * componentHeight);
-				g.setColor(Color.getHSBColor(
-						(float) i / (float) mes.tCond.size(), 1, 1));
+				int yScreen = (int) map(tc.tCond, scMinTcond, scMaxTcond, 0.9 * componentHeight, 0.1 * componentHeight);
+				g.setColor(Color.getHSBColor((float) i / (float) mes.tCond.size(), 1, 1));
 				g.fillOval(xScreen - 3, yScreen - 3, 6, 6);
 			}
 		}
