@@ -21,7 +21,7 @@ import ru.dolika.ui.MemorableDirectoryChooser;
 
 public class Drawer {
 
-	public static Path fileOpen(String[] args, Component parent) {
+	public static Path choosePath(String[] args, Component parent) {
 		Path selectedFile = null;
 		if (args.length == 0) {
 			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(Drawer.class);
@@ -85,7 +85,7 @@ public class Drawer {
 		JDrawingTabsPlane main = new JDrawingTabsPlane();
 
 		if (args.length > 0) {
-			Path selectedFile = fileOpen(args, frame);
+			Path selectedFile = choosePath(args, frame);
 			if (selectedFile == null) {
 				System.exit(0);
 			}
@@ -111,7 +111,7 @@ public class Drawer {
 		fileMenu.add(fileOpenMenuItem);
 
 		fileOpenMenuItem.addActionListener(e -> {
-			Path selectedFile = fileOpen(args, frame);
+			Path selectedFile = choosePath(args, frame);
 			if (selectedFile != null) {
 				ExperimentFileReader ereader = getEreader(selectedFile);
 				openNewTabs(ereader, main);

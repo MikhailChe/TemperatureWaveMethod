@@ -39,25 +39,21 @@ public class AngstremCombinedPlane extends JPanel {
 		super();
 		setLayout(new GridLayout(5, 2, 5, 5));
 
-		// ���� �������
 		JFormattedTextField periodSeconds = new JFormattedTextField(NumberFormat.getInstance());
 		periodSeconds.setText("86400");
 		add(new JLabel("Общий период измерений (секунды)"));
 		add(periodSeconds);
 
-		// ���� ��������� ����������
 		JFormattedTextField intervalSeconds = new JFormattedTextField(NumberFormat.getInstance());
 		intervalSeconds.setText("1800");
 		add(new JLabel("Интервал между измерениями (секунды)"));
 		add(intervalSeconds);
 
-		// ���������� ����� ���������
 		JFormattedTextField distanceMilimeters = new JFormattedTextField(NumberFormat.getInstance());
 		distanceMilimeters.setText("200");
 		add(new JLabel("Расстояние между датчиками (мм)"));
 		add(distanceMilimeters);
 
-		// ����� �����
 		JFileChooser fileChooser = new JFileChooser();
 		JButton fileChooserOpenButton = new JButton("Открыть...");
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -74,7 +70,6 @@ public class AngstremCombinedPlane extends JPanel {
 		add(fileChooserOpenButton);
 		add(chosenFileName);
 
-		// ���������
 		add(new JLabel());
 		JButton calculateButton = new JButton("Выполнить расчёты");
 

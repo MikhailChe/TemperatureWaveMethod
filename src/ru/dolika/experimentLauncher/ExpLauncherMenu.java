@@ -8,14 +8,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JSeparator;
-import javax.swing.SwingConstants;
 
 import ru.dolika.debug.Debug;
 import ru.dolika.debug.JExceptionHandler;
 import ru.dolika.experiment.Analyzer.AdjustFileCreator;
 import ru.dolika.experiment.Analyzer.TWMFoldersSelector;
-import ru.dolika.experiment.folderWatch.FilterTunerGUI;
+import ru.dolika.experiment.Analyzer.Angstrem.AngstremAnalyzer;
 import ru.dolika.experiment.folderWatch.FolderWatch;
 import ru.dolika.experiment.sample.Sample;
 import ru.dolika.experiment.sample.SampleFactory;
@@ -171,18 +169,7 @@ public class ExpLauncherMenu extends JMenuBar {
 		});
 		toolsMenu.add(toolsWatchFolder);
 
-		JMenuItem toolsFilterTuner = new JMenuItem("Настроить фильтр");
-		toolsFilterTuner.addActionListener(e -> {
-			try {
-				FilterTunerGUI fw = new FilterTunerGUI(parent);
-				fw.setVisible(true);
-			} catch (Exception exception) {
-
-			}
-		});
-		toolsMenu.add(toolsFilterTuner);
-
-		toolsMenu.add(new JSeparator(SwingConstants.HORIZONTAL));
+		toolsMenu.addSeparator();
 
 		JMenuItem convertTemperature = new JMenuItem("Преобразовать температуру");
 		convertTemperature.addActionListener(e -> {
@@ -227,5 +214,12 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		});
 		settingsMenu.add(sampleSettings);
+
+		JMenu angstromMenu = new JMenu("Ангстрем");
+		this.add(angstromMenu);
+
+		JMenuItem angstromCompute = new JMenuItem("МТВ Ангстрема");
+		angstromCompute.addActionListener(e -> new AngstremAnalyzer());
+		angstromMenu.add(angstromCompute);
 	}
 }

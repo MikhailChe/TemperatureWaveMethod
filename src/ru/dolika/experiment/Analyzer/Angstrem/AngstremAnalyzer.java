@@ -7,12 +7,6 @@ public class AngstremAnalyzer extends JFrame {
 
 	private static final long serialVersionUID = -3723796085767048840L;
 
-	public static void main(String[] args) {
-
-		new AngstremAnalyzer();
-
-	}
-
 	public AngstremAnalyzer() {
 		super("Анализатор температуропроводности по методу Ангстрема");
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
