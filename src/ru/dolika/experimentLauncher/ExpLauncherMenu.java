@@ -155,11 +155,11 @@ public class ExpLauncherMenu extends JMenuBar {
 		});
 		toolsMenu.add(prepareGrads);
 
-		JMenuItem toolsDofiles = new JMenuItem("Произвести измерения");
-		toolsDofiles.addActionListener(e -> {
+		JMenuItem toolsDirectoryDiffusivity = new JMenuItem("Произвести вычисления");
+		toolsDirectoryDiffusivity.addActionListener(e -> {
 			new Thread(new BatcherLaunch(parent, workspace)).start();
 		});
-		toolsMenu.add(toolsDofiles);
+		toolsMenu.add(toolsDirectoryDiffusivity);
 
 		JMenuItem toolsWatchFolder = new JMenuItem("Следить за папкой");
 		toolsWatchFolder.addActionListener(event -> {
@@ -192,6 +192,7 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		JMenu settingsMenu = new JMenu("Настройки");
 		this.add(settingsMenu);
+		
 		JMenuItem chooseChannels = new JMenuItem("Выбрать каналы");
 		chooseChannels.addActionListener(e -> {
 			if (workspace.getSignalIDs() != null) {
@@ -207,6 +208,7 @@ public class ExpLauncherMenu extends JMenuBar {
 			sidsd.setVisible(true);
 		});
 		settingsMenu.add(chooseChannels);
+		
 		JMenuItem sampleSettings = new JMenuItem("Настройки образца");
 		sampleSettings.addActionListener(e -> {
 			try {
