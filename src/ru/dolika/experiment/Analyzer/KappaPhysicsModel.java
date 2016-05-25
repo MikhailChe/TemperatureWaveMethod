@@ -1,6 +1,6 @@
 package ru.dolika.experiment.Analyzer;
 
-public class PhysicsModel {
+public class KappaPhysicsModel {
 
 	static double Bio = 0.4;
 

@@ -22,7 +22,6 @@ public class ExperimentFileReader {
 
 	public ExperimentFileReader(Path filepath) throws IOException {
 		List<String> strings = null;
-
 		strings = Files.readAllLines(filepath, StandardCharsets.UTF_8);
 
 		if (strings == null) {
