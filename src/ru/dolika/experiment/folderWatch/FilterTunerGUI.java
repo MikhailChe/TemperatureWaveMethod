@@ -13,6 +13,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import ru.dolika.debug.Debug;
 import ru.dolika.experiment.Analyzer.ExperimentReader;
 import ru.dolika.experiment.Analyzer.FFT;
 import ru.dolika.ui.MemorableDirectoryChooser;
@@ -99,7 +100,8 @@ public class FilterTunerGUI extends JDialog implements Runnable, WindowListener 
 
 	public void updateValuesForFile(File f) {
 		try {
-			System.out.println("Updating values for file " + f.toString());
+			if (Debug.debug)
+				System.out.println("Updating values for file " + f.toString());
 			ExperimentReader reader = new ExperimentReader(f.toPath());
 			double[] data = reader.getCroppedData()[selectedChannel];
 			int minIndex = FFT.getIndex(0, reader.getExperimentFrequency() * 1000, data.length);
@@ -111,9 +113,11 @@ public class FilterTunerGUI extends JDialog implements Runnable, WindowListener 
 			for (int i = minIndex; i < maxIndex; i++) {
 				fourierAbs[i - minIndex] = FFT.getAbs(FFT.getFourierForIndex(data, i), 0);
 			}
-			System.out.println("Fourier done");
+			if (Debug.debug)
+				System.out.println("Fourier done");
 			measurementViewer = new LogPointDrawer(fourierAbs);
-			System.out.println("Component created");
+			if (Debug.debug)
+				System.out.println("Component created");
 			this.getContentPane().removeAll();
 			this.getContentPane().add(measurementViewer);
 			this.repaint();

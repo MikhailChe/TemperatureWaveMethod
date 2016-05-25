@@ -17,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import ru.dolika.debug.Debug;
 import ru.dolika.experiment.Analyzer.ExperimentComputer;
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.measurement.MeasurementViewer;
@@ -143,7 +144,8 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 		}
 		ArrayList<TemperatureConductivity> tConds = m.tCond;
 		if (tConds.size() != tCondPanels.size()) {
-			System.out.println("Sizes differ");
+			if (Debug.debug)
+				System.out.println("Sizes differ");
 			for (JTDiffLabelSet set : tCondPanels) {
 				numbersContainer.remove(set);
 			}

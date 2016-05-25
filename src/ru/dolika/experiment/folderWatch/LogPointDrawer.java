@@ -6,6 +6,8 @@ import java.awt.Graphics;
 
 import javax.swing.JPanel;
 
+import ru.dolika.debug.Debug;
+
 public class LogPointDrawer extends JPanel {
 
 	/**
@@ -38,7 +40,8 @@ public class LogPointDrawer extends JPanel {
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		System.out.println("paint component");
+		if (Debug.debug)
+			System.out.println("paint component");
 		final int componentWidth = getWidth();
 		final int componentHeight = getHeight();
 		g.setColor(Color.black);

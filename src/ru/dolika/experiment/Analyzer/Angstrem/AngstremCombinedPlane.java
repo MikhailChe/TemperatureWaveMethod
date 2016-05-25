@@ -4,6 +4,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -208,15 +209,16 @@ public class AngstremCombinedPlane extends JPanel {
 		return (omega * (l * l)) / (2.0 * ((phi) * (phi)));
 	}
 
-	public void outputCalculatedSineWave(double[][][] subdividedData, int totalAmountOfPeriods, double[][][] fftVals) {
+	public void outputCalculatedSineWave(final double[][][] subdividedData, final int totalAmountOfPeriods,
+			final double[][][] fftVals, final PrintStream out) {
 		for (int periodNumber = 0; periodNumber < fftVals[0].length; periodNumber++) {
 			for (int sample = 0; sample < subdividedData[0][periodNumber].length; sample++) {
-				System.out.println();
+				out.println();
 				for (int channel = 0; channel < fftVals.length; channel++) {
 					double val = Math.cos(2.0 * Math.PI * (totalAmountOfPeriods / subdividedData[channel].length)
 							* sample / subdividedData[channel][periodNumber].length
 							+ fftVals[channel][periodNumber][ARG]) * 100;
-					System.out.print(val + "\t");
+					out.print(val + "\t");
 				}
 			}
 		}

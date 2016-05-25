@@ -13,6 +13,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
+import ru.dolika.debug.Debug;
 import ru.dolika.experiment.sample.Sample;
 import ru.dolika.experiment.workspace.Workspace;
 
@@ -20,7 +21,8 @@ public class ExpLauncher extends JFrame {
 	private static final long serialVersionUID = 5151838479190943050L;
 
 	public static void main(String[] args) {
-		System.out.println("public static void main(String[] args)");
+		if (Debug.debug)
+			System.out.println("public static void main(String[] args)");
 		new ExpLauncher();
 	}
 
