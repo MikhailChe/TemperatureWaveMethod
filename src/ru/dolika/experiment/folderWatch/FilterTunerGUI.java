@@ -14,6 +14,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import ru.dolika.debug.Debug;
+import ru.dolika.debug.JExceptionHandler;
 import ru.dolika.experiment.Analyzer.ExperimentReader;
 import ru.dolika.experiment.Analyzer.FFT;
 import ru.dolika.ui.MemorableDirectoryChooser;
@@ -37,8 +38,12 @@ public class FilterTunerGUI extends JDialog implements Runnable, WindowListener 
 		SwingUtilities.invokeLater(() -> {
 
 			try {
-				selectedChannel = Integer.parseInt(JOptionPane.showInputDialog("Input channel number"));
+				String reply = JOptionPane.showInputDialog("Input channel number");
+				if (reply != null) {
+					selectedChannel = Integer.parseInt(reply);
+				}
 			} catch (Exception e) {
+				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 				e.printStackTrace();
 			}
 			if (selectedChannel == null) {
@@ -125,6 +130,7 @@ public class FilterTunerGUI extends JDialog implements Runnable, WindowListener 
 			this.pack();
 
 		} catch (IOException e) {
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 		}
 	}
@@ -141,6 +147,7 @@ public class FilterTunerGUI extends JDialog implements Runnable, WindowListener 
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
+				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 				e.printStackTrace();
 			}
 		}

@@ -18,6 +18,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
+import ru.dolika.debug.JExceptionHandler;
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.measurement.Temperature;
 import ru.dolika.experiment.measurement.TemperatureConductivity;
@@ -51,7 +52,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		files.addAll(Arrays.asList(folder.listFiles(pathname -> {
 			return pathname.getName().matches("^[0-9]+.txt$");
 		})));
-		
+
 		if (files.size() <= 0)
 			return null;
 		BufferedWriter bw = null;
@@ -61,6 +62,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		try {
 			bw = Files.newBufferedWriter(resultFile.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
 		} catch (IOException e1) {
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 			e1.printStackTrace();
 		}
 		if (bw == null)
@@ -96,6 +98,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 				}
 				pm.setProgress(++currentProgress);
 			} catch (InterruptedException | ExecutionException | IOException e) {
+				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 				e.printStackTrace();
 			}
 		}
@@ -106,12 +109,14 @@ public class ExperimentComputer implements Callable<Measurement> {
 			bw.flush();
 			bw.close();
 		} catch (IOException e) {
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 		}
 		if (Desktop.isDesktopSupported()) {
 			try {
 				Desktop.getDesktop().open(resultFile);
 			} catch (IOException e) {
+				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 				e.printStackTrace();
 			}
 		}
@@ -130,6 +135,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 					try {
 						Files.delete(resultFile.toPath());
 					} catch (java.nio.file.FileSystemException e) {
+						JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 						e.printStackTrace();
 						exception = true;
 
@@ -143,12 +149,14 @@ public class ExperimentComputer implements Callable<Measurement> {
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e1) {
+							JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 							e1.printStackTrace();
 						}
 					}
 				} while (exception);
 			}
 		} catch (IOException e) {
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 			return null;
 		}
@@ -204,6 +212,7 @@ public class ExperimentComputer implements Callable<Measurement> {
 		try {
 			reader = new ExperimentReader(file.toPath());
 		} catch (Exception e) {
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 			return result;
 		}

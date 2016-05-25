@@ -7,6 +7,8 @@ import java.util.prefs.Preferences;
 
 import javax.swing.JFileChooser;
 
+import ru.dolika.debug.JExceptionHandler;
+
 public class MemorableDirectoryChooser extends JFileChooser {
 
 	/**
@@ -29,6 +31,7 @@ public class MemorableDirectoryChooser extends JFileChooser {
 		try {
 			prefs = Preferences.userNodeForPackage(classname);
 		} catch (Exception e) {
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 			return;
 		}
@@ -43,6 +46,7 @@ public class MemorableDirectoryChooser extends JFileChooser {
 						// setSelectedFile(dir);
 					}
 				} catch (Exception e) {
+					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 					e.printStackTrace();
 				}
 			}
@@ -65,11 +69,13 @@ public class MemorableDirectoryChooser extends JFileChooser {
 				try {
 					prefs.put(LAST_FOLDER, f.toString());
 				} catch (Exception e) {
+					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 					e.printStackTrace();
 				}
 				try {
 					prefs.flush();
 				} catch (Exception e) {
+					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 					e.printStackTrace();
 				}
 			}

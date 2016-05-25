@@ -14,6 +14,8 @@ import java.util.TreeMap;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import ru.dolika.debug.JExceptionHandler;
+
 /**
  * 
  * Класс градуировки термопары. Предполагается, что значение термо-ЭДС вводится
@@ -166,6 +168,7 @@ public class Graduate implements Serializable {
 			oos.flush();
 			oos.close();
 		} catch (Exception e) {
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 		}
 	}

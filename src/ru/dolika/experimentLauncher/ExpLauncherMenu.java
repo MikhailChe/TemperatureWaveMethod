@@ -11,6 +11,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
+import ru.dolika.debug.Debug;
+import ru.dolika.debug.JExceptionHandler;
 import ru.dolika.experiment.Analyzer.AdjustFileCreator;
 import ru.dolika.experiment.Analyzer.BatcherLaunch;
 import ru.dolika.experiment.folderWatch.FilterTunerGUI;
@@ -160,12 +162,11 @@ public class ExpLauncherMenu extends JMenuBar {
 		toolsMenu.add(toolsDofiles);
 
 		JMenuItem toolsWatchFolder = new JMenuItem("Следить за папкой");
-		toolsWatchFolder.addActionListener(e -> {
+		toolsWatchFolder.addActionListener(event -> {
 			try {
 				FolderWatch fw = new FolderWatch(parent);
 				fw.setVisible(true);
-			} catch (Exception exception) {
-				exception.printStackTrace();
+			} catch (Exception e) {
 			}
 		});
 		toolsMenu.add(toolsWatchFolder);
@@ -194,10 +195,12 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenuItem chooseChannels = new JMenuItem("Выбрать каналы");
 		chooseChannels.addActionListener(e -> {
 			if (workspace.getSignalIDs() != null) {
-				for (SignalIdentifier sd : workspace.getSignalIDs()) {
-					System.out.println(sd);
+				if (Debug.debug) {
+					for (SignalIdentifier sd : workspace.getSignalIDs()) {
+						System.out.println(sd);
+					}
+					System.out.println();
 				}
-				System.out.println();
 			}
 			SignalIDSettingsDialog sidsd = new SignalIDSettingsDialog(parent);
 			sidsd.setModal(true);
@@ -216,6 +219,7 @@ public class ExpLauncherMenu extends JMenuBar {
 				}
 
 			} catch (IllegalArgumentException e1) {
+				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 				e1.printStackTrace();
 			}
 

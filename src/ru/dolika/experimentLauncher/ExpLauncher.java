@@ -14,6 +14,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import ru.dolika.debug.Debug;
+import ru.dolika.debug.JExceptionHandler;
 import ru.dolika.experiment.sample.Sample;
 import ru.dolika.experiment.workspace.Workspace;
 
@@ -73,6 +74,7 @@ public class ExpLauncher extends JFrame {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 		}
 		createAndShowGUI();

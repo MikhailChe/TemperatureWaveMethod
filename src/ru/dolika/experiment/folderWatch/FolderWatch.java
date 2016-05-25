@@ -7,6 +7,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
@@ -18,6 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import ru.dolika.debug.Debug;
+import ru.dolika.debug.JExceptionHandler;
 import ru.dolika.experiment.Analyzer.ExperimentComputer;
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.measurement.MeasurementViewer;
@@ -48,15 +50,16 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 
 	ArrayList<JTDiffLabelSet> tCondPanels = new ArrayList<JTDiffLabelSet>();
 
-	public FolderWatch(JFrame parent) throws Exception {
+	public FolderWatch(JFrame parent) throws FileNotFoundException {
 		super(parent, false);
-		this.setTitle("Я смотрю за тобой!");
 		this.workspace = Workspace.getInstance();
 		if (workspace.getSample() == null) {
 			JOptionPane.showMessageDialog(parent,
 					"Не был выбран файл образца.\nПожалуйста закройте это окно и выберите образец или создайте новый",
 					"Ошибка образца", JOptionPane.ERROR_MESSAGE);
-			throw new Exception("No sample file chosen");
+			this.setVisible(false);
+			this.dispose();
+			throw new FileNotFoundException("Не был выбран файл образца.");
 		}
 		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(this.getClass());
 		fileChooser.setMultiSelectionEnabled(false);
@@ -68,12 +71,12 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 			if (folder == null) {
 				this.setVisible(false);
 				this.dispose();
-				throw new Exception();
+				throw new FileNotFoundException();
 			}
 		} else {
 			this.setVisible(false);
 			this.dispose();
-			throw new Exception();
+			throw new FileNotFoundException();
 		}
 
 		this.setTitle("Я смотрю за " + folder.getAbsolutePath());
@@ -176,6 +179,7 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
+				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 				e.printStackTrace();
 			}
 		}

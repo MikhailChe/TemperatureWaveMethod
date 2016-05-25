@@ -14,6 +14,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
+import ru.dolika.debug.JExceptionHandler;
 import ru.dolika.experiment.zeroCrossing.ZeroCrossing;
 import ru.dolika.experiment.zeroCrossing.ZeroCrossingFactory;
 import ru.dolika.experiment.zeroCrossing.ZeroCrossingViewerPanel;
@@ -93,6 +94,7 @@ public class AdjustFileCreator implements Runnable {
 
 					Toolkit.getDefaultToolkit().beep();
 				} catch (IOException e) {
+					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 					e.printStackTrace();
 				}
 				ZeroCrossing zc = ZeroCrossingFactory.forFile(resultFile);

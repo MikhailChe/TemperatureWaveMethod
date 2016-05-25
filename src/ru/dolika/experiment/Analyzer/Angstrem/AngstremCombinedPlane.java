@@ -24,6 +24,7 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
+import ru.dolika.debug.JExceptionHandler;
 import ru.dolika.experiment.Analyzer.ExperimentReader;
 import ru.dolika.experiment.Analyzer.FFT;
 
@@ -85,6 +86,7 @@ public class AngstremCombinedPlane extends JPanel {
 				} catch (ParseException e1) {
 					JOptionPane.showMessageDialog(AngstremCombinedPlane.this, "Ошибка формата",
 							"Убедитесь, что вы записали число", JOptionPane.ERROR_MESSAGE);
+					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 					e1.printStackTrace();
 				}
 				try {
@@ -92,6 +94,7 @@ public class AngstremCombinedPlane extends JPanel {
 				} catch (ParseException e1) {
 					JOptionPane.showMessageDialog(AngstremCombinedPlane.this, "Ошибка формата",
 							"Убедитесь, что вы записали число", JOptionPane.ERROR_MESSAGE);
+					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 					e1.printStackTrace();
 				}
 				try {
@@ -99,6 +102,7 @@ public class AngstremCombinedPlane extends JPanel {
 				} catch (ParseException e1) {
 					JOptionPane.showMessageDialog(AngstremCombinedPlane.this, "Ошибка формата",
 							"Убедитесь, что вы записали число", JOptionPane.ERROR_MESSAGE);
+					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 					e1.printStackTrace();
 				}
 				calculateResult(((Long) periodSeconds.getValue()).longValue(),
@@ -114,6 +118,7 @@ public class AngstremCombinedPlane extends JPanel {
 		try {
 			ereader = new ExperimentReader(file);
 		} catch (IOException e) {
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 		}
 		if (ereader == null)

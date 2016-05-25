@@ -1,5 +1,5 @@
 package ru.dolika.debug;
 
 public class Debug {
-	public static boolean debug = true;
+	public static boolean debug = false;
 }
