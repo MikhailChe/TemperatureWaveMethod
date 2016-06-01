@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.stream.IntStream;
 
 public class ExperimentFileReader {
 	private String[] headerInfo;
@@ -21,8 +22,7 @@ public class ExperimentFileReader {
 	private int leastSpace = Integer.MAX_VALUE;
 
 	public ExperimentFileReader(Path filepath) throws IOException {
-		List<String> strings = null;
-		strings = Files.readAllLines(filepath, StandardCharsets.UTF_8);
+		List<String> strings = Files.readAllLines(filepath, StandardCharsets.UTF_8);
 
 		if (strings == null) {
 			System.err.println("Couldn't load file content or file is empty");
@@ -32,14 +32,14 @@ public class ExperimentFileReader {
 			System.err.println("Invalid file.");
 			return;
 		}
-		String header = strings.get(0);
+		String header = strings.remove(0);
 		headerInfo = header.split("\t");
 		if (headerInfo.length != 2) {
 			System.err.println("Invalid header format");
 			return;
 		}
 		int sizeToValidate = Integer.parseInt(headerInfo[0]);
-		if (strings.size() - 1 != sizeToValidate) {
+		if (strings.size() != sizeToValidate) {
 			System.err.println("Size in the header doesn't match size of file");
 			return;
 		}
@@ -51,22 +51,24 @@ public class ExperimentFileReader {
 		initialData = new double[colNum][sizeToValidate];
 		maxValues = new double[colNum];
 		minValues = new double[colNum];
+
 		Arrays.fill(maxValues, Double.MIN_VALUE);
 		Arrays.fill(minValues, Double.MAX_VALUE);
 		croppedData = null;
-		for (int i = 1; i < strings.size(); i++) {
+
+		IntStream.range(0, strings.size()).parallel().forEach(i -> {
 			String line = strings.get(i);
 			String[] dataSplit = line.split("\t");
 			for (int j = 0; j < initialData.length; j++) {
-				initialData[j][i - 1] = Integer.parseInt(dataSplit[j]);
-				if (maxValues[j] < initialData[j][i - 1]) {
-					maxValues[j] = initialData[j][i - 1];
+				initialData[j][i] = Integer.parseInt(dataSplit[j]);
+				if (maxValues[j] < initialData[j][i]) {
+					maxValues[j] = initialData[j][i];
 				}
-				if (minValues[j] > initialData[j][i - 1]) {
-					minValues[j] = initialData[j][i - 1];
+				if (minValues[j] > initialData[j][i]) {
+					minValues[j] = initialData[j][i];
 				}
 			}
-		}
+		});
 		strings.clear();
 	}
 

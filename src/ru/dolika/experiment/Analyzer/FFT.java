@@ -1,5 +1,8 @@
 package ru.dolika.experiment.Analyzer;
 
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
+
 /**
  * @author Mikhail
  *
@@ -14,10 +17,14 @@ public class FFT {
 		double real = 0, imag = 0;
 		double N = realData.length;
 		double twoPiIndexDivN = (2 * Math.PI * index) / N;
-		for (int i = 0; i < realData.length; i++) {
-			real += Math.cos((twoPiIndexDivN * i)) * realData[i];
-			imag -= Math.sin((twoPiIndexDivN * i)) * realData[i];
-		}
+		real = IntStream.range(0, realData.length).mapToDouble(i -> {
+			return Math.cos((twoPiIndexDivN * i)) * realData[i];
+		}).parallel().sum();
+
+		imag = -IntStream.range(0, realData.length).mapToDouble(i -> {
+			return Math.sin((twoPiIndexDivN * i)) * realData[i];
+		}).parallel().sum();
+
 		return new double[] { real, imag };
 	}
 
@@ -29,7 +36,6 @@ public class FFT {
 		double[] real = new double[fftdata.length / 2];
 		for (int i = 0; i < real.length; i++) {
 			real[i] = fftdata[2 * i];
-
 		}
 		return real;
 	}

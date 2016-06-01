@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -46,13 +47,13 @@ public class TWMComputer implements Callable<Measurement> {
 		return value;
 	}
 
-	public static ArrayList<Measurement> computeFolder(File folder, Window parent) {
+	public static List<Measurement> computeFolder(File folder, Window parent) {
 		if (!folder.isDirectory())
 			return null;
 		if (!folder.exists())
 			return null;
 
-		ArrayList<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<File>();
 		files.addAll(Arrays.asList(folder.listFiles(pathname -> {
 			return pathname.getName().matches("^[0-9]+.txt$");
 		})));
@@ -73,7 +74,7 @@ public class TWMComputer implements Callable<Measurement> {
 			return null;
 
 		ExecutorService pool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
-		ArrayList<Future<Measurement>> futuresSet = new ArrayList<Future<Measurement>>();
+		List<Future<Measurement>> futuresSet = new ArrayList<Future<Measurement>>();
 		ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
 		pm.setMillisToDecideToPopup(1000);
 		pm.setMaximum(files.size());
@@ -81,7 +82,8 @@ public class TWMComputer implements Callable<Measurement> {
 
 		int currentProgress = 0;
 		boolean header = true;
-		ArrayList<Measurement> measurements = new ArrayList<Measurement>();
+		List<Measurement> measurements = new ArrayList<Measurement>();
+
 		for (Future<Measurement> future : futuresSet) {
 			try {
 				Measurement answer = future.get();
@@ -96,6 +98,7 @@ public class TWMComputer implements Callable<Measurement> {
 					}
 					if (header) {
 						header = false;
+						//Add magic UTF-8 
 						bw.write(new String(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF }));
 						bw.write(String.format("%s%n", answer.getHeader()));
 					}
