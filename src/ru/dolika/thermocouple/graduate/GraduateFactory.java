@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.HashMap;
+import java.util.Optional;
 
 public class GraduateFactory {
 
@@ -14,7 +15,6 @@ public class GraduateFactory {
 
 		if (file == null)
 			return null;
-
 		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
 			Object o = ois.readObject();
 			if (o instanceof Graduate) {

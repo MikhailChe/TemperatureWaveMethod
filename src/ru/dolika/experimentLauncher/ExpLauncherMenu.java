@@ -123,7 +123,6 @@ public class ExpLauncherMenu extends JMenuBar {
 		fileSave.addActionListener(e -> {
 			workspace.save();
 			if (workspace.getSampleFile() != null) {
-
 				SampleFactory.saveSample(workspace.getSampleFile().toString(), workspace.getSample());
 			} else {
 				SampleFactory.saveSample(null, workspace.getSample());

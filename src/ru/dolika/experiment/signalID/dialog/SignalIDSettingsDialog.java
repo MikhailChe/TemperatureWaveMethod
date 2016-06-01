@@ -3,7 +3,7 @@ package ru.dolika.experiment.signalID.dialog;
 import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Frame;
-import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BoxLayout;
 import javax.swing.JDialog;
@@ -54,10 +54,10 @@ public class SignalIDSettingsDialog extends JDialog {
 		contentPane.removeAll();
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.PAGE_AXIS));
-		ArrayList<SignalIdentifier> sigids = Workspace.getInstance().getSignalIDs();
+		List<SignalIdentifier> sigids = Workspace.getInstance().getSignalIDs();
 		if (Workspace.getInstance().getSignalIDs() != null) {
-			for (int i = 0; i < sigids.size(); i++) {
-				SignalIdentifier sigid = sigids.get(i);
+			// sigids.forEach(action);
+			sigids.forEach(sigid -> {
 				SignalIDPanel panel;
 				if (sigid instanceof BaseSignalID) {
 					panel = new BaseSignalIDPanel((BaseSignalID) sigid);
@@ -66,21 +66,19 @@ public class SignalIDSettingsDialog extends JDialog {
 				} else {
 					panel = new SignalIDPanel(null);
 				}
-				final int thiIDindex = i;
 				panel.deleteButton.addActionListener(e -> {
-					Workspace.getInstance().getSignalIDs().remove(thiIDindex);
+					Workspace.getInstance().getSignalIDs().remove(sigid);
 					getParent().remove(this);
 					SwingUtilities.invokeLater(() -> {
 						initialized = false;
 						initDialog();
 					});
 				});
-				contentPane.add(panel);
-			}
+				SwingUtilities.invokeLater(() -> contentPane.add(panel));
+			});
 		}
 		SignalIDAddNewPanel addNewPanel = new SignalIDAddNewPanel();
 		addNewPanel.addActionListener(e -> {
-
 			String[] options = new String[] { "Постоянка", "Переменка", "Пустой канал" };
 			int optionNumber = JOptionPane.showOptionDialog(SignalIDSettingsDialog.this, "Какой тип канала добавить?",
 					"Выберите тип канала", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
@@ -104,7 +102,7 @@ public class SignalIDSettingsDialog extends JDialog {
 				});
 			}
 		});
-		contentPane.add(addNewPanel);
+		SwingUtilities.invokeLater(() -> contentPane.add(addNewPanel));
 
 		pack();
 		initialized = true;

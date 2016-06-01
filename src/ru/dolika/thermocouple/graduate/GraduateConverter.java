@@ -56,8 +56,7 @@ public class GraduateConverter {
 		List<String> tVtgLines = null;
 
 		try {
-			tVtgLines = Files.readAllLines(fileChooser.getSelectedFile()
-					.toPath());
+			tVtgLines = Files.readAllLines(fileChooser.getSelectedFile().toPath());
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -65,9 +64,8 @@ public class GraduateConverter {
 		if (tVtgLines == null)
 			return;
 
-		ArrayList<Double> values = new ArrayList<Double>();
-		NumberFormat numberFormat = NumberFormat.getInstance(Locale
-				.getDefault());
+		List<Double> values = new ArrayList<Double>();
+		NumberFormat numberFormat = NumberFormat.getInstance(Locale.getDefault());
 		for (String line : tVtgLines) {
 			Double voltage = 0d;
 			try {
@@ -76,7 +74,7 @@ public class GraduateConverter {
 			} catch (ParseException e1) {
 				e1.printStackTrace();
 			} finally {
-				values.add(graduate.getTemperature(voltage, 22+273));
+				values.add(graduate.getTemperature(voltage, 22 + 273));
 			}
 		}
 

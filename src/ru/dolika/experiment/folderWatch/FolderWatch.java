@@ -6,9 +6,9 @@ import java.awt.GridLayout;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
@@ -105,11 +105,8 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 	}
 
 	public void checkNewFile() {
-		File[] files = folder.listFiles(new FileFilter() {
-			@Override
-			public boolean accept(File pathname) {
-				return pathname.getName().matches("^[0-9]+.txt$");
-			}
+		File[] files = folder.listFiles(pathname -> {
+			return pathname.getName().matches("^[0-9]+.txt$");
 		});
 		if (files != null) {
 			if (filesInFolder == null) {
@@ -145,7 +142,7 @@ public class FolderWatch extends JDialog implements Runnable, WindowListener {
 			signalLevelLabel.setText(String.format("%+.3f мВ", m.temperature.get(0).signalLevel * 1000));
 			temperatureLabel.setText(String.format("%+.0f K", m.temperature.get(0).value));
 		}
-		ArrayList<TemperatureConductivity> tConds = m.tCond;
+		List<TemperatureConductivity> tConds = m.tCond;
 		if (tConds.size() != tCondPanels.size()) {
 			if (Debug.debug)
 				System.out.println("Sizes differ");

@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
 import java.util.prefs.Preferences;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.swing.JFileChooser;
 

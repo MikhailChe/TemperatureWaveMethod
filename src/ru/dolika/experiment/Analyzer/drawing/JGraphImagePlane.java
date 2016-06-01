@@ -15,6 +15,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.Arrays;
+import java.util.stream.DoubleStream;
+import java.util.stream.IntStream;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPanel;
@@ -31,28 +33,18 @@ public class JGraphImagePlane extends JPanel {
 	class ArraysStats {
 		public double minValue = Double.MAX_VALUE;
 		public double maxValue = Double.MIN_VALUE;
-		public int maxArraysLength = 0;
 
 		public ArraysStats(double[][] arrays) {
 			if (arrays == null) {
 				return;
 			}
+			minValue = Arrays.asList(arrays).stream().mapToDouble(arr -> {
+				return DoubleStream.of(arr).min().orElse(Double.MAX_VALUE);
+			}).min().orElse(Double.MAX_VALUE);
 
-			for (int i = 0; i < arrays.length; i++) {
-				if (arrays[i] == null)
-					continue;
-				if (maxArraysLength < arrays[i].length) {
-					maxArraysLength = arrays[i].length;
-				}
-				for (int j = 0; j < arrays[i].length; j++) {
-					if (minValue > arrays[i][j]) {
-						minValue = arrays[i][j];
-					}
-					if (maxValue < arrays[i][j]) {
-						maxValue = arrays[i][j];
-					}
-				}
-			}
+			maxValue = Arrays.asList(arrays).stream().mapToDouble(arr -> {
+				return DoubleStream.of(arr).max().orElse(Double.MIN_VALUE);
+			}).max().orElse(Double.MIN_VALUE);
 		}
 	}
 
@@ -62,19 +54,14 @@ public class JGraphImagePlane extends JPanel {
 
 		public ArraySelectionContextMenu() {
 			items = new JCheckBoxMenuItem[showThisArray.length];
-			for (int i = 0; i < showThisArray.length; i++) {
+			IntStream.range(0, showThisArray.length).forEach(i -> {
 				items[i] = new JCheckBoxMenuItem("������ " + i);
 				items[i].setSelected(showThisArray[i]);
-				final int b = i;
-				items[i].addActionListener(new ActionListener() {
-
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						showThisArray[b] = !showThisArray[b];
-					}
+				items[i].addActionListener(e -> {
+					showThisArray[i] = !showThisArray[i];
 				});
 				add(items[i]);
-			}
+			});
 		}
 	}
 

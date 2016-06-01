@@ -2,6 +2,7 @@ package ru.dolika.experiment.measurement;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.util.stream.IntStream;
 
 import javax.swing.JPanel;
 import javax.swing.border.SoftBevelBorder;
@@ -48,11 +49,12 @@ public class MeasurementViewer extends JPanel {
 			}
 		}
 
-		for (int i = 0; i < m.tCond.size(); i++) {
+		IntStream.range(0, m.tCond.size()).parallel().forEach(i -> {
 			TemperatureConductivity tc = m.tCond.get(i);
 			XYSeries series = dataset.getSeries(i);
 			series.addOrUpdate(m.temperature.get(0).value, tc.tCond);
-		}
+		});
+
 		repaint();
 	}
 

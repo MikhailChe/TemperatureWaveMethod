@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -58,12 +59,24 @@ public class Graduate implements Serializable {
 
 			int currentTemperature = 0;
 			for (String singleLine : fileLines) {
-				singleLine = singleLine.replaceAll(",", ".");
-				String[] vtgValStrings = singleLine.split("\t");
+
+				List<String> vtgValStrings = Arrays.asList(singleLine.replaceAll(",", ".").split("\t"));
 
 				double innerTemperature = currentTemperature;
-				double innerTemperatureIncrement = 10.0 / vtgValStrings.length;
+				double innerTemperatureIncrement = 10.0 / vtgValStrings.size();
+				//
+				// DoubleStream voltageStream =
+				// vtgValStrings.stream().mapToDouble(v -> Double.valueOf(v));
+				//
+				// DoubleStream temperatureStream = DoubleStream
+				// .iterate(currentTemperature, t -> t +
+				// innerTemperatureIncrement).limit(vtgValStrings.size());
 
+				// IntStream.iterate(currentTemperature,
+				// t->t+innerTemperatureIncrement).
+
+				// vtgValStrings.stream().mapToDouble(v->Double.valueOf(v)).
+				// TODO: This can be rewriten as java8 code
 				for (String voltageStr : vtgValStrings) {
 
 					try {
