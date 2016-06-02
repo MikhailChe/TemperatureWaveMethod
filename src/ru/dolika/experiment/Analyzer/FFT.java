@@ -1,6 +1,5 @@
 package ru.dolika.experiment.Analyzer;
 
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 
 /**
