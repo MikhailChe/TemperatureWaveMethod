@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import ru.dolika.debug.Debug;
+
 public class Mysql {
 	final Connection conn_id;
 	final Statement stmt;
@@ -26,11 +28,18 @@ public class Mysql {
 	}
 
 	public ResultSet query(String query) {
+		if (Debug.debug) {
+			System.out.println(query);
+		}
 		try {
 			return stmt.executeQuery(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public ResultSet queryf(String format, Object... args) {
+		return query(String.format(format, args));
 	}
 }

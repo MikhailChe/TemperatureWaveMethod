@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,10 +20,11 @@ public class MySQLCredentials {
 		Path path = Paths.get(USERPASSWORD_TXT);
 
 		if (!Files.exists(path)) {
-			Files.createFile(path);
+			fillWithDefaults(path);
 		}
 		List<String> lines = Files.lines(path).collect(Collectors.toList());
 		if (lines.size() != 4) {
+			fillWithDefaults(path);
 			return;
 		}
 		address = lines.get(0);
@@ -30,18 +33,18 @@ public class MySQLCredentials {
 		database = lines.get(3);
 	}
 
-	@Override
-	public String toString() {
-		return "//" + username + ":" + password + "@" + address + "/" + database;
-	}
-
-	public static void main(String... strings) {
+	public void fillWithDefaults(Path path) {
 		try {
-			System.out.println(new MySQLCredentials());
+			Files.write(path, Arrays.asList("address", "username", "password", "database"), StandardOpenOption.CREATE);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 	}
+
+	@Override
+	public String toString() {
+		return "jdbc:mysql://" + username + ":" + password + "@" + address + "/" + database;
+	}
+
 }

@@ -1,13 +1,18 @@
 package ru.dolika.mysql;
 
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 import ru.dolika.experiment.measurement.Measurement;
 import ru.dolika.experiment.sample.Sample;
 
 public class ExperimentUploader {
+
+	final static private String sampleTableName = "tp_samples";
+	final static private String measuresTableName = "tp_measures";
 
 	Mysql mysql;
 
@@ -22,22 +27,44 @@ public class ExperimentUploader {
 			createDataStructure();
 		}
 		if (!sampleExists(s)) {
-			createSampleTable(s);
+			createSample(s);
 		}
-
-		Integer id = getSampleId(s);
+		Integer id = getSampleId(s).orElse(-1);
 
 		measures.stream().map(m -> uploadMeasurement(m, id)).filter(a -> a).count();
+
 	}
 
-	private Integer getSampleId(Sample s) {
-		// TODO Auto-generated method stub
-		return null;
+	private Optional<Integer> getSampleId(Sample s) {
+		ResultSet result = mysql.query("SELECT `id` " + " FROM `" + sampleTableName + "` " + " WHERE `name` = '"
+				+ s.name + "' " + " AND `length` = '" + s.length + "'");
+		Integer id = null;
+		try {
+			if (result.next()) {
+				try {
+					id = result.getInt("id");
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return Optional.ofNullable(id);
 	}
 
-	private void createSampleTable(Sample s) {
-		// TODO Auto-generated method stub
-
+	private Optional<Integer> createSample(Sample s) {
+		ResultSet result = mysql.queryf("INSERT INTO `%s` SET `name`='%s', `comment`='%s', `length`='%.6f'",
+				sampleTableName, s.name, s.comments, s.length);
+		Integer id = null;
+		try {
+			if (result.next()) {
+				id = result.getInt("id");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return Optional.ofNullable(id);
 	}
 
 	private boolean sampleExists(Sample s) {
