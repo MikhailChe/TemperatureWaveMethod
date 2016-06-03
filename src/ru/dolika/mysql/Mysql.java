@@ -22,7 +22,8 @@ public class Mysql {
 					throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		Class.forName(driverClassName).newInstance();
 
-		String connectionUrl = "jdbc:" + driverName + "://" + address + ":" + port + "/" + database;
+		String connectionUrl = "jdbc:" + driverName + "://" + address + ":" + port + "/" + database
+				+ "?useUnicode=true&characterEncoding=utf-8";
 		conn_id = DriverManager.getConnection(connectionUrl, user, password);
 	}
 

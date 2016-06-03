@@ -131,7 +131,7 @@ public class ExperimentUploader {
 				.forEach(channel -> mysql.queryUpdatef(
 						"INSERT INTO `%s` SET " + "`id_sample` = '%d'," + "`id_channel` = '%d',"
 								+ "`temperature` = %.1f," + "`timestamp` = '%d'," + "`frequency` = '%.1f',"
-								+ "`amplitude` = '%.3f'," + "`diffusivity` = '%f'",
+								+ "`amplitude` = '%.3f'," + "`diffusivity` = '%.12f'",
 						measuresTableName, id, channel, m.temperature.get(0).value, m.time, m.frequency,
 						m.tCond.get(channel).amplitude, m.tCond.get(0).tCond));
 	}
