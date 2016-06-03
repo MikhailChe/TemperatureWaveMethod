@@ -33,6 +33,12 @@ public class JExceptionHandler extends JFrame implements UncaughtExceptionHandle
 	private JExceptionHandler() {
 		super("Ошибки программы");
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+		addWindowStateListener(e -> {
+			if (JFrame.getFrames().length <= 1) {
+				JExceptionHandler.this.dispose();
+			}
+		});
+
 		setPreferredSize(new Dimension(320, 240));
 		pack();
 		listModel = new DefaultListModel<String>();

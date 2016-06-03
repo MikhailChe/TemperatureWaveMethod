@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
@@ -30,6 +32,7 @@ import ru.dolika.experiment.signalID.DCsignalID;
 import ru.dolika.experiment.signalID.SignalIdentifier;
 import ru.dolika.experiment.workspace.Workspace;
 import ru.dolika.experiment.zeroCrossing.ZeroCrossing;
+import ru.dolika.mysql.ExperimentUploader;
 
 public class TWMComputer implements Callable<Measurement> {
 
@@ -98,7 +101,7 @@ public class TWMComputer implements Callable<Measurement> {
 					}
 					if (header) {
 						header = false;
-						//Add magic UTF-8 
+						// Add magic UTF-8
 						bw.write(new String(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF }));
 						bw.write(String.format("%s%n", answer.getHeader()));
 					}
@@ -112,6 +115,35 @@ public class TWMComputer implements Callable<Measurement> {
 		}
 		pm.close();
 		pool.shutdown();
+		if (JOptionPane.showConfirmDialog(parent, "Загрузить данные в базу?") == JOptionPane.OK_OPTION) {
+			try {
+				ExperimentUploader eu = new ExperimentUploader();
+
+				eu.uploadExperimentResults(futuresSet.stream().map(future -> {
+					try {
+						return future.get();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					return null;
+				}).collect(Collectors.toList()), Workspace.getInstance().getSample());
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 
 		try {
 			bw.flush();
