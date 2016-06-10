@@ -102,9 +102,11 @@ public class SignalIDSettingsDialog extends JDialog {
 				});
 			}
 		});
-		SwingUtilities.invokeLater(() -> contentPane.add(addNewPanel));
+		SwingUtilities.invokeLater(() -> {
+			contentPane.add(addNewPanel);
+			pack();
+		});
 
-		pack();
 		initialized = true;
 	}
 

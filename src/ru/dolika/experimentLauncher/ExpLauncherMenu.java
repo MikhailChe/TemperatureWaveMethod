@@ -95,7 +95,7 @@ public class ExpLauncherMenu extends JMenuBar {
 			if (sample == null) {
 				MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(this.getClass());
 
-				fileChooser.setDialogTitle("Отркыть...");
+				fileChooser.setDialogTitle("Открыть...");
 				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				fileChooser.setMultiSelectionEnabled(false);
 				fileChooser.resetChoosableFileFilters();
@@ -121,6 +121,8 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		JMenuItem fileSave = new JMenuItem("Сохранить...");
 		fileSave.addActionListener(e -> {
+			//TODO: need refactoring ASAP!!  Something goes horribly wrong here!
+			
 			workspace.save();
 			if (workspace.getSampleFile() != null) {
 				SampleFactory.saveSample(workspace.getSampleFile().toString(), workspace.getSample());
@@ -198,7 +200,7 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenuItem sampleSettings = new JMenuItem("Настройки образца");
 		sampleSettings.addActionListener(e -> {
 			try {
-
+				
 				int status = SampleSettingsDialog.showSampleSettings(parent, workspace.getSample());
 
 				if (status == SampleSettingsDialog.OK_BUTTON) {
