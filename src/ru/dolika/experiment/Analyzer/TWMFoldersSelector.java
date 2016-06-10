@@ -39,8 +39,6 @@ public class TWMFoldersSelector implements Runnable {
 		fileChooser.setDialogTitle("Выберите папку с данными");
 
 		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-			fileChooser.saveCurrentSelection();
-
 			File[] folders = fileChooser.getSelectedFiles();
 			ProgressMonitor pm = new ProgressMonitor(parent, "Анализ файлов в папке", "Идёт вычисление измерений", 0,
 					folders.length);
