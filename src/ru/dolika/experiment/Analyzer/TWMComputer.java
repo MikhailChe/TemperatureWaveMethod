@@ -129,7 +129,7 @@ public class TWMComputer implements Callable<Measurement> {
 				eu.uploadExperimentResults(futuresSet.stream().map(future -> {
 					try {
 						return future.get();
-					} catch (Exception e) {
+					} catch (Throwable e) {
 						e.printStackTrace();
 					}
 					return null;
