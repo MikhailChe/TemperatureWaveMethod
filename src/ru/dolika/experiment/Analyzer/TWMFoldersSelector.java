@@ -3,6 +3,9 @@
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -39,22 +42,22 @@ public class TWMFoldersSelector implements Runnable {
 		fileChooser.setDialogTitle("Выберите папку с данными");
 
 		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-			File[] folders = fileChooser.getSelectedFiles();
+			List<File> folders = Arrays.asList(fileChooser.getSelectedFiles());
 			ProgressMonitor pm = new ProgressMonitor(parent, "Анализ файлов в папке", "Идёт вычисление измерений", 0,
-					folders.length);
+					folders.size());
 
 			pm.setMillisToDecideToPopup(1000);
-			int progress = 0;
-			pm.setProgress(progress++);
+			final AtomicInteger progress = new AtomicInteger(0);
 
-			for (File folder : folders) {
+			// int progress = 0;
+
+			pm.setProgress(progress.incrementAndGet());
+			folders.stream().parallel().forEach(folder -> {
 				pm.setNote(folder.getName());
-				TWMComputer.computeFolder(folder, parent);
-				pm.setProgress(progress++);
-				if (pm.isCanceled()) {
-					break;
-				}
-			}
+				TWMComputer.computeFolder(folder, parent, pm);
+				pm.setProgress(progress.incrementAndGet());
+			});
+
 			pm.close();
 
 			Toolkit.getDefaultToolkit().beep();

@@ -5,11 +5,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.HashMap;
-import java.util.Optional;
 
 public class GraduateFactory {
 
-	private static HashMap<File, Graduate> cache = new HashMap<File, Graduate>();
+	final private static HashMap<File, Graduate> cache = new HashMap<File, Graduate>();
 
 	public synchronized static Graduate forBinary(File file) {
 

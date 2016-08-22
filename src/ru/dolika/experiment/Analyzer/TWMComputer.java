@@ -50,7 +50,7 @@ public class TWMComputer implements Callable<Measurement> {
 		return value;
 	}
 
-	public static List<Measurement> computeFolder(File folder, Window parent) {
+	public static List<Measurement> computeFolder(File folder, Window parent, ProgressMonitor opm) {
 		if (!folder.isDirectory())
 			return null;
 		if (!folder.exists())
@@ -63,6 +63,7 @@ public class TWMComputer implements Callable<Measurement> {
 
 		if (files.size() <= 0)
 			return null;
+
 		BufferedWriter bw = null;
 		File resultFile = tryToCreateResultFile(folder);
 		if (resultFile == null)
@@ -81,6 +82,9 @@ public class TWMComputer implements Callable<Measurement> {
 		ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
 		pm.setMillisToDecideToPopup(1000);
 		pm.setMaximum(files.size());
+		if (opm.isCanceled() || pm.isCanceled()) {
+			return null;
+		}
 		files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f))));
 
 		int currentProgress = 0;
@@ -88,6 +92,9 @@ public class TWMComputer implements Callable<Measurement> {
 		List<Measurement> measurements = new ArrayList<Measurement>();
 
 		for (Future<Measurement> future : futuresSet) {
+			if (opm.isCanceled() || pm.isCanceled()) {
+				return null;
+			}
 			try {
 				Measurement answer = future.get();
 				if (answer != null) {
@@ -101,7 +108,7 @@ public class TWMComputer implements Callable<Measurement> {
 					}
 					if (header) {
 						header = false;
-						// Add magic UTF-8
+						// Add magic UTF-8 BOM
 						bw.write(new String(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF }));
 						bw.write(String.format("%s%n", answer.getHeader()));
 					}

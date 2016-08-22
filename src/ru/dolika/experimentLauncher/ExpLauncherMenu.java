@@ -3,6 +3,8 @@
  */
 package ru.dolika.experimentLauncher;
 
+import java.io.FileNotFoundException;
+
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -121,8 +123,8 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		JMenuItem fileSave = new JMenuItem("Сохранить...");
 		fileSave.addActionListener(e -> {
-			//TODO: need refactoring ASAP!!  Something goes horribly wrong here!
-			
+			// TODO: need refactoring ASAP!! Something goes horribly wrong here!
+
 			workspace.save();
 			if (workspace.getSampleFile() != null) {
 				SampleFactory.saveSample(workspace.getSampleFile().toString(), workspace.getSample());
@@ -163,9 +165,10 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenuItem toolsWatchFolder = new JMenuItem("Следить за папкой");
 		toolsWatchFolder.addActionListener(event -> {
 			try {
-				FolderWatch fw = new FolderWatch(parent);
+				FolderWatch fw = FolderWatch.factory(parent);
 				fw.setVisible(true);
-			} catch (Exception e) {
+			} catch (FileNotFoundException e) {
+				
 			}
 		});
 		toolsMenu.add(toolsWatchFolder);
@@ -200,7 +203,7 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenuItem sampleSettings = new JMenuItem("Настройки образца");
 		sampleSettings.addActionListener(e -> {
 			try {
-				
+
 				int status = SampleSettingsDialog.showSampleSettings(parent, workspace.getSample());
 
 				if (status == SampleSettingsDialog.OK_BUTTON) {
