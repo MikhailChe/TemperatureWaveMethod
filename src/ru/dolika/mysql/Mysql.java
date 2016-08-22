@@ -19,7 +19,7 @@ public class Mysql {
 
 	public Mysql(String address, String port, String user, String password, String database, String driverName,
 			String driverClassName)
-					throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		Class.forName(driverClassName).newInstance();
 
 		String connectionUrl = "jdbc:" + driverName + "://" + address + ":" + port + "/" + database
