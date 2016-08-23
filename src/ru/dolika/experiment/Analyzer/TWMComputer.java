@@ -36,20 +36,6 @@ import ru.dolika.mysql.ExperimentUploader;
 
 public class TWMComputer implements Callable<Measurement> {
 
-	/**
-	 * @param value
-	 * @return positive angle (from 0 to 2 * Pi)
-	 */
-	public double truncatePositive(double value) {
-		while (value < 0) {
-			value += Math.PI * 2.0;
-		}
-		while (value > Math.PI * 2.0) {
-			value -= Math.PI * 2.0;
-		}
-		return value;
-	}
-
 	public static List<Measurement> computeFolder(File folder, Window parent, ProgressMonitor opm) {
 		if (!folder.isDirectory())
 			return null;
@@ -170,6 +156,27 @@ public class TWMComputer implements Callable<Measurement> {
 		return measurements;
 	}
 
+	public static SignalParameters[] getAllSignalParameters(double[][] signals, int frequency) {
+		SignalParameters[] params = new SignalParameters[signals.length];
+		for (int i = 0; i < signals.length; i++) {
+			double[] signal = signals[i];
+			params[i] = getSignalParameters(signal, frequency);
+		}
+		return params;
+	}
+
+	public static SignalParameters getSignalParameters(double[] signal, int frequency) {
+		double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
+		double phase = FFT.getArgument(fourierForFreq, 0);
+		double amplitude = FFT.getAbs(fourierForFreq, 0) / signal.length;
+		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
+		double nullOffset = FFT.getAbs(nullOffsetFourier, 0) / signal.length;
+
+		SignalParameters params = new SignalParameters(phase, amplitude, nullOffset);
+
+		return params;
+	}
+
 	public static File tryToCreateResultFile(File folder) {
 		File resultFile;
 		final String formatStringOfReulstFile = "result-%s.tsv";
@@ -210,34 +217,13 @@ public class TWMComputer implements Callable<Measurement> {
 		return resultFile;
 	}
 
-	public static SignalParameters[] getAllSignalParameters(double[][] signals, int frequency) {
-		SignalParameters[] params = new SignalParameters[signals.length];
-		for (int i = 0; i < signals.length; i++) {
-			double[] signal = signals[i];
-			params[i] = getSignalParameters(signal, frequency);
-		}
-		return params;
-	}
-
-	public static SignalParameters getSignalParameters(double[] signal, int frequency) {
-		double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
-		double phase = FFT.getArgument(fourierForFreq, 0);
-		double amplitude = FFT.getAbs(fourierForFreq, 0) / signal.length;
-		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
-		double nullOffset = FFT.getAbs(nullOffsetFourier, 0) / signal.length;
-
-		SignalParameters params = new SignalParameters(phase, amplitude, nullOffset);
-
-		return params;
-	}
-
 	// Non-static functions
 	final private File file;
+
 	final private Workspace workspace;
+
 	public Measurement result;
-
 	SignalIdentifier[] SHIFTS;
-
 	public TWMComputer(File filename) {
 		this.file = filename;
 		this.workspace = Workspace.getInstance();
@@ -247,7 +233,7 @@ public class TWMComputer implements Callable<Measurement> {
 				this.SHIFTS = (SignalIdentifier[]) signalIDs.toArray(new SignalIdentifier[signalIDs.size()]);
 			}
 		}
-
+	
 	}
 
 	public Measurement call() {
@@ -334,5 +320,19 @@ public class TWMComputer implements Callable<Measurement> {
 			System.gc();
 		}
 		return result;
+	}
+
+	/**
+	 * @param value
+	 * @return positive angle (from 0 to 2 * Pi)
+	 */
+	public double truncatePositive(double value) {
+		while (value < 0) {
+			value += Math.PI * 2.0;
+		}
+		while (value > Math.PI * 2.0) {
+			value -= Math.PI * 2.0;
+		}
+		return value;
 	}
 }

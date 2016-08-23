@@ -48,14 +48,17 @@ public class ExpLauncherMenu extends JMenuBar {
 			Sample sample = workspace.getSample();
 			if (sample != null) {
 				int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
-						"Хотите сохранить изменения в образце перед созданием нового?", "Не забудь сохраниться",
+						"Хотите сохранить изменения в образце перед созданием нового?",
+						"Не забудь сохраниться",
 						JOptionPane.YES_NO_CANCEL_OPTION);
 				if (shouldSaveOption == JOptionPane.NO_OPTION) {
 					sample = null;
 					System.gc();
 				}
 				if (shouldSaveOption == JOptionPane.YES_OPTION) {
-					SampleFactory.saveSample(workspace.getSampleFile().toString(), workspace.getSample());
+					SampleFactory.saveSample(
+							workspace.getSampleFile().toString(),
+							workspace.getSample());
 					sample = null;
 					System.gc();
 				}
@@ -66,7 +69,8 @@ public class ExpLauncherMenu extends JMenuBar {
 				if (status == SampleSettingsDialog.OK_BUTTON) {
 					workspace.setSample(s);
 					parent.setTitle(workspace.getSample().name);
-					parent.statusBar.setText(String.format("%.6f", workspace.getSample().length));
+					parent.statusBar.setText(String.format("%.6f",
+							workspace.getSample().length));
 					workspace.setSampleFile(null);
 				} else {
 					/* Добавить обработчик отказа */;
@@ -82,20 +86,23 @@ public class ExpLauncherMenu extends JMenuBar {
 			Sample sample;
 			if ((sample = workspace.getSample()) != null) {
 				int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
-						"Хотите сохранить изменения в образце перед открытием нового?", "Не забудь сохраниться",
+						"Хотите сохранить изменения в образце перед открытием нового?",
+						"Не забудь сохраниться",
 						JOptionPane.YES_NO_CANCEL_OPTION);
 				if (shouldSaveOption == JOptionPane.NO_OPTION) {
 					sample = null;
 					System.gc();
 				}
 				if (shouldSaveOption == JOptionPane.YES_OPTION) {
-					SampleFactory.saveSample(workspace.getSampleFile().toString(), sample);
+					SampleFactory.saveSample(
+							workspace.getSampleFile().toString(), sample);
 					sample = null;
 					System.gc();
 				}
 			}
 			if (sample == null) {
-				MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(this.getClass());
+				MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(
+						this.getClass());
 
 				fileChooser.setDialogTitle("Открыть...");
 				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -107,12 +114,14 @@ public class ExpLauncherMenu extends JMenuBar {
 				int option = fileChooser.showOpenDialog(parent);
 				if (option == JFileChooser.APPROVE_OPTION) {
 					if (fileChooser.getSelectedFile() != null) {
-						sample = SampleFactory.forBinary(fileChooser.getSelectedFile().getAbsolutePath());
+						sample = SampleFactory.forBinary(fileChooser
+								.getSelectedFile().getAbsolutePath());
 						workspace.setSampleFile(fileChooser.getSelectedFile());
 						workspace.setSample(null);
 						System.out.println(sample);
 						parent.setTitle(sample.name);
-						parent.statusBar.setText(String.format("%.6f", sample.length));
+						parent.statusBar
+								.setText(String.format("%.6f", sample.length));
 					}
 				}
 
@@ -127,18 +136,21 @@ public class ExpLauncherMenu extends JMenuBar {
 
 			workspace.save();
 			if (workspace.getSampleFile() != null) {
-				SampleFactory.saveSample(workspace.getSampleFile().toString(), workspace.getSample());
+				SampleFactory.saveSample(workspace.getSampleFile().toString(),
+						workspace.getSample());
 			} else {
-				SampleFactory.saveSample(null, workspace.getSample());
+				workspace.setSampleFile(
+						SampleFactory.saveSample(null, workspace.getSample()));
+
 			}
 		});
 		fileMenu.add(fileSave);
 
 		JMenuItem fileSaveAs = new JMenuItem("Сохранить как...");
 		fileSaveAs.addActionListener(e -> {
-			Workspace w = Workspace.getInstance();
-			w.save();
-			w.setSampleFile(SampleFactory.saveSample(null, w.getSample()));
+			workspace.save();
+			workspace.setSampleFile(
+					SampleFactory.saveSample(null, workspace.getSample()));
 		});
 		fileMenu.add(fileSaveAs);
 
@@ -156,7 +168,8 @@ public class ExpLauncherMenu extends JMenuBar {
 		});
 		toolsMenu.add(prepareGrads);
 
-		JMenuItem toolsDirectoryDiffusivity = new JMenuItem("Произвести вычисления");
+		JMenuItem toolsDirectoryDiffusivity = new JMenuItem(
+				"Произвести вычисления");
 		toolsDirectoryDiffusivity.addActionListener(e -> {
 			new Thread(new TWMFoldersSelector(parent)).start();
 		});
@@ -168,14 +181,15 @@ public class ExpLauncherMenu extends JMenuBar {
 				FolderWatch fw = FolderWatch.factory(parent);
 				fw.setVisible(true);
 			} catch (FileNotFoundException e) {
-				
+
 			}
 		});
 		toolsMenu.add(toolsWatchFolder);
 
 		toolsMenu.addSeparator();
 
-		JMenuItem convertTemperature = new JMenuItem("Преобразовать температуру");
+		JMenuItem convertTemperature = new JMenuItem(
+				"Преобразовать температуру");
 		convertTemperature.addActionListener(e -> {
 			new GraduateConverter(parent);
 		});
@@ -204,7 +218,8 @@ public class ExpLauncherMenu extends JMenuBar {
 		sampleSettings.addActionListener(e -> {
 			try {
 
-				int status = SampleSettingsDialog.showSampleSettings(parent, workspace.getSample());
+				int status = SampleSettingsDialog.showSampleSettings(parent,
+						workspace.getSample());
 
 				if (status == SampleSettingsDialog.OK_BUTTON) {
 					parent.setTitle(workspace.getSample().name);
@@ -212,7 +227,8 @@ public class ExpLauncherMenu extends JMenuBar {
 				}
 
 			} catch (IllegalArgumentException e1) {
-				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
+				JExceptionHandler.getExceptionHanlder()
+						.uncaughtException(Thread.currentThread(), e1);
 				e1.printStackTrace();
 			}
 

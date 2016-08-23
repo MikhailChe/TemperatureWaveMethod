@@ -10,19 +10,20 @@ import java.util.Vector;
 import java.util.stream.IntStream;
 
 public class ExperimentFileReader {
-	private String[] headerInfo;
-	private double experimentFrequecny;
-	private double[][] initialData;
-	private double[][] croppedData;
-	private int croppedDataPeriods = 0;
+	private String[]		headerInfo;
+	private double			experimentFrequecny;
+	private double[][]		initialData;
+	private double[][]		croppedData;
+	private int				croppedDataPeriods	= 0;
 
-	private double[] maxValues;
-	private double[] minValues;
-	private Vector<Integer> indicies = null;
-	private int leastSpace = Integer.MAX_VALUE;
+	private double[]		maxValues;
+	private double[]		minValues;
+	private Vector<Integer>	indicies			= null;
+	private int				leastSpace			= Integer.MAX_VALUE;
 
 	public ExperimentFileReader(Path filepath) throws IOException {
-		List<String> strings = Files.readAllLines(filepath, StandardCharsets.UTF_8);
+		List<String> strings = Files.readAllLines(filepath,
+				StandardCharsets.UTF_8);
 
 		if (strings == null) {
 			System.err.println("Couldn't load file content or file is empty");
@@ -82,10 +83,17 @@ public class ExperimentFileReader {
 			croppedData = new double[initialData.length][];
 			int[] indicies = getPulseIndicies();
 
+			IntStream.range(0, indicies.length - 1)
+					.mapToObj(
+							(i) -> new int[] { indicies[i], indicies[i + 1] })
+					.reduce(0, (a, v, c) -> v[1] - v[0], (a1, a2) -> {
+					});
+
 			int startIndex = indicies[0];
 			int stopIndex = indicies[indicies.length - 1];
 			croppedDataPeriods = 1;
 			int length = (stopIndex - startIndex) / croppedDataPeriods;
+
 			while (length > 2010) {
 				croppedDataPeriods++;
 				length = (stopIndex - startIndex) / croppedDataPeriods;
@@ -93,7 +101,8 @@ public class ExperimentFileReader {
 
 			for (int i = 0; i < croppedData.length; i++) {
 
-				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex, stopIndex);
+				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex,
+						stopIndex);
 			}
 		}
 		return croppedData;
@@ -149,7 +158,8 @@ public class ExperimentFileReader {
 				}
 			}
 		}
-		Integer[] inds = (Integer[]) indicies.toArray(new Integer[indicies.size()]);
+		Integer[] inds = (Integer[]) indicies
+				.toArray(new Integer[indicies.size()]);
 		int[] outinds = new int[inds.length];
 		int i = 0;
 		for (int value : inds) {

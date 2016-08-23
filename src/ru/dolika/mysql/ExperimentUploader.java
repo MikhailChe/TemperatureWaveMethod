@@ -12,10 +12,10 @@ import ru.dolika.experiment.sample.Sample;
 
 public class ExperimentUploader {
 
-	final static private String sampleTableName = "tp_samples";
-	final static private String measuresTableName = "tp_measures";
+	final static private String	sampleTableName		= "tp_samples";
+	final static private String	measuresTableName	= "tp_measures";
 
-	final Mysql mysql;
+	final Mysql					mysql;
 
 	public ExperimentUploader() throws InstantiationException,
 			IllegalAccessException, ClassNotFoundException, SQLException,
@@ -40,7 +40,7 @@ public class ExperimentUploader {
 
 	private Optional<Integer> getSampleId(Sample s) {
 		ResultSet result = mysql.query("SELECT `id` FROM `" + sampleTableName
-				+ "`  WHERE `name` = ? " + " AND `length` = ?", s.name,
+				+ "`  WHERE `name` = ? AND `length` = ?", s.name,
 				s.length);
 		Integer id = null;
 		try {
@@ -58,24 +58,13 @@ public class ExperimentUploader {
 	}
 
 	private Optional<Integer> createSample(Sample s) {
-		ResultSet result = mysql.queryUpdate("INSERT INTO `" + sampleTableName
-				+ "` SET `name`=?, `comment`=?, `length`=?", s.name, s.comments,
-				s.length);
-		try {
-			IntStream.rangeClosed(1, result.getMetaData().getColumnCount())
-					.forEach(i -> {
-						try {
-							System.out.println(result.getMetaData()
-									.getColumnLabel(i));
-						} catch (Exception e) {
-						}
-					});
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 		Integer id = null;
 		try {
+			ResultSet result = mysql
+					.queryUpdate("INSERT INTO `" + sampleTableName
+							+ "` SET `name`=?, `comment`=?, `length`=?", s.name,
+							s.comments,
+							s.length);
 			if (result.next()) {
 				id = result.getInt(1);
 			}
@@ -86,13 +75,13 @@ public class ExperimentUploader {
 	}
 
 	boolean sampleExists(Sample s) {
-
-		ResultSet rs = mysql.query("SELECT * FROM `" + sampleTableName
-				+ "` WHERE `name` = ? AND `comment`=? AND `length`=?", s.name,
-				s.comments, s.length);
-		if (rs == null)
-			return false;
 		try {
+			ResultSet rs = mysql.query("SELECT * FROM `" + sampleTableName
+					+ "` WHERE `name` = ? AND `comment`=? AND `length`=?",
+					s.name,
+					s.comments, s.length);
+			if (rs == null)
+				return false;
 			if (rs.next() == false)
 				return false;
 		} catch (SQLException e) {
@@ -153,13 +142,16 @@ public class ExperimentUploader {
 
 	private void uploadMeasurement(Measurement m, Integer id) {
 		IntStream.range(0, m.tCond.size()).forEach(channel -> mysql.queryUpdate(
-				String.format("INSERT INTO `%s` SET " + "`id_sample` = '%d',"
-						+ "`id_channel` = '%d'," + "`temperature` = '%.1f',"
-						+ "`timestamp` = '%d'," + "`frequency` = '%.1f',"
-						+ "`amplitude` = '%.3f'," + "`diffusivity` = '%.12f'",
-						measuresTableName, id, channel, m.temperature.get(
-								0).value, m.time, m.frequency, m.tCond.get(
-										channel).amplitude, m.tCond.get(
-												0).tCond)));
+				String.format("INSERT INTO `%s` SET " + "`id_sample` = ?,"
+						+ "`id_channel` = ?," + "`temperature` = ?,"
+						+ "`timestamp` = ?," + "`frequency` = ?,"
+						+ "`amplitude` = ?," + "`diffusivity` = ?",
+						measuresTableName),
+				id, channel, m.temperature.get(
+						0).value,
+				m.time, m.frequency, m.tCond.get(
+						channel).amplitude,
+				m.tCond.get(
+						0).tCond));
 	}
 }
