@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Vector;
 import java.util.stream.IntStream;
 
 public class ExperimentFileReader {
@@ -18,7 +18,7 @@ public class ExperimentFileReader {
 
 	private double[]		maxValues;
 	private double[]		minValues;
-	private Vector<Integer>	indicies			= null;
+	private List<Integer>	indicies			= null;
 	private int				leastSpace			= Integer.MAX_VALUE;
 
 	public ExperimentFileReader(Path filepath) throws IOException {
@@ -78,29 +78,24 @@ public class ExperimentFileReader {
 	}
 
 	public synchronized double[][] getCroppedData() {
-		// TODO: Legacy code. It depends on fixed distance between pulses
+		// TODO: Keep an eye on this
 		if (croppedData == null) {
 			croppedData = new double[initialData.length][];
 			int[] indicies = getPulseIndicies();
 
-			IntStream.range(0, indicies.length - 1)
+			int mindiff = IntStream.range(0, indicies.length - 1)
 					.mapToObj(
-							(i) -> new int[] { indicies[i], indicies[i + 1] })
-					.reduce(0, (a, v, c) -> v[1] - v[0], (a1, a2) -> {
-					});
+							(i) -> new int[] { indicies[i],
+									indicies[i + 1] })
+					.mapToInt((a) -> a[1] - a[0])
+					.filter(i -> i > 500)
+					.min()
+					.orElse(Integer.MAX_VALUE);
 
 			int startIndex = indicies[0];
 			int stopIndex = indicies[indicies.length - 1];
-			croppedDataPeriods = 1;
-			int length = (stopIndex - startIndex) / croppedDataPeriods;
-
-			while (length > 2010) {
-				croppedDataPeriods++;
-				length = (stopIndex - startIndex) / croppedDataPeriods;
-			}
-
+			croppedDataPeriods = (startIndex - stopIndex) / mindiff;
 			for (int i = 0; i < croppedData.length; i++) {
-
 				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex,
 						stopIndex);
 			}
@@ -133,7 +128,7 @@ public class ExperimentFileReader {
 
 	public int[] getPulseIndicies() {
 		if (indicies == null) {
-			indicies = new Vector<Integer>(100);
+			indicies = new ArrayList<Integer>(100);
 			double[] refsignal = getDataColumn(0);
 			boolean trigger = false;
 			double threshold = (maxValues[0] + minValues[0]) / 2;
@@ -152,7 +147,7 @@ public class ExperimentFileReader {
 					}
 				} else {
 					if (trigger) {
-						lastIndex = indicies.lastElement();
+						lastIndex = indicies.get(indicies.size() - 1);
 						trigger = false;
 					}
 				}
