@@ -94,7 +94,7 @@ public class ExperimentFileReader {
 
 			int startIndex = indicies[0];
 			int stopIndex = indicies[indicies.length - 1];
-			croppedDataPeriods = (startIndex - stopIndex) / mindiff;
+			croppedDataPeriods = (stopIndex - startIndex) / mindiff;
 			for (int i = 0; i < croppedData.length; i++) {
 				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex,
 						stopIndex);

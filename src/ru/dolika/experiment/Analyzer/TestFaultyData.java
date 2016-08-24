@@ -9,8 +9,9 @@ import ru.dolika.experiment.measurement.TemperatureConductivity;
 
 public class TestFaultyData {
 	public static void main(String[] args) throws IOException {
+
 		File f = new File(
-				"C:\\Users\\Mikhail\\Documents\\FaultyData!\\290616115712.txt");
+				"C:\\Users\\Mikhail\\Documents\\FaultyData!\\290616115818.txt");
 		ExperimentFileReader fileReader = new ExperimentFileReader(f.toPath());
 		System.out.println("File info from fileReader");
 		System.out.printf("Columns: %d%n", fileReader.getColumnCount());
