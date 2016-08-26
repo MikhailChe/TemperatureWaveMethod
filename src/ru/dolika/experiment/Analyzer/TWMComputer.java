@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
@@ -65,8 +65,7 @@ public class TWMComputer implements Callable<Measurement> {
 		if (bw == null)
 			return null;
 
-		ExecutorService pool = Executors.newFixedThreadPool(
-				Runtime.getRuntime().availableProcessors() * 2);
+		ExecutorService pool = ForkJoinPool.commonPool();
 		List<Future<Measurement>> futuresSet = new ArrayList<Future<Measurement>>();
 		ProgressMonitor pm = new ProgressMonitor(parent,
 				"Папка обрабатывается слишком долго", "", 0, 1);
@@ -114,7 +113,7 @@ public class TWMComputer implements Callable<Measurement> {
 			}
 		}
 		pm.close();
-		pool.shutdown();
+
 		if (JOptionPane.showConfirmDialog(parent,
 				"Загрузить данные в базу?") == JOptionPane.OK_OPTION) {
 			try {
