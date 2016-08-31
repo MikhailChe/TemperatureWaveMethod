@@ -176,11 +176,11 @@ public class ExpLauncherMenu extends JMenuBar {
 		toolsMenu.add(toolsDirectoryDiffusivity);
 
 		JMenuItem toolsWatchFolder = new JMenuItem("Следить за папкой");
-		toolsWatchFolder.addActionListener(event -> {
+		toolsWatchFolder.addActionListener(e -> {
 			try {
 				FolderWatch fw = FolderWatch.factory(parent);
 				fw.setVisible(true);
-			} catch (FileNotFoundException e) {
+			} catch (FileNotFoundException exc) {
 
 			}
 		});

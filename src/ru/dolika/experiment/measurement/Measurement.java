@@ -2,6 +2,7 @@ package ru.dolika.experiment.measurement;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Класс измерений. Хранит в себе одну точку измерения. Каждой точке присвоено
@@ -30,18 +31,18 @@ public class Measurement implements Serializable {
 	 * 
 	 * @see Temperature
 	 */
-	public ArrayList<Temperature> temperature;
+	public List<Temperature> temperature;
 	/**
 	 * Массив значений температуропроводности
 	 * 
 	 * @see TemperatureConductivity
 	 */
-	public ArrayList<TemperatureConductivity> tCond;
+	public List<TemperatureConductivity> tCond;
 
 	public Measurement() {
 		time = System.currentTimeMillis();
-		temperature = new ArrayList<Temperature>();
-		tCond = new ArrayList<TemperatureConductivity>();
+		temperature = new ArrayList<>();
+		tCond = new ArrayList<>();
 	}
 
 	public String getHeader() {

@@ -2,6 +2,7 @@ package ru.dolika.experiment.zeroCrossing;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Фактори для создания юстировочного класса
@@ -11,7 +12,7 @@ import java.util.HashMap;
  */
 public class ZeroCrossingFactory {
 
-	private static HashMap<File, ZeroCrossing> cache = new HashMap<File, ZeroCrossing>();
+	private static Map<File, ZeroCrossing> cache = new HashMap<>();
 
 	/**
 	 * Выдаёт файл юстировки. Если файл уже открывался, то берется файл из кэша,
@@ -37,9 +38,9 @@ public class ZeroCrossingFactory {
 				try {
 					System.out.println("Actually opening a file " + file);
 					ZeroCrossing crossing = new ZeroCrossing(file);
-					
+
 					cache.put(file, crossing);
-					
+
 					return crossing;
 				} catch (IllegalArgumentException e) {
 					return null;

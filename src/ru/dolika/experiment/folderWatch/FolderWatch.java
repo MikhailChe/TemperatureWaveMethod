@@ -47,9 +47,10 @@ public class FolderWatch extends JDialog implements Runnable {
 	JPanel temperaturePanel = new JPanel();
 	JLabel temperatureLabel = new JLabel("Здесь будет температура");
 
-	List<JTDiffLabelSet> tCondPanels = new ArrayList<JTDiffLabelSet>();
+	List<JTDiffLabelSet> tCondPanels = new ArrayList<>();
 
-	public static FolderWatch factory(JFrame parent) throws FileNotFoundException {
+	public static FolderWatch factory(JFrame parent)
+			throws FileNotFoundException {
 		Workspace workspace = Workspace.getInstance();
 		if (workspace.getSample() == null) {
 			JOptionPane.showMessageDialog(parent,
@@ -57,7 +58,8 @@ public class FolderWatch extends JDialog implements Runnable {
 					"Ошибка образца", JOptionPane.ERROR_MESSAGE);
 			throw new FileNotFoundException("Не был выбран файл образца.");
 		}
-		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(FolderWatch.class);
+		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(
+				FolderWatch.class);
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.setDialogTitle("Выберите папку с данными");
 
@@ -93,10 +95,12 @@ public class FolderWatch extends JDialog implements Runnable {
 
 		this.setTitle("Я смотрю за " + folder.getAbsolutePath());
 
-		signalLevelPanel.setBorder(BorderFactory.createTitledBorder("Уровень сигнала"));
+		signalLevelPanel
+				.setBorder(BorderFactory.createTitledBorder("Уровень сигнала"));
 		signalLevelPanel.add(signalLevelLabel);
 
-		temperaturePanel.setBorder(BorderFactory.createTitledBorder("Температура"));
+		temperaturePanel
+				.setBorder(BorderFactory.createTitledBorder("Температура"));
 		temperaturePanel.add(temperatureLabel);
 
 		numbersContainer.setLayout(new GridLayout(0, 2, 16, 16));
@@ -133,7 +137,8 @@ public class FolderWatch extends JDialog implements Runnable {
 			if (filesInFolder.length != files.length) {
 				if (files.length >= 1) {
 					filesInFolder = files;
-					updateValuesForFile(filesInFolder[filesInFolder.length - 1]);
+					updateValuesForFile(
+							filesInFolder[filesInFolder.length - 1]);
 				}
 				return;
 			}
@@ -147,8 +152,10 @@ public class FolderWatch extends JDialog implements Runnable {
 			signalLevelLabel.setText("Температура неизвестна");
 			temperatureLabel.setText("Температура неизвестна");
 		} else {
-			signalLevelLabel.setText(String.format("%+.3f мВ", m.temperature.get(0).signalLevel * 1000));
-			temperatureLabel.setText(String.format("%+.0f K", m.temperature.get(0).value));
+			signalLevelLabel.setText(String.format("%+.3f мВ",
+					m.temperature.get(0).signalLevel * 1000));
+			temperatureLabel.setText(
+					String.format("%+.0f K", m.temperature.get(0).value));
 		}
 		List<TemperatureConductivity> tConds = m.tCond;
 		if (tConds.size() != tCondPanels.size()) {

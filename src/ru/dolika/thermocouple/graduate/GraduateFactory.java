@@ -5,16 +5,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.HashMap;
+import java.util.Map;
 
 public class GraduateFactory {
 
-	final private static HashMap<File, Graduate> cache = new HashMap<File, Graduate>();
+	final private static Map<File, Graduate> cache = new HashMap<>();
 
 	public synchronized static Graduate forBinary(File file) {
 
 		if (file == null)
 			return null;
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+		try (ObjectInputStream ois = new ObjectInputStream(
+				new FileInputStream(file))) {
 			Object o = ois.readObject();
 			if (o instanceof Graduate) {
 				Graduate g = (Graduate) o;

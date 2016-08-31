@@ -43,7 +43,7 @@ public class TWMComputer implements Callable<Measurement> {
 		if (!folder.exists())
 			return null;
 
-		List<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<>();
 		files.addAll(Arrays.asList(folder.listFiles(
 				pathname -> pathname.getName().matches("^[0-9]+.txt$"))));
 
@@ -66,7 +66,7 @@ public class TWMComputer implements Callable<Measurement> {
 			return null;
 
 		ExecutorService pool = ForkJoinPool.commonPool();
-		List<Future<Measurement>> futuresSet = new ArrayList<Future<Measurement>>();
+		List<Future<Measurement>> futuresSet = new ArrayList<>();
 		ProgressMonitor pm = new ProgressMonitor(parent,
 				"Папка обрабатывается слишком долго", "", 0, 1);
 		pm.setMillisToDecideToPopup(1000);
@@ -78,7 +78,7 @@ public class TWMComputer implements Callable<Measurement> {
 
 		int currentProgress = 0;
 		boolean header = true;
-		List<Measurement> measurements = new ArrayList<Measurement>();
+		List<Measurement> measurements = new ArrayList<>();
 
 		for (Future<Measurement> future : futuresSet) {
 			if (opm.isCanceled() || pm.isCanceled()) {
@@ -238,17 +238,17 @@ public class TWMComputer implements Callable<Measurement> {
 	}
 
 	// Non-static functions
-	final private File		file;
+	final private File file;
 
-	final private Workspace	workspace;
+	final private Workspace workspace;
 
-	public Measurement		result;
-	SignalIdentifier[]		SHIFTS;
+	public Measurement result;
+	SignalIdentifier[] SHIFTS;
 
 	public TWMComputer(File filename) {
 		this.file = filename;
 		this.workspace = Workspace.getInstance();
-		ArrayList<SignalIdentifier> signalIDs;
+		List<SignalIdentifier> signalIDs;
 		if ((signalIDs = workspace.getSignalIDs()) != null) {
 			if (signalIDs.size() > 0) {
 				this.SHIFTS = (SignalIdentifier[]) signalIDs

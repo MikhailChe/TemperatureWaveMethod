@@ -2,6 +2,7 @@ package ru.dolika.experiment.sample;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -17,13 +18,13 @@ public class Sample implements Serializable {
 	public double length;
 	public String comments;
 
-	public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter("Файл образца (*.smpl)",
-			"smpl");
+	public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+			"Файл образца (*.smpl)", "smpl");
 
-	public ArrayList<Measurement> measurements;
+	public List<Measurement> measurements;
 
 	public Sample() {
-		measurements = new ArrayList<Measurement>();
+		measurements = new ArrayList<>();
 		comments = "Default_comment";
 		name = "Default_name";
 	}

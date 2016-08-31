@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Scanner;
 import java.util.TreeMap;
@@ -28,13 +29,14 @@ public class ZeroCrossing implements Serializable {
 
 	private NavigableMap<Double, Double> shifts;
 
-	private HashMap<Double, Double> answerMap;
+	private Map<Double, Double> answerMap;
 
 	/**
 	 * Защищенный конструктор юстировки.
 	 */
 	protected ZeroCrossing() {
-		shifts = Collections.synchronizedNavigableMap(new TreeMap<Double, Double>());
+		shifts = Collections
+				.synchronizedNavigableMap(new TreeMap<Double, Double>());
 		answerMap = new HashMap<Double, Double>();
 	}
 
@@ -49,7 +51,8 @@ public class ZeroCrossing implements Serializable {
 		this();
 		Scanner s;
 		try {
-			s = new Scanner(new BufferedInputStream(new FileInputStream(filename)));
+			s = new Scanner(
+					new BufferedInputStream(new FileInputStream(filename)));
 			while (s.hasNext()) {
 
 				double key = 0;
@@ -131,7 +134,8 @@ public class ZeroCrossing implements Serializable {
 				double higherDiff = nearestHigherKey - frequency;
 				double lowerK = 1 - (lowerDiff / diff);
 				double higherK = 1 - (higherDiff / diff);
-				double value = nearestLowerValue * lowerK + nearestHigherValue * higherK;
+				double value = nearestLowerValue * lowerK
+						+ nearestHigherValue * higherK;
 				answerMap.put(frequency, value);
 				return value;
 			}

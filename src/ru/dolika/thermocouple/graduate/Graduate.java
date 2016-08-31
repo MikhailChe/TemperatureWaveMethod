@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 
@@ -33,7 +34,7 @@ public class Graduate implements Serializable {
 
 	private static final long serialVersionUID = 1347461243070602565L;
 	private NavigableMap<Double, Double> grads;
-	private HashMap<Double, Double> answerMap;
+	private Map<Double, Double> answerMap;
 
 	public File fromFile;
 
@@ -41,8 +42,8 @@ public class Graduate implements Serializable {
 	 * Конструктор градуировки
 	 */
 	protected Graduate() {
-		grads = Collections.synchronizedNavigableMap(new TreeMap<Double, Double>());
-		answerMap = new HashMap<Double, Double>();
+		grads = Collections.synchronizedNavigableMap(new TreeMap<>());
+		answerMap = new HashMap<>();
 	}
 
 	/**
@@ -60,22 +61,11 @@ public class Graduate implements Serializable {
 			int currentTemperature = 0;
 			for (String singleLine : fileLines) {
 
-				List<String> vtgValStrings = Arrays.asList(singleLine.replaceAll(",", ".").split("\t"));
+				List<String> vtgValStrings = Arrays
+						.asList(singleLine.replaceAll(",", ".").split("\t"));
 
 				double innerTemperature = currentTemperature;
 				double innerTemperatureIncrement = 10.0 / vtgValStrings.size();
-				//
-				// DoubleStream voltageStream =
-				// vtgValStrings.stream().mapToDouble(v -> Double.valueOf(v));
-				//
-				// DoubleStream temperatureStream = DoubleStream
-				// .iterate(currentTemperature, t -> t +
-				// innerTemperatureIncrement).limit(vtgValStrings.size());
-
-				// IntStream.iterate(currentTemperature,
-				// t->t+innerTemperatureIncrement).
-
-				// vtgValStrings.stream().mapToDouble(v->Double.valueOf(v)).
 				// TODO: This can be rewriten as java8 code
 				for (String voltageStr : vtgValStrings) {
 
@@ -160,7 +150,8 @@ public class Graduate implements Serializable {
 				double higherDiff = nearestHigherKey - voltage;
 				double lowerK = 1 - (lowerDiff / diff);
 				double higherK = 1 - (higherDiff / diff);
-				double value = nearestLowerValue * lowerK + nearestHigherValue * higherK;
+				double value = nearestLowerValue * lowerK
+						+ nearestHigherValue * higherK;
 				answerMap.put(voltage, value);
 				return value + zeroTemp;
 			}
@@ -176,12 +167,14 @@ public class Graduate implements Serializable {
 	 *            файл, в который нужно записать граудировку
 	 */
 	public void save(File file) {
-		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+		try (ObjectOutputStream oos = new ObjectOutputStream(
+				new FileOutputStream(file))) {
 			oos.writeObject(this);
 			oos.flush();
 			oos.close();
 		} catch (Exception e) {
-			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
+			JExceptionHandler.getExceptionHanlder()
+					.uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 		}
 	}

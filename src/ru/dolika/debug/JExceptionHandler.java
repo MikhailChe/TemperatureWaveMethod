@@ -12,7 +12,8 @@ import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-public class JExceptionHandler extends JFrame implements UncaughtExceptionHandler {
+public class JExceptionHandler extends JFrame
+		implements UncaughtExceptionHandler {
 
 	/**
 	 * 
@@ -41,10 +42,11 @@ public class JExceptionHandler extends JFrame implements UncaughtExceptionHandle
 
 		setPreferredSize(new Dimension(320, 240));
 		pack();
-		listModel = new DefaultListModel<String>();
-		list = new JList<String>(listModel);
+		listModel = new DefaultListModel<>();
+		list = new JList<>(listModel);
 
-		SwingUtilities.invokeLater(() -> getContentPane().add(list, BorderLayout.CENTER));
+		SwingUtilities.invokeLater(
+				() -> getContentPane().add(list, BorderLayout.CENTER));
 	}
 
 	@Override

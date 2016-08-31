@@ -64,7 +64,7 @@ public class GraduateConverter {
 		if (tVtgLines == null)
 			return;
 
-		List<Double> values = new ArrayList<Double>();
+		List<Double> values = new ArrayList<>();
 		NumberFormat numberFormat = NumberFormat.getInstance(Locale.getDefault());
 		for (String line : tVtgLines) {
 			Double voltage = 0d;
