@@ -53,8 +53,8 @@ public class ExpLauncher extends JFrame {
 			if (workspace != null) {
 				Sample sample;
 				if ((sample = workspace.getSample()) != null) {
-					ExpLauncher.this.setTitle(sample.name);
-					ExpLauncher.this.statusBar.setText("" + sample.length);
+					ExpLauncher.this.setTitle(sample.getName());
+					ExpLauncher.this.statusBar.setText("" + sample.getLength());
 				}
 			}
 			pack();

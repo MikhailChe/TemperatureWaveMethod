@@ -314,8 +314,8 @@ public class TWMComputer implements Callable<Measurement> {
 					// kappa = PhysicsModel.searchKappaFor(-adjustAngle, 0.001);
 
 					double omega = 2 * Math.PI * EXPERIMENT_FREQUENCY;
-					double A = (omega * workspace.getSample().length
-							* workspace.getSample().length) / (kappa * kappa);
+					double A = (omega * workspace.getSample().getLength()
+							* workspace.getSample().getLength()) / (kappa * kappa);
 
 					TemperatureConductivity tCond = new TemperatureConductivity();
 

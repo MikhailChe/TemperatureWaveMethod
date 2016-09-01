@@ -78,19 +78,19 @@ public class SampleSettingsDialog extends JDialog {
 
 		setLocationRelativeTo(parent);
 
-		name.setText(sample.name);
-		comment.setText(sample.comments);
-		length.setValue(sample.length);
+		name.setText(sample.getName());
+		comment.setText(sample.getComment());
+		length.setValue(sample.getLength());
 
 		okButton.addActionListener(e -> {
-			sample.name = name.getText();
-			sample.comments = comment.getText();
+			sample.setName(name.getText());
+			sample.setComment(comment.getText());
 			try {
 				length.commitEdit();
 				Object o = length.getValue();
 				if (o instanceof Double) {
 					Double val = (Double) o;
-					sample.length = val.doubleValue();
+					sample.setLength(val.doubleValue());
 				}
 			} catch (ParseException e1) {
 				e1.printStackTrace();

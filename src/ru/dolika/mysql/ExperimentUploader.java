@@ -40,8 +40,8 @@ public class ExperimentUploader {
 
 	private Optional<Integer> getSampleId(Sample s) {
 		ResultSet result = mysql.query("SELECT `id` FROM `" + sampleTableName
-				+ "`  WHERE `name` = ? AND `length` = ?", s.name,
-				s.length);
+				+ "`  WHERE `name` = ? AND `length` = ?", s.getName(),
+				s.getLength());
 		Integer id = null;
 		try {
 			if (result.next()) {
@@ -62,9 +62,9 @@ public class ExperimentUploader {
 		try {
 			ResultSet result = mysql
 					.queryUpdate("INSERT INTO `" + sampleTableName
-							+ "` SET `name`=?, `comment`=?, `length`=?", s.name,
-							s.comments,
-							s.length);
+							+ "` SET `name`=?, `comment`=?, `length`=?", s.getName(),
+							s.getComment(),
+							s.getLength());
 			if (result.next()) {
 				id = result.getInt(1);
 			}
@@ -78,8 +78,8 @@ public class ExperimentUploader {
 		try {
 			ResultSet rs = mysql.query("SELECT * FROM `" + sampleTableName
 					+ "` WHERE `name` = ? AND `comment`=? AND `length`=?",
-					s.name,
-					s.comments, s.length);
+					s.getName(),
+					s.getComment(), s.getLength());
 			if (rs == null)
 				return false;
 			if (rs.next() == false)

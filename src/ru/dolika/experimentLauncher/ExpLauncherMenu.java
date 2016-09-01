@@ -68,9 +68,9 @@ public class ExpLauncherMenu extends JMenuBar {
 				int status = SampleSettingsDialog.showSampleSettings(parent, s);
 				if (status == SampleSettingsDialog.OK_BUTTON) {
 					workspace.setSample(s);
-					parent.setTitle(workspace.getSample().name);
+					parent.setTitle(workspace.getSample().getName());
 					parent.statusBar.setText(String.format("%.6f",
-							workspace.getSample().length));
+							workspace.getSample().getLength()));
 					workspace.setSampleFile(null);
 				} else {
 					/* Добавить обработчик отказа */;
@@ -108,8 +108,8 @@ public class ExpLauncherMenu extends JMenuBar {
 				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				fileChooser.setMultiSelectionEnabled(false);
 				fileChooser.resetChoosableFileFilters();
-				fileChooser.addChoosableFileFilter(Sample.extensionFilter);
-				fileChooser.setFileFilter(Sample.extensionFilter);
+				fileChooser.addChoosableFileFilter(Sample.getExtensionfilter());
+				fileChooser.setFileFilter(Sample.getExtensionfilter());
 
 				int option = fileChooser.showOpenDialog(parent);
 				if (option == JFileChooser.APPROVE_OPTION) {
@@ -119,9 +119,9 @@ public class ExpLauncherMenu extends JMenuBar {
 						workspace.setSampleFile(fileChooser.getSelectedFile());
 						workspace.setSample(null);
 						System.out.println(sample);
-						parent.setTitle(sample.name);
+						parent.setTitle(sample.getName());
 						parent.statusBar
-								.setText(String.format("%.6f", sample.length));
+								.setText(String.format("%.6f", sample.getLength()));
 					}
 				}
 
@@ -222,8 +222,8 @@ public class ExpLauncherMenu extends JMenuBar {
 						workspace.getSample());
 
 				if (status == SampleSettingsDialog.OK_BUTTON) {
-					parent.setTitle(workspace.getSample().name);
-					parent.statusBar.setText("" + workspace.getSample().length);
+					parent.setTitle(workspace.getSample().getName());
+					parent.statusBar.setText("" + workspace.getSample().getLength());
 				}
 
 			} catch (IllegalArgumentException e1) {

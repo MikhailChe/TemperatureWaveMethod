@@ -32,10 +32,10 @@ public class SampleFactory {
 				if (debug)
 					System.out.println("Opened sample binary");
 				if (debug)
-					if (sample.name == null)
+					if (sample.getName() == null)
 						System.out.println("Sample name empty (null)");
 					else
-						System.out.println("Sample name: " + sample.name);
+						System.out.println("Sample name: " + sample.getName());
 
 				return sample;
 			}
@@ -55,7 +55,7 @@ public class SampleFactory {
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			chooser.setMultiSelectionEnabled(false);
 			chooser.resetChoosableFileFilters();
-			FileNameExtensionFilter filter = Sample.extensionFilter;
+			FileNameExtensionFilter filter = Sample.getExtensionfilter();
 			chooser.setFileFilter(filter);
 			chooser.addChoosableFileFilter(filter);
 			if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {

@@ -118,9 +118,9 @@ public class Mysql {
 
 		ExperimentUploader eu = new ExperimentUploader();
 		Sample s = new Sample();
-		s.name = "Михаил";
-		s.comments = "Черноскутов";
-		s.length = 0.001515;
+		s.setName("Михаил");
+		s.setComment("Черноскутов");
+		s.setLength(0.001515);
 
 		System.out.println(eu.sampleExists(s));
 	}

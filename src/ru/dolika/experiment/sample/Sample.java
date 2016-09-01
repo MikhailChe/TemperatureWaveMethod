@@ -3,6 +3,8 @@ package ru.dolika.experiment.sample;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -14,28 +16,82 @@ public class Sample implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 5445072467730687777L;
-	public String name;
-	public double length;
-	public String comments;
+	private String name;
+	private double length;
+	private String comment;
 
-	public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+	private transient final static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
 			"Файл образца (*.smpl)", "smpl");
 
-	public List<Measurement> measurements;
+	public List<Measurement> measurements = new ArrayList<>();;
 
 	public Sample() {
-		measurements = new ArrayList<>();
-		comments = "Default_comment";
-		name = "Default_name";
+		setComment("Default_comment");
+		setName("Default_name");
+	}
+
+	/**
+	 * @return the extensionfilter
+	 */
+	public static FileNameExtensionFilter getExtensionfilter() {
+		return extensionFilter;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public double getLength() {
+		return length;
+	}
+
+	public void setLength(double length) {
+		this.length = length;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == this)
+			return true;
+		if (o == null)
+			return false;
+
+		if (!(o instanceof Sample))
+			return false;
+		Predicate<Function<Sample, Object>> equalizer = (
+				Function<Sample, Object> f) -> {
+			return f.apply(this).equals(f.apply((Sample) o));
+		};
+		return equalizer.test(Sample::getLength)
+				&& equalizer.test(Sample::getName)
+				&& equalizer.test(Sample::getComment);
+	}
+
+	@Override
+	public int hashCode() {
+		return 0;
+
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("Имя:\t" + name + "\n");
-		sb.append("Коментарий:\t" + comments + "\n");
-		sb.append("Длина:\t" + length + "\n");
+		sb.append("Имя:\t" + getName() + "\n");
+		sb.append("Коментарий:\t" + getComment() + "\n");
+		sb.append("Длина:\t" + getLength() + "\n");
 
 		sb.append("Измерения\n");
 		for (Measurement m : measurements) {
