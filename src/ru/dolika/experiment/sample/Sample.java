@@ -1,5 +1,7 @@
 package ru.dolika.experiment.sample;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +18,11 @@ public class Sample implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 5445072467730687777L;
-	private String name;
-	private double length;
-	private String comment;
+	private String name = "Default_name";
+	private double length = 0;
+	private String comment = "Default_comment";
+
+	private PropertyChangeSupport mPcs = new PropertyChangeSupport(this);
 
 	private transient final static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
 			"Файл образца (*.smpl)", "smpl");
@@ -26,8 +30,10 @@ public class Sample implements Serializable {
 	public List<Measurement> measurements = new ArrayList<>();;
 
 	public Sample() {
+		super();
 		setComment("Default_comment");
 		setName("Default_name");
+		setLength(0D);
 	}
 
 	/**
@@ -42,7 +48,9 @@ public class Sample implements Serializable {
 	}
 
 	public void setName(String name) {
+		String oldName = this.name;
 		this.name = name;
+		mPcs.firePropertyChange("name", oldName, this.name);
 	}
 
 	public double getLength() {
@@ -50,7 +58,9 @@ public class Sample implements Serializable {
 	}
 
 	public void setLength(double length) {
+		double oldLength = this.length;
 		this.length = length;
+		mPcs.firePropertyChange("length", oldLength, this.length);
 	}
 
 	public String getComment() {
@@ -58,7 +68,9 @@ public class Sample implements Serializable {
 	}
 
 	public void setComment(String comment) {
+		String oldComment = this.comment;
 		this.comment = comment;
+		mPcs.firePropertyChange("comment", oldComment, this.comment);
 	}
 
 	@Override
@@ -81,8 +93,8 @@ public class Sample implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return 0;
-
+		return this.name.hashCode() + this.comment.hashCode()
+				+ Double.hashCode(this.length);
 	}
 
 	@Override
@@ -124,6 +136,15 @@ public class Sample implements Serializable {
 			}
 			return -1;
 		});
+	}
+
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		mPcs.addPropertyChangeListener(listener);
+
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		mPcs.removePropertyChangeListener(listener);
 	}
 
 }
