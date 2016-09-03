@@ -36,7 +36,8 @@ public class SampleSettingsDialog extends JDialog {
 		}
 		this.sample = sample;
 
-		NumberFormat format = NumberFormat.getNumberInstance(Locale.getDefault());
+		NumberFormat format = NumberFormat
+				.getNumberInstance(Locale.getDefault());
 		format.setMinimumFractionDigits(3);
 		format.setMaximumFractionDigits(6);
 		format.setMinimumIntegerDigits(0);
@@ -56,7 +57,8 @@ public class SampleSettingsDialog extends JDialog {
 		pane.setPreferredSize(new Dimension(400, 200));
 
 		JPanel namePanel = new JPanel(new BorderLayout(8, 8));
-		namePanel.setBorder(BorderFactory.createTitledBorder("Название образца"));
+		namePanel.setBorder(
+				BorderFactory.createTitledBorder("Название образца"));
 		namePanel.add(name);
 
 		JPanel commentPanel = new JPanel(new BorderLayout(8, 8));
@@ -64,7 +66,8 @@ public class SampleSettingsDialog extends JDialog {
 		commentPanel.add(comment);
 
 		JPanel lengthPanel = new JPanel(new BorderLayout(8, 8));
-		lengthPanel.setBorder(BorderFactory.createTitledBorder("Толщина образца (метры)"));
+		lengthPanel.setBorder(
+				BorderFactory.createTitledBorder("Толщина образца (метры)"));
 		lengthPanel.add(length);
 
 		pane.add(namePanel);
