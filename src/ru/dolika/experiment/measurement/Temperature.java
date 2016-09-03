@@ -39,6 +39,11 @@ public class Temperature implements Serializable {
 		signalID = null;
 	}
 
+	public Temperature setValue(double value) {
+		this.value = value;
+		return this;
+	}
+
 	@Override
 	public String toString() {
 		return String.format("%.8f", value);

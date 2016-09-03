@@ -50,12 +50,23 @@ public class TemperatureConductivity implements Serializable {
 		signalID = null;
 	}
 
+	public double gettCond() {
+		return tCond;
+	}
+
+	public TemperatureConductivity settCond(double tCond) {
+		this.tCond = tCond;
+		return this;
+	}
+
 	@Override
 	public String toString() {
 
 		return String.format("%.0f;%.3f;%.3f;%.3f;%.3f;%.4e", amplitude,
-				initSignalParams == null ? 0 : Math.toDegrees(initSignalParams.phase),
-				signalID == null ? 0 : signalID.zc.getCurrentShift(frequency), Math.toDegrees(phase), kappa, tCond);
+				initSignalParams == null ? 0
+						: Math.toDegrees(initSignalParams.phase),
+				signalID == null ? 0 : signalID.zc.getCurrentShift(frequency),
+				Math.toDegrees(phase), kappa, tCond);
 	}
 
 	public String getHeader() {

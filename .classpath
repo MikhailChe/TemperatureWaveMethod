@@ -3,9 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry exported="true" kind="lib" path="libs/jfreechart-1.0.19/lib/jcommon-1.0.23.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jfreechart-1.0.19/lib/jfreechart-1.0.19-swt.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jfreechart-1.0.19/lib/jfreechart-1.0.19.jar" sourcepath="libs/jfreechart-1.0.19/source"/>
 	<classpathentry kind="lib" path="libs/mysql-connector-java-5.1.39-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
 	<referencedentry kind="lib" path="libs/jfreechart-1.0.19/lib/jfreechart-1.0.19.jar" sourcepath="libs/jfreechart-1.0.19/source"/>

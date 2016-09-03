@@ -1,74 +1,100 @@
 package ru.dolika.experiment.measurement;
 
+import static java.util.stream.Collectors.toList;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.util.stream.IntStream;
+import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.JPanel;
 import javax.swing.border.SoftBevelBorder;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-import org.jfree.data.general.SeriesException;
-import org.jfree.data.xy.DefaultTableXYDataset;
-import org.jfree.data.xy.XYSeries;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.chart.NumberAxis;
+import javafx.scene.chart.ScatterChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.chart.XYChart.Data;
+import javafx.scene.chart.XYChart.Series;
+import javafx.util.StringConverter;
 
 public class MeasurementViewer extends JPanel {
 	private static final long serialVersionUID = 3555290921726804677L;
 
-	final DefaultTableXYDataset dataset;
-	final JFreeChart chart;
-	final ChartPanel chartPanel;
+	final ScatterChart<Number, Number> chart;
+	final JFXPanel chartPanel;
 
 	public MeasurementViewer() {
 		super();
 		Dimension d = new Dimension(640, 480);
 		setPreferredSize(d);
-		setSize(d);
-		setMinimumSize(d);
-		setMaximumSize(d);
 		setBorder(new SoftBevelBorder(SoftBevelBorder.LOWERED));
 
-		dataset = new DefaultTableXYDataset(true);
-		chart = ChartFactory.createScatterPlot("Измерения", "Температура", "Коэффициент температуропроводности",
-				dataset);
+		chartPanel = new JFXPanel();
+
+		NumberAxis xAxis = new NumberAxis(200, 300, 20);
+		NumberAxis yAxis = new NumberAxis(0, 1E-5, 1E-6);
+
+		xAxis.setLabel("Температура");
+		yAxis.setLabel("Коэффициент температуропроводности");
+
+		yAxis.setTickUnit(1E-6);
+		yAxis.setTickLabelFormatter(new StringConverter<Number>() {
+			@Override
+			public String toString(Number object) {
+
+				return String.format("%3.2E", object.floatValue());
+			}
+
+			@Override
+			public Number fromString(String string) {
+				return Double.valueOf(string);
+			}
+		});
+
+		xAxis.setAutoRanging(true);
+		xAxis.setForceZeroInRange(false);
+
+		chart = new ScatterChart<>(xAxis, yAxis);
+		chart.setTitle("Измерения");
+
+		Scene scene = new Scene(chart);
+		chartPanel.setScene(scene);
 
 		this.setLayout(new BorderLayout());
-		chartPanel = new ChartPanel(chart);
 		this.add(chartPanel, BorderLayout.CENTER);
 	}
 
 	public void addMeasurement(Measurement m) {
-		if (m == null || m.temperature == null || m.tCond == null)
-			throw new NullPointerException();
-		if (m.temperature.size() == 0) {
-			System.err.println("Temperature is not present");
-			return;
-		}
-		if (m.tCond.size() == 0) {
-			System.err.println("Temperature conductivity is not present");
-			return;
-		}
+		try {
 
-		if (dataset.getSeriesCount() != m.tCond.size()) {
-			for (int i = dataset.getSeriesCount(); i < m.tCond.size(); i++) {
-				dataset.addSeries(new XYSeries("Канал " + (i + 1), false, false));
+			double temperature = m.temperature.get(0).value;
+			List<Data<Number, Number>> dataPoints = m.tCond.stream()
+					.map(t -> new Data<Number, Number>(temperature, t.tCond))
+					.collect(toList());
+			Iterator<Data<Number, Number>> iter = dataPoints.iterator();
+			Platform.runLater(() -> {
+				matchSeriesSize(m.tCond.size());
+				chart.getData().stream().map(Series::getData)
+						.forEachOrdered(data -> data.add(iter.next()));
+			});
+		} catch (NullPointerException ignore) {
+
+		}
+	}
+
+	private void matchSeriesSize(int size) {
+		if (chart.getData().size() < size) {
+			List<Series<Number, Number>> data = chart.getData();
+
+			while (data.size() < size) {
+				XYChart.Series<Number, Number> ser = new XYChart.Series<>();
+				ser.setName("Канал " + (data.size() + 1));
+				data.add(ser);
 			}
 		}
-
-		IntStream.range(0, m.tCond.size()).parallel().forEach(i -> {
-			TemperatureConductivity tc = m.tCond.get(i);
-			if (tc.tCond < 10E-5 && tc.tCond > 1E-6) {
-				XYSeries series = dataset.getSeries(i);
-
-				try {
-					series.addOrUpdate(m.temperature.get(0).value, tc.tCond);
-				} catch (SeriesException e) {
-					// May throw that X-value already exists. Ignore it.
-				}
-			}
-		});
 	}
 
 }
