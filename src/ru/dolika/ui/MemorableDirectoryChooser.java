@@ -5,7 +5,10 @@ import java.awt.Dimension;
 import java.io.File;
 import java.util.prefs.Preferences;
 
+import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 
 import ru.dolika.debug.JExceptionHandler;
 
@@ -14,11 +17,11 @@ public class MemorableDirectoryChooser extends JFileChooser {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 5847949653692605158L;
+	private static final long	serialVersionUID	= 5847949653692605158L;
 
-	private static final String LAST_FOLDER = "memFileChooser_lastDirectory";
+	private static final String	LAST_FOLDER			= "memFileChooser_lastDirectory";
 
-	private Preferences prefs;
+	private Preferences			prefs;
 
 	public MemorableDirectoryChooser(Class<?> classname) {
 		super();
@@ -26,12 +29,22 @@ public class MemorableDirectoryChooser extends JFileChooser {
 		this.setMultiSelectionEnabled(true);
 		this.setPreferredSize(new Dimension(640, 480));
 
-		this.getActionMap().get("viewTypeDetails").actionPerformed(null);
+		SwingUtilities.invokeLater(() -> {
+			try {
+				MemorableDirectoryChooser c = MemorableDirectoryChooser.this;
+				ActionMap map = c.getActionMap();
+				Action a = map.get("viewTypeDetails");
+				a.actionPerformed(null);
+			} catch (NullPointerException e) {
+				e.printStackTrace();
+			}
+		});
 
 		try {
 			prefs = Preferences.userNodeForPackage(classname);
 		} catch (Exception e) {
-			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
+			JExceptionHandler.getExceptionHanlder()
+					.uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 			return;
 		}
@@ -40,13 +53,15 @@ public class MemorableDirectoryChooser extends JFileChooser {
 			String lastFolder = prefs.get(LAST_FOLDER, null);
 			if (lastFolder != null) {
 				try {
-					File dir = new File(new File(lastFolder).getCanonicalPath());
+					File dir = new File(
+							new File(lastFolder).getCanonicalPath());
 					if (dir.isDirectory()) {
 						setCurrentDirectory(dir);
 						// setSelectedFile(dir);
 					}
 				} catch (Exception e) {
-					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
+					JExceptionHandler.getExceptionHanlder()
+							.uncaughtException(Thread.currentThread(), e);
 					e.printStackTrace();
 				}
 			}
@@ -69,13 +84,15 @@ public class MemorableDirectoryChooser extends JFileChooser {
 				try {
 					prefs.put(LAST_FOLDER, f.toString());
 				} catch (Exception e) {
-					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
+					JExceptionHandler.getExceptionHanlder()
+							.uncaughtException(Thread.currentThread(), e);
 					e.printStackTrace();
 				}
 				try {
 					prefs.flush();
 				} catch (Exception e) {
-					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
+					JExceptionHandler.getExceptionHanlder()
+							.uncaughtException(Thread.currentThread(), e);
 					e.printStackTrace();
 				}
 			}

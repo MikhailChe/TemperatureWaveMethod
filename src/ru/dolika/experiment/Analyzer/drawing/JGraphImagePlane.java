@@ -25,12 +25,12 @@ public class JGraphImagePlane extends JPanel {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -3435828605900305971L;
-	public static boolean shouldShowIndicies = false;
+	private static final long	serialVersionUID	= -3435828605900305971L;
+	public static boolean		shouldShowIndicies	= false;
 
 	class ArraysStats {
-		public double minValue = Double.MAX_VALUE;
-		public double maxValue = Double.MIN_VALUE;
+		public double	minValue	= Double.MAX_VALUE;
+		public double	maxValue	= Double.MIN_VALUE;
 
 		public ArraysStats(double[][] arrays) {
 			if (arrays == null) {
@@ -47,8 +47,8 @@ public class JGraphImagePlane extends JPanel {
 	}
 
 	class ArraySelectionContextMenu extends JPopupMenu {
-		private static final long serialVersionUID = 8708433669119770570L;
-		JCheckBoxMenuItem[] items = null;
+		private static final long	serialVersionUID	= 8708433669119770570L;
+		JCheckBoxMenuItem[]			items				= null;
 
 		public ArraySelectionContextMenu() {
 			items = new JCheckBoxMenuItem[showThisArray.length];
@@ -63,9 +63,9 @@ public class JGraphImagePlane extends JPanel {
 		}
 	}
 
-	public ArraysStats stats = null;
-	public double[][] arrays;
-	public boolean[] showThisArray;
+	public ArraysStats	stats	= null;
+	public double[][]	arrays;
+	public boolean[]	showThisArray;
 
 	public JGraphImagePlane(double[][] arrays) {
 		if (arrays == null) {
@@ -112,7 +112,8 @@ public class JGraphImagePlane extends JPanel {
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
 
-			if ((e.getModifiersEx() & MouseWheelEvent.CTRL_DOWN_MASK) == MouseWheelEvent.CTRL_DOWN_MASK) {
+			if ((e.getModifiersEx()
+					& MouseWheelEvent.CTRL_DOWN_MASK) == MouseWheelEvent.CTRL_DOWN_MASK) {
 				final double ZOOM_AMOUNT = 1.1;
 				int width = JGraphImagePlane.this.getWidth();
 				int height = JGraphImagePlane.this.getHeight();
@@ -120,11 +121,14 @@ public class JGraphImagePlane extends JPanel {
 				Dimension newSize = null;
 				if (Math.abs(e.getWheelRotation()) > 0) {
 					if (e.getWheelRotation() > 0) {
-						if (width / ZOOM_AMOUNT > (getParent() == null ? 1024 : getParent().getWidth())) {
-							newSize = new Dimension((int) (width / ZOOM_AMOUNT), height);
+						if (width / ZOOM_AMOUNT > (getParent() == null ? 1024
+								: getParent().getWidth())) {
+							newSize = new Dimension((int) (width / ZOOM_AMOUNT),
+									height);
 						}
 					} else {
-						newSize = new Dimension((int) (width * ZOOM_AMOUNT), height);
+						newSize = new Dimension((int) (width * ZOOM_AMOUNT),
+								height);
 					}
 					if (newSize != null) {
 						JGraphImagePlane.this.setSize(newSize);
@@ -132,7 +136,9 @@ public class JGraphImagePlane extends JPanel {
 						if (getParent() instanceof JViewport) {
 							JViewport vp = (JViewport) getParent();
 							vp.setViewPosition(new Point(
-									(int) map(vp.getViewPosition().x, 0, oldSize.getWidth(), 0, newSize.getWidth()),
+									(int) map(vp.getViewPosition().x, 0,
+											oldSize.getWidth(), 0,
+											newSize.getWidth()),
 									vp.getViewPosition().y));
 						}
 					}
@@ -146,7 +152,8 @@ public class JGraphImagePlane extends JPanel {
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
-		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+				RenderingHints.VALUE_ANTIALIAS_ON);
 		Rectangle view = new Rectangle();
 		if (getParent() instanceof JViewport) {
 			JViewport vp = (JViewport) getParent();
@@ -163,7 +170,8 @@ public class JGraphImagePlane extends JPanel {
 				continue;
 			double[] array = arrays[i];
 			for (int j = 1; j < array.length; j++) {
-				g2.setColor(Color.getHSBColor((float) i / (float) arrays.length, 1f, 1f));
+				g2.setColor(Color.getHSBColor((float) i / (float) arrays.length,
+						1f, 1f));
 				if (array.length < getWidth()) {
 					g2.setStroke(new BasicStroke(2f));
 				} else {
@@ -173,14 +181,20 @@ public class JGraphImagePlane extends JPanel {
 					}
 					g2.setStroke(new BasicStroke(val));
 				}
-				int y1 = (int) Math.round(map(array[j - 1], stats.minValue, stats.maxValue, getHeight(), 0));
-				int y2 = (int) Math.round(map(array[j], stats.minValue, stats.maxValue, getHeight(), 0));
-				int x1 = (int) Math.round(map(j - 1, 0, array.length, 0, getWidth()));
-				int x2 = (int) Math.round(map(j, 0, array.length, 0, getWidth()));
+				int y1 = (int) Math.round(map(array[j - 1], stats.minValue,
+						stats.maxValue, getHeight(), 0));
+				int y2 = (int) Math.round(map(array[j], stats.minValue,
+						stats.maxValue, getHeight(), 0));
+				int x1 = (int) Math
+						.round(map(j - 1, 0, array.length, 0, getWidth()));
+				int x2 = (int) Math
+						.round(map(j, 0, array.length, 0, getWidth()));
 
-				if (((x1 >= view.x) && (x1 <= (view.x + view.width)) && (y1 >= view.y)
+				if (((x1 >= view.x) && (x1 <= (view.x + view.width))
+						&& (y1 >= view.y)
 						&& (y1 <= (view.y + view.height)))
-						|| ((x2 >= view.x) && (x2 <= (view.x + view.width)) && (y2 >= view.y)
+						|| ((x2 >= view.x) && (x2 <= (view.x + view.width))
+								&& (y2 >= view.y)
 								&& (y2 <= (view.y + view.height)))) {
 					g2.drawLine(x1, y1, x2, y2);
 					drawAdditionalData(g2, x1, y1, x2, y2, j - 1, j);
@@ -190,9 +204,11 @@ public class JGraphImagePlane extends JPanel {
 		g2.dispose();
 	}
 
-	public void drawAdditionalData(Graphics2D g, int x1, int y1, int x2, int y2, int index1, int index2) {
+	public void drawAdditionalData(Graphics2D g, int x1, int y1, int x2, int y2,
+			int index1, int index2) {
 		if (shouldShowIndicies) {
-			final double i1fwidth = g.getFontMetrics().stringWidth("9999") * 1.1;
+			final double i1fwidth = g.getFontMetrics().stringWidth("9999")
+					* 1.1;
 			if (i1fwidth < Math.abs(x2 - x1)) {
 				int ny1 = y1;
 				if (y1 - g.getFontMetrics().getAscent() < 5) {
@@ -206,7 +222,8 @@ public class JGraphImagePlane extends JPanel {
 
 	}
 
-	private double map(double val, double min1, double max1, double min2, double max2) {
+	private double map(double val, double min1, double max1, double min2,
+			double max2) {
 		return (val - min1) / (max1 - min1) * (max2 - min2) + min2;
 	}
 }
