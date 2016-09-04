@@ -1,6 +1,7 @@
 package ru.dolika.experiment.sample;
 
-import static ru.dolika.debug.Debug.debug;
+import static ru.dolika.debug.Debug.isDebug;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -12,6 +13,7 @@ import javax.swing.JFileChooser;
 import javax.swing.ProgressMonitorInputStream;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import ru.dolika.debug.Debug;
 import ru.dolika.ui.MemorableDirectoryChooser;
 
 public class SampleFactory {
@@ -21,21 +23,20 @@ public class SampleFactory {
 	}
 
 	public static Sample forBinary(String filename) {
-		if (debug)
-			System.out.println("Opening samplefile " + filename);
+		Debug.println("Opening samplefile " + filename);
 
 		try (ObjectInputStream ois = new ObjectInputStream(
-				new ProgressMonitorInputStream(null, "Открытие", new FileInputStream(filename)))) {
+				new ProgressMonitorInputStream(null, "Открытие",
+						new FileInputStream(filename)))) {
 			Object o = ois.readObject();
 			if (o instanceof Sample) {
 				Sample sample = (Sample) o;
-				if (debug)
-					System.out.println("Opened sample binary");
-				if (debug)
+				Debug.println("Opened sample binary");
+				if (isDebug())
 					if (sample.getName() == null)
-						System.out.println("Sample name empty (null)");
+						Debug.println("Sample name empty (null)");
 					else
-						System.out.println("Sample name: " + sample.getName());
+						Debug.println("Sample name: " + sample.getName());
 
 				return sample;
 			}
@@ -44,14 +45,14 @@ public class SampleFactory {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		if (debug)
-			System.out.println("Problems openning sample file");
+		Debug.println("Problems openning sample file");
 		return null;
 	}
 
 	public static File saveSample(String filename, final Sample sample) {
 		if (filename == null) {
-			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(SampleFactory.class);
+			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(
+					SampleFactory.class);
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			chooser.setMultiSelectionEnabled(false);
 			chooser.resetChoosableFileFilters();
@@ -68,7 +69,8 @@ public class SampleFactory {
 
 		}
 		if (filename != null) {
-			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
+			try (ObjectOutputStream oos = new ObjectOutputStream(
+					new FileOutputStream(filename))) {
 				oos.writeObject(sample);
 				return new File(filename);
 			} catch (IOException e) {

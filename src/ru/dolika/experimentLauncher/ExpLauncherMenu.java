@@ -3,6 +3,8 @@
  */
 package ru.dolika.experimentLauncher;
 
+import static ru.dolika.experiment.sample.SampleFactory.saveSample;
+
 import java.io.FileNotFoundException;
 
 import javax.swing.JFileChooser;
@@ -120,8 +122,8 @@ public class ExpLauncherMenu extends JMenuBar {
 						workspace.setSample(null);
 						System.out.println(sample);
 						parent.setTitle(sample.getName());
-						parent.statusBar
-								.setText(String.format("%.6f", sample.getLength()));
+						parent.statusBar.setText(
+								String.format("%.6f", sample.getLength()));
 					}
 				}
 
@@ -136,11 +138,11 @@ public class ExpLauncherMenu extends JMenuBar {
 
 			workspace.save();
 			if (workspace.getSampleFile() != null) {
-				SampleFactory.saveSample(workspace.getSampleFile().toString(),
+				saveSample(workspace.getSampleFile().toString(),
 						workspace.getSample());
 			} else {
-				workspace.setSampleFile(
-						SampleFactory.saveSample(null, workspace.getSample()));
+				workspace
+						.setSampleFile(saveSample(null, workspace.getSample()));
 
 			}
 		});
@@ -149,8 +151,7 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenuItem fileSaveAs = new JMenuItem("Сохранить как...");
 		fileSaveAs.addActionListener(e -> {
 			workspace.save();
-			workspace.setSampleFile(
-					SampleFactory.saveSample(null, workspace.getSample()));
+			workspace.setSampleFile(saveSample(null, workspace.getSample()));
 		});
 		fileMenu.add(fileSaveAs);
 
@@ -201,11 +202,11 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenuItem chooseChannels = new JMenuItem("Выбрать каналы");
 		chooseChannels.addActionListener(e -> {
 			if (workspace.getSignalIDs() != null) {
-				if (Debug.debug) {
+				if (Debug.isDebug()) {
 					for (SignalIdentifier sd : workspace.getSignalIDs()) {
-						System.out.println(sd);
+						Debug.println(sd);
 					}
-					System.out.println();
+					Debug.println();
 				}
 			}
 			SignalIDSettingsDialog sidsd = new SignalIDSettingsDialog(parent);
@@ -223,7 +224,8 @@ public class ExpLauncherMenu extends JMenuBar {
 
 				if (status == SampleSettingsDialog.OK_BUTTON) {
 					parent.setTitle(workspace.getSample().getName());
-					parent.statusBar.setText("" + workspace.getSample().getLength());
+					parent.statusBar
+							.setText("" + workspace.getSample().getLength());
 				}
 
 			} catch (IllegalArgumentException e1) {

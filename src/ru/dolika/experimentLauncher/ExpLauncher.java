@@ -1,7 +1,5 @@
 ﻿package ru.dolika.experimentLauncher;
 
-import static ru.dolika.debug.Debug.debug;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
@@ -22,8 +20,7 @@ public class ExpLauncher extends JFrame {
 	private static final long serialVersionUID = 5151838479190943050L;
 
 	public static void main(String[] args) {
-		if (Debug.debug)
-			System.out.println("public static void main(String[] args)");
+		Debug.println("public static void main(String[] args)");
 		new ExpLauncher();
 	}
 
@@ -32,52 +29,49 @@ public class ExpLauncher extends JFrame {
 	JPanel contentPanel;
 
 	public void createAndShowGUI() {
-		SwingUtilities.invokeLater(() -> {
-			if (debug)
-				System.out.println("Creating gui");
-			statusBar = new JLabel();
-			contentPanel = new JPanel();
-			setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		Debug.println("Creating gui");
+		statusBar = new JLabel();
+		contentPanel = new JPanel();
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-			JMenuBar menuBar = new ExpLauncherMenu(ExpLauncher.this);
-			ExpLauncher.this.setJMenuBar(menuBar);
+		JMenuBar menuBar = new ExpLauncherMenu(ExpLauncher.this);
+		ExpLauncher.this.setJMenuBar(menuBar);
 
-			getContentPane().setLayout(new BorderLayout(16, 16));
+		getContentPane().setLayout(new BorderLayout(16, 16));
 
-			getContentPane().add(statusBar, BorderLayout.SOUTH);
+		getContentPane().add(statusBar, BorderLayout.SOUTH);
 
-			getContentPane().add(contentPanel, BorderLayout.CENTER);
+		getContentPane().add(contentPanel, BorderLayout.CENTER);
 
-			getContentPane().setPreferredSize(new Dimension(640, 480));
+		getContentPane().setPreferredSize(new Dimension(640, 480));
 
-			if (workspace != null) {
-				Sample sample;
-				if ((sample = workspace.getSample()) != null) {
-					ExpLauncher.this.setTitle(sample.getName());
-					ExpLauncher.this.statusBar.setText("" + sample.getLength());
-				}
+		if (workspace != null) {
+			Sample sample;
+			if ((sample = workspace.getSample()) != null) {
+				ExpLauncher.this.setTitle(sample.getName());
+				ExpLauncher.this.statusBar.setText("" + sample.getLength());
 			}
-			pack();
-			setLocationRelativeTo(null);
-			setVisible(true);
-		});
+		}
+		pack();
+		setLocationRelativeTo(null);
+		setVisible(true);
+
 	}
 
 	ExpLauncher() {
 		super("Обработчик данных");
 
-		if (debug)
-			System.out.println("Getting workspace instance");
+		Debug.println("Getting workspace instance");
 		workspace = Workspace.getInstance();
-		if (debug)
-			System.out.println("Got workspace instance");
+		Debug.println("Got workspace instance");
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
-			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
+			JExceptionHandler.getExceptionHanlder()
+					.uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 		}
-		createAndShowGUI();
+		SwingUtilities.invokeLater(this::createAndShowGUI);
 	}
 
 }

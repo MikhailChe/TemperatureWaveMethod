@@ -1,7 +1,5 @@
 package ru.dolika.experiment.workspace;
 
-import static ru.dolika.debug.Debug.debug;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -30,23 +28,18 @@ public class Workspace implements Serializable {
 
 	public synchronized static Workspace getInstance() {
 		if (instance == null) {
-			if (debug)
-				System.out.println("Opening instance");
+			Debug.println("Opening instance");
 			instance = open();
 		}
 		return instance;
 	}
 
 	public synchronized static Workspace open() {
-		if (Debug.debug)
-			System.out.println(
-					"Opening default workspace [static Workspace.open()]");
+		Debug.println("Opening default workspace [static Workspace.open()]");
 		Workspace opened = open(defaultWorkspace);
 
 		if (opened == null) {
-			if (Debug.debug)
-				System.out.println(
-						"There was no workspace file, creating new one");
+			Debug.println("There was no workspace file, creating new one");
 			opened = new Workspace();
 			opened.save();
 		}
@@ -55,9 +48,8 @@ public class Workspace implements Serializable {
 	}
 
 	public synchronized static Workspace open(String filename) {
-		if (Debug.debug)
-			System.out.println("Opening workspace [static Workspace.open("
-					+ filename + ")]");
+		Debug.println(
+				"Opening workspace [static Workspace.open(" + filename + ")]");
 
 		File f = new File(filename);
 		if (!f.exists())
@@ -67,8 +59,7 @@ public class Workspace implements Serializable {
 			Object o = ois.readObject();
 			if (o instanceof Workspace) {
 				Workspace wspace = (Workspace) o;
-				if (Debug.debug)
-					System.out.println("Opened workspace " + filename);
+				Debug.println("Opened workspace " + filename);
 				return wspace;
 			}
 
@@ -94,8 +85,7 @@ public class Workspace implements Serializable {
 	private List<SignalIdentifier> signalIDs;
 
 	private Workspace() {
-		if (Debug.debug)
-			System.out.println("Workpsace contructor called");
+		Debug.println("Workpsace contructor called");
 	}
 
 	public synchronized void save() {
@@ -103,8 +93,7 @@ public class Workspace implements Serializable {
 	}
 
 	public synchronized void save(String filename) {
-		if (Debug.debug)
-			System.out.println("Сохраняю рабочее пространство " + filename);
+		Debug.println("Сохраняю рабочее пространство " + filename);
 
 		try (ObjectOutputStream oos = new ObjectOutputStream(
 				new FileOutputStream(filename))) {
@@ -121,15 +110,13 @@ public class Workspace implements Serializable {
 	private void readObject(java.io.ObjectInputStream in)
 			throws IOException, ClassNotFoundException {
 		in.defaultReadObject();
-		if (Debug.debug)
-			System.out.println("Deserializing workspace");
+		Debug.println("Deserializing workspace");
 	}
 
 	public Sample getSample() {
 		if (sample == null) {
 			if (samplefile != null) {
-				if (Debug.debug)
-					System.out.println("Opening sample binary " + samplefile);
+				Debug.println("Opening sample binary " + samplefile);
 				sample = SampleFactory.forBinary(samplefile.toString());
 			}
 		}
