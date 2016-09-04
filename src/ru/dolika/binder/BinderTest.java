@@ -1,8 +1,12 @@
 package ru.dolika.binder;
 
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.joining;
 import static ru.dolika.binder.Binder.boundJCheckBox;
 import static ru.dolika.binder.Binder.boundJTextField;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
@@ -15,7 +19,11 @@ import org.junit.Test;
 
 public class BinderTest {
 
-	class SimpleBean {
+	class SimpleBean implements java.io.Serializable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 8405129845336949775L;
 		private String name = "";
 		private boolean correct = false;
 		final private PropertyChangeSupport pcs = new PropertyChangeSupport(
@@ -58,8 +66,7 @@ public class BinderTest {
 	public void initBean() {
 		bean = new SimpleBean();
 	}
-
-	@Test
+@Test
 	public void testBinding() throws InterruptedException {
 
 		JTextField field = new JTextField();
@@ -82,7 +89,7 @@ public class BinderTest {
 			if (i == 1) {
 				bean.setName("YO");
 			}
-			Thread.sleep(1000);
+			Thread.sleep(100);
 
 		}
 
@@ -90,8 +97,7 @@ public class BinderTest {
 		org.junit.Assert.assertEquals("YO", bean.getName());
 
 	}
-
-	@Test
+@Test
 	public void testCheckBox() {
 		JCheckBox box = new JCheckBox();
 		boundJCheckBox(bean, "correct", bean::addPropertyChangeListener,
@@ -113,13 +119,35 @@ public class BinderTest {
 			System.out.println(
 					i + " " + box.isSelected() + " " + bean.isCorrect());
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 
 				e.printStackTrace();
 			}
 		}
+	}
 
+	@Test
+	public void checkIntrospection() {
+		try {
+			BeanInfo info = java.beans.Introspector
+					.getBeanInfo(bean.getClass());
+			System.out.println(info);
+			System.out.println("\r\n");
+			System.out.println(info.getBeanDescriptor());
+			System.out.println("\r\n");
+			System.out.println(asList(info.getPropertyDescriptors()).stream()
+					.map(a -> a.toString()).collect(joining("\r\n")));
+			System.out.println("\r\n");
+			System.out.println(asList(info.getMethodDescriptors()).stream()
+					.map(a -> a.toString()).collect(joining("\r\n")));
+			System.out.println("\r\n");
+			System.out.println(asList(info.getEventSetDescriptors()).stream()
+					.map(a -> a.toString()).collect(joining("\r\n")));
+		} catch (IntrospectionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

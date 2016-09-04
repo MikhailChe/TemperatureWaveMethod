@@ -6,8 +6,11 @@ import java.beans.PropertyChangeListener;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import javax.management.NotCompliantMBeanException;
 import javax.swing.JCheckBox;
 import javax.swing.JTextField;
+
+import com.sun.jmx.mbeanserver.Introspector;
 
 public class Binder<T extends Component, U> implements PropertyChangeListener {
 
@@ -16,6 +19,7 @@ public class Binder<T extends Component, U> implements PropertyChangeListener {
 			BiConsumer<String, PropertyChangeListener> beanAddPropertyChangeListener,
 			Consumer<? super R> beanSetValue, S control,
 			Consumer<? super R> controlSetValue, Class<R> type) {
+
 		Binder<S, R> binder = new Binder<>(bean, control, beanSetValue,
 				controlSetValue, type);
 		beanAddPropertyChangeListener.accept(propertyName, binder);
