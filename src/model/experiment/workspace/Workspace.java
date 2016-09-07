@@ -22,9 +22,9 @@ public class Workspace implements Serializable {
 	 * @author Mikey
 	 * @serialField serialVersionUID
 	 */
-	private static final long serialVersionUID = -2757711622043028895L;
-	private static Workspace instance = null;
-	final static String defaultWorkspace = "workspace.expws";
+	final private static long	serialVersionUID	= -2757711622043028895L;
+	private static Workspace	instance			= null;
+	final static String			defaultWorkspace	= "workspace.expws";
 
 	public synchronized static Workspace getInstance() {
 		if (instance == null) {
@@ -80,9 +80,9 @@ public class Workspace implements Serializable {
 		w.save(filename);
 	}
 
-	private transient Sample sample = null;
-	private File samplefile = null;
-	private List<SignalIdentifier> signalIDs;
+	private transient Sample		sample;
+	private File					samplefile;
+	private List<SignalIdentifier>	signalIDs;
 
 	private Workspace() {
 		Debug.println("Workpsace contructor called");
