@@ -1,4 +1,4 @@
-package startHere;
+package controller.startHere;
 
 import debug.Debug;
 import view.experimentLauncher.ExpLauncher;
