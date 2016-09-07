@@ -1,4 +1,4 @@
-package controller.experiment.Analyzer;
+package model.experiment.Analyzer;
 
 import java.io.Serializable;
 

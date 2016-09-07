@@ -1,4 +1,4 @@
-package controller.experiment.Analyzer.Angstrem;
+package view.experiment.Analyzer.Angstrem;
 
 import java.awt.GridLayout;
 import java.io.IOException;

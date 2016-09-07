@@ -66,7 +66,6 @@ public class SampleFactory {
 					filename += ".smpl";
 				}
 			}
-
 		}
 		if (filename != null) {
 			try (ObjectOutputStream oos = new ObjectOutputStream(

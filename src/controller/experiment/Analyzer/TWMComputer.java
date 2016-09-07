@@ -23,6 +23,7 @@ import javax.swing.ProgressMonitor;
 
 import controller.mysql.ExperimentUploader;
 import debug.JExceptionHandler;
+import model.experiment.Analyzer.SignalParameters;
 import model.experiment.measurement.Diffusivity;
 import model.experiment.measurement.Measurement;
 import model.experiment.measurement.Temperature;

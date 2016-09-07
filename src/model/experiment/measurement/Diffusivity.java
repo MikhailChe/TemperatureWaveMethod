@@ -2,7 +2,7 @@ package model.experiment.measurement;
 
 import java.io.Serializable;
 
-import controller.experiment.Analyzer.SignalParameters;
+import model.experiment.Analyzer.SignalParameters;
 import model.experiment.signalID.BaseSignalID;
 import model.experiment.signalID.SignalIdentifier;
 

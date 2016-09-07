@@ -1,4 +1,4 @@
-package controller.experiment.Analyzer.drawing;
+package view.experiment.Analyzer.drawing;
 
 import java.util.ArrayList;
 import java.util.List;

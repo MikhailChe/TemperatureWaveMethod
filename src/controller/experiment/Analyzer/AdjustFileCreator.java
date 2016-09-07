@@ -15,6 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
 import debug.JExceptionHandler;
+import model.experiment.Analyzer.SignalParameters;
 import model.experiment.zeroCrossing.ZeroCrossing;
 import model.experiment.zeroCrossing.ZeroCrossingFactory;
 import model.experiment.zeroCrossing.ZeroCrossingViewerPanel;

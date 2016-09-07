@@ -14,8 +14,11 @@ public class KappaPhysicsModel {
 		b3 = Math.cosh(kappaOverSqrt2) * Math.cos(kappaOverSqrt2);
 		b4 = Math.sinh(kappaOverSqrt2) * Math.sin(kappaOverSqrt2);
 
-		double nominator = Bio * Bio * (b1 - b2) - 2.0 * kappaOverSqrt2 * (2.0 * Bio) * b4 - kappa * kappa * (b1 + b2);
-		double denominator = Bio * Bio * (b1 + b2) + 2.0 * kappaOverSqrt2 * (2.0 * Bio) * b3
+		double nominator = Bio * Bio * (b1 - b2)
+				- 2.0 * kappaOverSqrt2 * (2.0 * Bio) * b4
+				- kappa * kappa * (b1 + b2);
+		double denominator = Bio * Bio * (b1 + b2)
+				+ 2.0 * kappaOverSqrt2 * (2.0 * Bio) * b3
 				+ kappa * kappa * (b1 - b2);
 
 		double val = Math.atan2(nominator, denominator);
@@ -51,11 +54,5 @@ public class KappaPhysicsModel {
 		}
 
 		return kappa;
-	}
-
-	public static void main(String[] args) {
-		for (double i = 0.01; i < 3; i += 0.01) {
-			System.out.printf("%.3f\t%.3f", searchKappaFor(-i, 0.00001), -i);
-		}
 	}
 }

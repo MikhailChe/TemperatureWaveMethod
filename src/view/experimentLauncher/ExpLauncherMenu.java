@@ -15,7 +15,6 @@ import javax.swing.JOptionPane;
 
 import controller.experiment.Analyzer.AdjustFileCreator;
 import controller.experiment.Analyzer.TWMFoldersSelector;
-import controller.experiment.Analyzer.Angstrem.AngstremAnalyzer;
 import debug.Debug;
 import debug.JExceptionHandler;
 import model.experiment.sample.Sample;
@@ -26,6 +25,7 @@ import model.experiment.workspace.Workspace;
 import model.thermocouple.graduate.GraduateConverter;
 import model.thermocouple.graduate.GraduateFileCreator;
 import view.MemorableDirectoryChooser;
+import view.experiment.Analyzer.Angstrem.AngstremAnalyzer;
 import view.experiment.folderWatch.FolderWatch;
 import view.experiment.signalID.dialog.SignalIDSettingsDialog;
 

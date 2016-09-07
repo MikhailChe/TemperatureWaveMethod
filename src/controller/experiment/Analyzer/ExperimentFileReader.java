@@ -10,16 +10,16 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class ExperimentFileReader {
-	private String[] headerInfo;
-	private double experimentFrequecny;
-	private double[][] initialData;
-	private double[][] croppedData;
-	private int croppedDataPeriods = 0;
+	private String[]		headerInfo;
+	private double			experimentFrequecny;
+	private double[][]		initialData;
+	private double[][]		croppedData;
+	private int				croppedDataPeriods	= 0;
 
-	private double[] maxValues;
-	private double[] minValues;
-	private List<Integer> indicies = null;
-	private int leastSpace = Integer.MAX_VALUE;
+	private double[]		maxValues;
+	private double[]		minValues;
+	private List<Integer>	indicies			= null;
+	private int				leastSpace			= Integer.MAX_VALUE;
 
 	public ExperimentFileReader(Path filepath) throws IOException {
 		List<String> strings = Files.readAllLines(filepath,
@@ -85,7 +85,9 @@ public class ExperimentFileReader {
 
 			int mindiff = IntStream.range(0, indicies.length - 1)
 					.mapToObj((i) -> new int[] { indicies[i], indicies[i + 1] })
-					.mapToInt((a) -> a[1] - a[0]).filter(i -> i > 500).min()
+					.mapToInt((a) -> a[1] - a[0])
+					.filter(i -> i > 500)
+					.min()
 					.orElse(Integer.MAX_VALUE);
 
 			int startIndex = indicies[0];
