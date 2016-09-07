@@ -15,6 +15,7 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.bind.annotation.XmlAttribute;
 
 import debug.JExceptionHandler;
 
@@ -29,19 +30,19 @@ import debug.JExceptionHandler;
 
 public class Graduate implements Serializable {
 
-	public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+	public static FileNameExtensionFilter	extensionFilter		= new FileNameExtensionFilter(
 			"Файл градуировки бинарный (*.gradbin)", "gradbin");
 
-	private static final long serialVersionUID = 1347461243070602565L;
-	private NavigableMap<Double, Double> grads;
-	private Map<Double, Double> answerMap;
-
-	public File fromFile;
+	private static final long				serialVersionUID	= 1347461243070602565L;
+	private NavigableMap<Double, Double>	grads;
+	private transient Map<Double, Double>	answerMap;
+	@XmlAttribute
+	public File								fromFile;
 
 	/**
 	 * Конструктор градуировки
 	 */
-	protected Graduate() {
+	public Graduate() {
 		grads = Collections.synchronizedNavigableMap(new TreeMap<>());
 		answerMap = new HashMap<>();
 	}

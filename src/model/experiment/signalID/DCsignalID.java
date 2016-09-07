@@ -1,11 +1,13 @@
 package model.experiment.signalID;
 
+import javax.xml.bind.annotation.XmlElement;
+
 import model.thermocouple.graduate.Graduate;
 
 public class DCsignalID extends SignalIdentifier {
 	private static final long	serialVersionUID	= 8360006961756985177L;
 
-	Graduate					graduate;
+	private Graduate			graduate;
 
 	public DCsignalID() {
 		// graduate = GraduateFactory.forFile(new
@@ -21,8 +23,11 @@ public class DCsignalID extends SignalIdentifier {
 
 	// gain for 1100 = 682
 	// gain for 0100 = 271
-	double			gain			= 270;		// /2.51
+
+	double			gain			= 270;
+
 	final double	ADCgain			= 32767.5;
+
 	final double	ADCmaxVoltage	= 10;
 
 	public double getVoltage(double ADCvalue) {
@@ -42,6 +47,7 @@ public class DCsignalID extends SignalIdentifier {
 		return graduate;
 	}
 
+	@XmlElement
 	public Graduate setGraduate(Graduate newgrad) {
 		this.graduate = newgrad;
 		return this.graduate;

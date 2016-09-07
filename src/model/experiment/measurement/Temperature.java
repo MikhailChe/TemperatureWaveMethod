@@ -1,6 +1,10 @@
 package model.experiment.measurement;
 
+import java.io.IOException;
 import java.io.Serializable;
+
+import javax.xml.bind.JAXB;
+import javax.xml.bind.annotation.XmlElement;
 
 import model.experiment.signalID.DCsignalID;
 import model.experiment.signalID.SignalIdentifier;
@@ -13,17 +17,20 @@ import model.experiment.signalID.SignalIdentifier;
  * @author Mike
  *
  */
+
 public class Temperature implements Serializable {
 
 	/**
 	* 
 	*/
-	private static final long serialVersionUID = 4120156102719235528L;
+	private static final long	serialVersionUID	= 4120156102719235528L;
 	/**
 	 * Значение температуры
 	 */
-	public double value;
-	public double signalLevel;
+
+	public double				value;
+
+	public double				signalLevel;
 	/**
 	 * Идентификатор канала данных, с помощью которых была вычислена эта
 	 * температура
@@ -32,7 +39,8 @@ public class Temperature implements Serializable {
 	 * @see SignalIdentifier
 	 * 
 	 */
-	public DCsignalID signalID;
+	@XmlElement
+	public DCsignalID			signalID;
 
 	public Temperature() {
 		value = 0;
@@ -52,4 +60,15 @@ public class Temperature implements Serializable {
 	public String getHeader() {
 		return "Температура";
 	}
+
+	private void writeObject(java.io.ObjectOutputStream out)
+			throws IOException {
+		JAXB.marshal(this, out);
+	}
+
+	private void readObject(java.io.ObjectInputStream in)
+			throws IOException, ClassNotFoundException {
+		JAXB.unmarshal(in, this.getClass());
+	}
+
 }
