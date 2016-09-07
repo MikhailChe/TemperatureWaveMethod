@@ -48,6 +48,7 @@ public class ZeroCrossing implements Serializable {
 		try {
 			s = new Scanner(
 					new BufferedInputStream(new FileInputStream(filename)));
+
 			while (s.hasNext()) {
 				double key = 0;
 				if (s.hasNextDouble()) {
