@@ -1,4 +1,4 @@
-package model.experiment.zeroCrossing;
+package view.experiment.zeroCrossing;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -8,6 +8,8 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 
 import javax.swing.JPanel;
+
+import model.experiment.zeroCrossing.ZeroCrossing;
 
 public class ZeroCrossingViewerPanel extends JPanel {
 

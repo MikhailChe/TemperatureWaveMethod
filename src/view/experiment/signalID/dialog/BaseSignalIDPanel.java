@@ -17,8 +17,8 @@ import javax.swing.border.TitledBorder;
 import model.experiment.signalID.BaseSignalID;
 import model.experiment.zeroCrossing.ZeroCrossing;
 import model.experiment.zeroCrossing.ZeroCrossingFactory;
-import model.experiment.zeroCrossing.ZeroCrossingViewerPanel;
 import view.MemorableDirectoryChooser;
+import view.experiment.zeroCrossing.ZeroCrossingViewerPanel;
 
 public class BaseSignalIDPanel extends SignalIDPanel {
 	private static final long serialVersionUID = 7193781950090874574L;

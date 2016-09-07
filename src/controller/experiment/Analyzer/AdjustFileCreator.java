@@ -18,8 +18,8 @@ import debug.JExceptionHandler;
 import model.experiment.Analyzer.SignalParameters;
 import model.experiment.zeroCrossing.ZeroCrossing;
 import model.experiment.zeroCrossing.ZeroCrossingFactory;
-import model.experiment.zeroCrossing.ZeroCrossingViewerPanel;
 import view.MemorableDirectoryChooser;
+import view.experiment.zeroCrossing.ZeroCrossingViewerPanel;
 
 public class AdjustFileCreator implements Runnable {
 	final private JFrame parent;
