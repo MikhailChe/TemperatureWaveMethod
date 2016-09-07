@@ -13,8 +13,8 @@ import javax.swing.WindowConstants;
 
 import debug.Debug;
 import debug.JExceptionHandler;
-import experiment.sample.Sample;
-import experiment.workspace.Workspace;
+import model.experiment.sample.Sample;
+import model.experiment.workspace.Workspace;
 
 public class ExpLauncher extends JFrame {
 	private static final long	serialVersionUID	= 5151838479190943050L;

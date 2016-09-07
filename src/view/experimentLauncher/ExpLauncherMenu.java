@@ -3,7 +3,7 @@
  */
 package view.experimentLauncher;
 
-import static experiment.sample.SampleFactory.saveSample;
+import static model.experiment.sample.SampleFactory.saveSample;
 
 import java.io.FileNotFoundException;
 
@@ -13,21 +13,21 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
+import controller.experiment.Analyzer.AdjustFileCreator;
+import controller.experiment.Analyzer.TWMFoldersSelector;
+import controller.experiment.Analyzer.Angstrem.AngstremAnalyzer;
 import debug.Debug;
 import debug.JExceptionHandler;
-import experiment.Analyzer.AdjustFileCreator;
-import experiment.Analyzer.TWMFoldersSelector;
-import experiment.Analyzer.Angstrem.AngstremAnalyzer;
-import experiment.folderWatch.FolderWatch;
-import experiment.sample.Sample;
-import experiment.sample.SampleFactory;
-import experiment.sample.SampleSettingsDialog;
-import experiment.signalID.SignalIdentifier;
-import experiment.signalID.dialog.SignalIDSettingsDialog;
-import experiment.workspace.Workspace;
-import thermocouple.graduate.GraduateConverter;
-import thermocouple.graduate.GraduateFileCreator;
+import model.experiment.sample.Sample;
+import model.experiment.sample.SampleFactory;
+import model.experiment.sample.SampleSettingsDialog;
+import model.experiment.signalID.SignalIdentifier;
+import model.experiment.workspace.Workspace;
+import model.thermocouple.graduate.GraduateConverter;
+import model.thermocouple.graduate.GraduateFileCreator;
 import view.MemorableDirectoryChooser;
+import view.experiment.folderWatch.FolderWatch;
+import view.experiment.signalID.dialog.SignalIDSettingsDialog;
 
 /**
  * @author Mikey

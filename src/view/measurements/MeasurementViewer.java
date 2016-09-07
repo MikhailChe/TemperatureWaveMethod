@@ -10,7 +10,6 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.border.SoftBevelBorder;
 
-import experiment.measurement.Measurement;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
@@ -20,6 +19,7 @@ import javafx.scene.chart.XYChart;
 import javafx.scene.chart.XYChart.Data;
 import javafx.scene.chart.XYChart.Series;
 import javafx.util.StringConverter;
+import model.experiment.measurement.Measurement;
 
 public class MeasurementViewer extends JPanel {
 	private static final long serialVersionUID = 3555290921726804677L;
