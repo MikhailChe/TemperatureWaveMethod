@@ -73,7 +73,7 @@ public class MeasurementViewer extends JPanel {
 
 			double temperature = m.temperature.get(0).value;
 			List<Data<Number, Number>> dataPoints = m.tCond.stream()
-					.map(t -> new Data<Number, Number>(temperature, t.tCond))
+					.map(t -> new Data<Number, Number>(temperature, t.diffusivity))
 					.collect(toList());
 			Iterator<Data<Number, Number>> iter = dataPoints.iterator();
 			Platform.runLater(() -> {

@@ -42,7 +42,7 @@ public class Diffusivity implements Serializable {
 	/**
 	 * Значение коэффициента температуропроводности
 	 */
-	public double tCond;
+	public double diffusivity;
 
 	public SignalParameters initSignalParams;
 
@@ -51,11 +51,11 @@ public class Diffusivity implements Serializable {
 	}
 
 	public double gettCond() {
-		return tCond;
+		return diffusivity;
 	}
 
 	public Diffusivity settCond(double tCond) {
-		this.tCond = tCond;
+		this.diffusivity = tCond;
 		return this;
 	}
 
@@ -66,7 +66,7 @@ public class Diffusivity implements Serializable {
 				initSignalParams == null ? 0
 						: Math.toDegrees(initSignalParams.phase),
 				signalID == null ? 0 : signalID.zc.getCurrentShift(frequency),
-				Math.toDegrees(phase), kappa, tCond);
+				Math.toDegrees(phase), kappa, diffusivity);
 	}
 
 	public String getHeader() {

@@ -323,7 +323,7 @@ public class TWMComputer implements Callable<Measurement> {
 					tCond.amplitude = param.amplitude;
 					tCond.kappa = kappa;
 					tCond.phase = adjustAngle;
-					tCond.tCond = A;
+					tCond.diffusivity = A;
 					tCond.initSignalParams = param;
 					tCond.frequency = EXPERIMENT_FREQUENCY;
 					tCond.signalID = id;

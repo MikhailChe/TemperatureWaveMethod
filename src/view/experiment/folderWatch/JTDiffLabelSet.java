@@ -57,7 +57,7 @@ public class JTDiffLabelSet extends JPanel {
 			argumentLabel.setText(String.format("%+.3f", tCond.phase));
 			kappaLabel.setText(String.format("%+.3f", tCond.kappa));
 			amplitudeLabel.setText(String.format("%.0f", tCond.amplitude));
-			diffusivityLabel.setText(String.format("%.3e", tCond.tCond));
+			diffusivityLabel.setText(String.format("%.3e", tCond.diffusivity));
 		}
 	}
 }

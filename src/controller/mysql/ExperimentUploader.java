@@ -152,6 +152,6 @@ public class ExperimentUploader {
 				m.time, m.frequency, m.tCond.get(
 						channel).amplitude,
 				m.tCond.get(
-						0).tCond));
+						0).diffusivity));
 	}
 }
