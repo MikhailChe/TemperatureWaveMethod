@@ -1,8 +1,9 @@
 package controller.experiment.Analyzer;
 
+import static java.nio.file.Files.readAllLines;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,28 +23,24 @@ public class ExperimentFileReader {
 	private int				leastSpace			= Integer.MAX_VALUE;
 
 	public ExperimentFileReader(Path filepath) throws IOException {
-		List<String> strings = Files.readAllLines(filepath,
+		List<String> strings = readAllLines(filepath,
 				StandardCharsets.UTF_8);
 
-		if (strings == null) {
-			System.err.println("Couldn't load file content or file is empty");
-			return;
-		}
-		if (strings.size() <= 1) {
-			System.err.println("Invalid file.");
-			return;
-		}
+		if (strings == null) throw new IOException(
+				"Couldn't load file content or file is empty");
+		if (strings.size() <= 1)
+			throw new IOException("Invalid file.");
+
 		String header = strings.remove(0);
+
 		headerInfo = header.split("\t");
-		if (headerInfo.length != 2) {
-			System.err.println("Invalid header format");
-			return;
-		}
+		if (headerInfo.length != 2)
+			throw new IOException("Invalid header format");
+
 		int sizeToValidate = Integer.parseInt(headerInfo[0]);
-		if (strings.size() != sizeToValidate) {
-			System.err.println("Size in the header doesn't match size of file");
-			return;
-		}
+
+		if (strings.size() != sizeToValidate) throw new IOException(
+				"Size in the header doesn't match size of file");
 
 		experimentFrequecny = (Integer.parseInt(headerInfo[1]) / 10.0);
 
