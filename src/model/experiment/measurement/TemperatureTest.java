@@ -30,5 +30,7 @@ public class TemperatureTest {
 
 		assertEquals(t.signalLevel, deser.signalLevel, 0.01);
 		assertEquals(t.value, deser.value, 0.01);
+
+		new File("testTemperature.xml").delete();
 	}
 }

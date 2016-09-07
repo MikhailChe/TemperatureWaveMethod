@@ -17,17 +17,18 @@ public class Sample implements Serializable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 5445072467730687777L;
-	private String name = "Default_name";
-	private double length = 0;
-	private String comment = "Default_comment";
+	private static final long								serialVersionUID	= 5445072467730687777L;
+	private String											name				= "Default_name";
+	private double											length				= 0;
+	private String											comment				= "Default_comment";
 
-	private PropertyChangeSupport mPcs = new PropertyChangeSupport(this);
+	private PropertyChangeSupport							mPcs				= new PropertyChangeSupport(
+			this);
 
-	private transient final static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+	private transient final static FileNameExtensionFilter	extensionFilter		= new FileNameExtensionFilter(
 			"Файл образца (*.smpl)", "smpl");
 
-	public List<Measurement> measurements = new ArrayList<>();;
+	public List<Measurement>								measurements		= new ArrayList<>();;
 
 	public Sample() {
 		super();

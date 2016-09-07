@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workspace>
+    <samplefile>C:\Users\Mikhail\Documents\testnew.smpl</samplefile>
+    <signalIDs>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dCsignalID"/>
+        <signalIDs/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dCsignalID"/>
+        <signalIDs/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dCsignalID"/>
+        <signalIDs/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dCsignalID"/>
+        <signalIDs/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dCsignalID"/>
+        <signalIDs/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dCsignalID"/>
+        <signalIDs/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dCsignalID"/>
+        <signalIDs/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dCsignalID"/>
+        <signalIDs/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dCsignalID"/>
+        <signalIDs/>
+    </signalIDs>
+    <sample>
+        <comment>CommentNew</comment>
+        <length>0.001111</length>
+        <name>Testnew</name>
+    </sample>
+    <sampleFile>C:\Users\Mikhail\Documents\testnew.smpl</sampleFile>
+</workspace>

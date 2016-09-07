@@ -2,6 +2,8 @@ package model.experiment.signalID;
 
 import java.io.File;
 
+import javax.xml.bind.annotation.XmlElement;
+
 import model.experiment.zeroCrossing.ZeroCrossing;
 import model.experiment.zeroCrossing.ZeroCrossingFactory;
 
@@ -16,8 +18,9 @@ public class BaseSignalID extends SignalIdentifier {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -5580000396824926562L;
-	public ZeroCrossing zc;
+	private static final long	serialVersionUID	= -5580000396824926562L;
+	@XmlElement
+	public ZeroCrossing			zc;
 
 	public BaseSignalID() {
 		super();
@@ -32,6 +35,16 @@ public class BaseSignalID extends SignalIdentifier {
 	public BaseSignalID(File file) {
 		this();
 		zc = ZeroCrossingFactory.forFile(file);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null) return false;
+		if (o == this) return true;
+		if (!(o instanceof BaseSignalID)) return false;
+		if (this.zc != null)
+			if (this.zc.equals(((BaseSignalID) o).zc)) return true;
+		return false;
 	}
 
 }

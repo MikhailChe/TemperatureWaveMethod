@@ -1,15 +1,14 @@
 package model.experiment.workspace;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.bind.JAXB;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 
 import debug.Debug;
 import model.experiment.sample.Sample;
@@ -24,7 +23,7 @@ public class Workspace implements Serializable {
 	 */
 	final private static long	serialVersionUID	= -2757711622043028895L;
 	private static Workspace	instance			= null;
-	final static String			defaultWorkspace	= "workspace.expws";
+	final static String			defaultWorkspace	= "workspace.xml";
 
 	public synchronized static Workspace getInstance() {
 		if (instance == null) {
@@ -52,28 +51,8 @@ public class Workspace implements Serializable {
 				"Opening workspace [static Workspace.open(" + filename + ")]");
 
 		File f = new File(filename);
-		if (!f.exists())
-			return null;
-		try (ObjectInputStream ois = new ObjectInputStream(
-				new FileInputStream(f))) {
-			Object o = ois.readObject();
-			if (o instanceof Workspace) {
-				Workspace wspace = (Workspace) o;
-				Debug.println("Opened workspace " + filename);
-				return wspace;
-			}
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return null;
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			return null;
-		}
-		return null;
+		if (!f.exists()) return null;
+		return JAXB.unmarshal(new File(filename), Workspace.class);
 	}
 
 	public synchronized static void save(String filename, Workspace w) {
@@ -81,7 +60,11 @@ public class Workspace implements Serializable {
 	}
 
 	private transient Sample		sample;
+	@XmlElement
 	private File					samplefile;
+
+	@XmlElement
+	@XmlElementWrapper(name = "signalIDs")
 	private List<SignalIdentifier>	signalIDs;
 
 	private Workspace() {
@@ -94,17 +77,7 @@ public class Workspace implements Serializable {
 
 	public synchronized void save(String filename) {
 		Debug.println("Сохраняю рабочее пространство " + filename);
-
-		try (ObjectOutputStream oos = new ObjectOutputStream(
-				new FileOutputStream(filename))) {
-			oos.writeObject(this);
-			oos.flush();
-			oos.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		JAXB.marshal(this, new File(filename));
 	}
 
 	private void readObject(java.io.ObjectInputStream in)
