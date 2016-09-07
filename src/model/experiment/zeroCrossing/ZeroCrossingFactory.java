@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class ZeroCrossingFactory {
 
-	private static Map<File, ZeroCrossing> cache = synchronizedMap(
+	final private static Map<File, ZeroCrossing> cache = synchronizedMap(
 			new Hashtable<>());
 
 	/**
@@ -31,5 +31,4 @@ public class ZeroCrossingFactory {
 
 		return cache.computeIfAbsent(file, ZeroCrossing::new);
 	}
-
 }

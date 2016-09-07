@@ -1,11 +1,12 @@
 package model.experiment.zeroCrossing;
 
+import static java.util.Collections.synchronizedNavigableMap;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -22,23 +23,15 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class ZeroCrossing implements Serializable {
 
-	private static final long serialVersionUID = 3683913050629661757L;
-	public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+	final private static long					serialVersionUID	= 3683913050629661757L;
+	final public static FileNameExtensionFilter	extensionFilter		= new FileNameExtensionFilter(
 			"Файл юстировки текстовы (*.zc)", "zc");
-	public File forFile;
 
-	private NavigableMap<Double, Double> shifts;
+	final public File							forFile;
 
-	private Map<Double, Double> answerMap;
+	final private NavigableMap<Double, Double>	shifts;
 
-	/**
-	 * Защищенный конструктор юстировки.
-	 */
-	protected ZeroCrossing() {
-		shifts = Collections
-				.synchronizedNavigableMap(new TreeMap<Double, Double>());
-		answerMap = new HashMap<Double, Double>();
-	}
+	final private Map<Double, Double>			answerMap;
 
 	/**
 	 * Защищенный конструктор для создания юстировки из файла
@@ -48,13 +41,14 @@ public class ZeroCrossing implements Serializable {
 	 * @throws IllegalArgumentException
 	 */
 	protected ZeroCrossing(File filename) throws IllegalArgumentException {
-		this();
+		shifts = synchronizedNavigableMap(new TreeMap<Double, Double>());
+		answerMap = new HashMap<Double, Double>();
+
 		Scanner s;
 		try {
 			s = new Scanner(
 					new BufferedInputStream(new FileInputStream(filename)));
 			while (s.hasNext()) {
-
 				double key = 0;
 				if (s.hasNextDouble()) {
 					key = s.nextDouble();
