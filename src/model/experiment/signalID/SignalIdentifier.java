@@ -1,15 +1,20 @@
 package model.experiment.signalID;
 
-import java.io.Serializable;
+import javax.xml.bind.annotation.XmlSeeAlso;
 
-public class SignalIdentifier implements Serializable {
-	private static final long serialVersionUID = 3649178817602291964L;
+@XmlSeeAlso(value = { DCsignalID.class, BaseSignalID.class,
+		AdjustmentSignalID.class })
+public class SignalIdentifier {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null) return false;
-		if (o == this) return true;
-		if (o instanceof SignalIdentifier) return true;
+		if (o == null)
+			return false;
+		if (o == this)
+			return true;
+		if (o instanceof SignalIdentifier)
+			return true;
 		return false;
 	}
+
 }

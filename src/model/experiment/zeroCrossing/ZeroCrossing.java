@@ -6,7 +6,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -21,17 +20,15 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  * @author Mikey
  *
  */
-public class ZeroCrossing implements Serializable {
-
-	final private static long					serialVersionUID	= 3683913050629661757L;
-	final public static FileNameExtensionFilter	extensionFilter		= new FileNameExtensionFilter(
+public class ZeroCrossing {
+	final public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
 			"Файл юстировки текстовы (*.zc)", "zc");
 
-	final public File							forFile;
+	final public File forFile;
 
-	final private NavigableMap<Double, Double>	shifts;
+	final private NavigableMap<Double, Double> shifts;
 
-	final private Map<Double, Double>			answerMap;
+	final private Map<Double, Double> answerMap;
 
 	/**
 	 * Защищенный конструктор для создания юстировки из файла
@@ -46,8 +43,8 @@ public class ZeroCrossing implements Serializable {
 
 		Scanner s;
 		try {
-			s = new Scanner(
-					new BufferedInputStream(new FileInputStream(filename)));
+			s = new Scanner(new BufferedInputStream(new FileInputStream(
+					filename)));
 
 			while (s.hasNext()) {
 				double key = 0;
@@ -129,8 +126,8 @@ public class ZeroCrossing implements Serializable {
 				double higherDiff = nearestHigherKey - frequency;
 				double lowerK = 1 - (lowerDiff / diff);
 				double higherK = 1 - (higherDiff / diff);
-				double value = nearestLowerValue * lowerK
-						+ nearestHigherValue * higherK;
+				double value = nearestLowerValue * lowerK + nearestHigherValue
+						* higherK;
 				answerMap.put(frequency, value);
 				return value;
 			}

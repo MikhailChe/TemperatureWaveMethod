@@ -14,13 +14,8 @@ import model.experiment.zeroCrossing.ZeroCrossingFactory;
  *
  */
 public class BaseSignalID extends SignalIdentifier {
-
-	/**
-	 * 
-	 */
-	private static final long	serialVersionUID	= -5580000396824926562L;
 	@XmlElement
-	public ZeroCrossing			zc;
+	public ZeroCrossing zc;
 
 	public BaseSignalID() {
 		super();
@@ -39,11 +34,15 @@ public class BaseSignalID extends SignalIdentifier {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null) return false;
-		if (o == this) return true;
-		if (!(o instanceof BaseSignalID)) return false;
+		if (o == null)
+			return false;
+		if (o == this)
+			return true;
+		if (!(o instanceof BaseSignalID))
+			return false;
 		if (this.zc != null)
-			if (this.zc.equals(((BaseSignalID) o).zc)) return true;
+			if (this.zc.equals(((BaseSignalID) o).zc))
+				return true;
 		return false;
 	}
 
