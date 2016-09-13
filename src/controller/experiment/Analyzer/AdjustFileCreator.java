@@ -6,8 +6,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -32,68 +35,108 @@ public class AdjustFileCreator implements Runnable {
 	@Override
 	public void run() {
 		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(
-				TWMComputer.class);
-		fileChooser.setDialogTitle("Выберите папку для обработки юстировки");
+		        TWMComputer.class);
+		fileChooser.setDialogTitle(
+		        "Выберите папку для обработки юстировки");
 		fileChooser.setMultiSelectionEnabled(false);
-		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		fileChooser.setFileSelectionMode(
+		        JFileChooser.DIRECTORIES_ONLY);
 
-		Integer channelNumber = (Integer) JOptionPane.showInputDialog(parent,
-				"Выберите номер канала для выполнения юстировки",
-				"Каналы юстировки", JOptionPane.QUESTION_MESSAGE,
-				null, new Integer[] { 1, 2, 3, 4, 5 }, new Integer(1));
+		Integer channelNumber = (Integer) JOptionPane
+		        .showInputDialog(parent,
+		                "Выберите номер канала для выполнения юстировки",
+		                "Каналы юстировки",
+		                JOptionPane.QUESTION_MESSAGE,
+		                null,
+		                new Integer[] { 1, 2, 3, 4, 5 },
+		                new Integer(1));
 
 		if (channelNumber == null) return;
 
-		if (fileChooser.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION)
-			return;
+		if (fileChooser.showOpenDialog(
+		        parent) != JFileChooser.APPROVE_OPTION)
+		    return;
 		fileChooser.saveCurrentSelection();
 
-		File folder = fileChooser.getSelectedFile();
-		File[] files = folder.listFiles(
-				pathname -> pathname.getName().matches("^[0-9]+.txt$"));
-		fileChooser = new MemorableDirectoryChooser(this.getClass());
+		Path folder = fileChooser.getSelectedFile()
+		        .toPath();
+		// File[] files = Files.list(folder)
+		// .filter(p -> p.getFileName()
+		// .toString()
+		// .matches("^[0-9]+.txt$"));
+		File[] files = folder.toFile().listFiles(
+		        pathname -> pathname.getName()
+		                .matches("^[0-9]+.txt$"));
+		Stream<Path> filePaths = Arrays.asList(files)
+		        .stream()
+		        .map(f -> f.toPath());
+		fileChooser = new MemorableDirectoryChooser(
+		        this.getClass());
 		fileChooser.setDialogTitle(
-				"Выберите папку для сохранения юстировочных данных");
-		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		        "Выберите папку для сохранения юстировочных данных");
+		fileChooser.setFileSelectionMode(
+		        JFileChooser.DIRECTORIES_ONLY);
 		fileChooser.setMultiSelectionEnabled(false);
 		if (fileChooser
-				.showSaveDialog(parent) != JFileChooser.APPROVE_OPTION)
-			return;
+		        .showSaveDialog(
+		                parent) != JFileChooser.APPROVE_OPTION)
+		    return;
 		fileChooser.saveCurrentSelection();
-		File resultFolder = fileChooser.getSelectedFile();
-		File resultFile = new File(resultFolder,
-				System.currentTimeMillis() + "ch" + channelNumber + "."
-						+ ZeroCrossing.extensionFilter
-								.getExtensions()[0]);
-		try (BufferedWriter bw = Files.newBufferedWriter(
-				resultFile.toPath(), StandardOpenOption.CREATE_NEW,
-				StandardOpenOption.WRITE)) {
-			ProgressMonitor pm = new ProgressMonitor(parent,
-					"Папка обрабатывается слишком долго", "", 0,
-					files.length);
-			AtomicInteger progIter = new AtomicInteger(0);
-			for (File file : files) {
-				ExperimentFileReader reader = new ExperimentFileReader(
-						file.toPath());
+		Path resultFolder = fileChooser.getSelectedFile()
+		        .toPath();
 
-				double[][] croppedData = reader.getCroppedData();
+		Path resultFile = resultFolder
+		        .resolve(System.currentTimeMillis() + "ch"
+		                + channelNumber + "."
+		                + ZeroCrossing.extensionFilter
+		                        .getExtensions()[0]);
+
+		try (BufferedWriter bw = Files.newBufferedWriter(
+		        resultFile,
+		        StandardOpenOption.CREATE_NEW,
+		        StandardOpenOption.WRITE)) {
+			ProgressMonitor pm = new ProgressMonitor(parent,
+			        "Папка обрабатывается слишком долго",
+			        "", 0,
+			        files.length);
+
+			AtomicInteger progIter = new AtomicInteger(0);
+			filePaths.forEach(path -> {
+				ExperimentFileReader reader = null;
+				try {
+					reader = new ExperimentFileReader(
+					        path);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				if (reader == null)
+				    return;
+
+				double[][] croppedData = reader
+				        .getCroppedData();
 				if (channelNumber >= croppedData.length) {
 					JOptionPane.showMessageDialog(parent,
-							"Выбранного канала не существует в одном или нескольких файлах",
-							"Ошибка",
-							JOptionPane.ERROR_MESSAGE);
+					        "Выбранного канала не существует в одном или нескольких файлах",
+					        "Ошибка",
+					        JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 				final int FREQ_INDEX = reader
-						.getCroppedDataPeriodsCount() * 2;
+				        .getCroppedDataPeriodsCount() * 2;
 				SignalParameters param = TWMComputer
-						.getSignalParameters(croppedData[channelNumber],
-								FREQ_INDEX);
-				bw.write(String.format("%.1f\t%.3f\r\n",
-						reader.getExperimentFrequency(),
-						Math.toDegrees(-param.phase)));
+				        .getSignalParameters(
+				                croppedData[channelNumber],
+				                FREQ_INDEX);
+				try {
+					bw.write(String.format("%.1f\t%.3f\r\n",
+					        reader.getExperimentFrequency(),
+					        Math.toDegrees(-param.phase)));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				pm.setProgress(progIter.incrementAndGet());
-			}
+			});
 
 			pm.close();
 			bw.flush();
@@ -102,18 +145,23 @@ public class AdjustFileCreator implements Runnable {
 			Toolkit.getDefaultToolkit().beep();
 		} catch (IOException e) {
 			JExceptionHandler.getExceptionHanlder()
-					.uncaughtException(Thread.currentThread(), e);
+			        .uncaughtException(
+			                Thread.currentThread(), e);
 			e.printStackTrace();
 		}
 
-		ZeroCrossing zc = ZeroCrossingFactory.forFile(resultFile);
-		ZeroCrossingViewerPanel zcvp = new ZeroCrossingViewerPanel(zc);
+		ZeroCrossing zc = ZeroCrossingFactory
+		        .forFile(resultFile.toFile());
+		ZeroCrossingViewerPanel zcvp = new ZeroCrossingViewerPanel(
+		        zc);
 
-		JDialog dialog = new JDialog(parent, "Файл юстировки");
+		JDialog dialog = new JDialog(parent,
+		        "Файл юстировки");
 		dialog.getContentPane().add(zcvp);
 		dialog.pack();
 		dialog.setModal(true);
-		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		dialog.setDefaultCloseOperation(
+		        JDialog.DISPOSE_ON_CLOSE);
 		dialog.setVisible(true);
 	}
 }
