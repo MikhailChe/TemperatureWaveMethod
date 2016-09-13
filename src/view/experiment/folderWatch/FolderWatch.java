@@ -155,7 +155,7 @@ public class FolderWatch extends JDialog implements Runnable {
 			temperatureLabel.setText(
 					String.format("%+.0f K", m.temperature.get(0).value));
 		}
-		List<Diffusivity> tConds = m.tCond;
+		List<Diffusivity> tConds = m.diffusivity;
 		if (tConds.size() != tCondPanels.size()) {
 			Debug.println("Sizes differ");
 			for (JTDiffLabelSet set : tCondPanels) {

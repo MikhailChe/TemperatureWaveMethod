@@ -3,9 +3,18 @@ package model.experiment.measurement;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+
+import controller.lambda.HashCoder;
+import controller.lambda.Predicates;
 
 /**
  * Класс измерений. Хранит в себе одну точку измерения. Каждой точке присвоено
@@ -15,37 +24,37 @@ import java.util.List;
  * @author Mike
  * 
  */
-public class Measurement implements Serializable {
-
-	/**
-	 * 
-	 */
-	private static final long	serialVersionUID	= -7462056475933664988L;
+@XmlAccessorType(XmlAccessType.NONE)
+public class Measurement {
 	/**
 	 * Время измерения
 	 */
+	@XmlElement
 	public long					time;
 	/**
 	 * Частота эксперимента
 	 */
+	@XmlAttribute
 	public double				frequency;
 	/**
 	 * Массив температур
 	 * 
 	 * @see Temperature
 	 */
+	@XmlElement
 	public List<Temperature>	temperature;
 	/**
 	 * Массив значений температуропроводности
 	 * 
 	 * @see Diffusivity
 	 */
-	public List<Diffusivity>	tCond;
+	@XmlElement
+	public List<Diffusivity>	diffusivity;
 
 	public Measurement() {
 		time = System.currentTimeMillis();
 		temperature = new ArrayList<>();
-		tCond = new ArrayList<>();
+		diffusivity = new ArrayList<>();
 	}
 
 	public String getHeader() {
@@ -54,7 +63,7 @@ public class Measurement implements Serializable {
 		for (Temperature t : temperature) {
 			sb.append(t.getHeader() + ";");
 		}
-		for (Diffusivity t : tCond) {
+		for (Diffusivity t : diffusivity) {
 			sb.append(t.getHeader() + ";");
 		}
 		return sb.toString();
@@ -67,7 +76,7 @@ public class Measurement implements Serializable {
 		for (Temperature t : temperature) {
 			sb.append(t.toString() + ";");
 		}
-		for (Diffusivity t : tCond) {
+		for (Diffusivity t : diffusivity) {
 			sb.append(t.toString() + ";");
 		}
 		return sb.toString();
@@ -83,8 +92,9 @@ public class Measurement implements Serializable {
 	 */
 	public static Measurement forBinary(String filename) {
 
-		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(
-				filename))) {
+		try (ObjectInputStream ois = new ObjectInputStream(
+		        new FileInputStream(
+		                filename))) {
 			Object o = ois.readObject();
 			if (o instanceof Measurement) {
 				return (Measurement) o;
@@ -103,7 +113,27 @@ public class Measurement implements Serializable {
 	 * @return новый пустой объект измерений
 	 * @see Measurement
 	 */
+
 	public static Measurement getMeasurement() {
 		return new Measurement();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o == null) return false;
+		if (o == this) return true;
+		if (!(o instanceof Measurement)) return false;
+		Predicate<Function<Measurement, Object>> eq = Predicates
+		        .equalizer(this, (Measurement) o);
+		return eq.test(a -> a.frequency)
+		        && eq.test(a -> a.diffusivity)
+		        && eq.test(a -> a.temperature)
+		        && eq.test(a -> a.time);
+	}
+
+	@Override
+	public int hashCode() {
+		return HashCoder.hashCode(frequency, diffusivity,
+		        temperature, time);
 	}
 }

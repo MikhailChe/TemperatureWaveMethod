@@ -1,9 +1,14 @@
 package model.experiment.signalID;
 
 import java.io.File;
+import java.util.Arrays;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 
+import controller.lambda.HashCoder;
+import controller.lambda.Predicates;
 import model.experiment.zeroCrossing.ZeroCrossing;
 import model.experiment.zeroCrossing.ZeroCrossingFactory;
 
@@ -13,6 +18,7 @@ import model.experiment.zeroCrossing.ZeroCrossingFactory;
  * @author Mikey
  *
  */
+@XmlAccessorType(XmlAccessType.NONE)
 public class BaseSignalID extends SignalIdentifier {
 	@XmlElement
 	public ZeroCrossing zc;
@@ -34,16 +40,18 @@ public class BaseSignalID extends SignalIdentifier {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null)
-			return false;
-		if (o == this)
-			return true;
-		if (!(o instanceof BaseSignalID))
-			return false;
-		if (this.zc != null)
-			if (this.zc.equals(((BaseSignalID) o).zc))
-				return true;
-		return false;
+		return Predicates.areEqual(BaseSignalID.class, this,
+		        o,
+		        Arrays.asList(a -> a.zc));
 	}
 
+	@Override
+	public int hashCode() {
+		return HashCoder.hashCode(zc);
+	}
+
+	@Override
+	public String toString() {
+		return "Base signal";
+	}
 }

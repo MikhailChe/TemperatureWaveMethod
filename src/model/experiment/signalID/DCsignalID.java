@@ -1,13 +1,20 @@
 package model.experiment.signalID;
 
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.Arrays;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 
+import controller.lambda.HashCoder;
+import controller.lambda.Predicates;
+import controller.lambda.Utils;
 import model.thermocouple.graduate.Graduate;
 
+@XmlAccessorType(XmlAccessType.NONE)
 public class DCsignalID extends SignalIdentifier {
+
+	@XmlElement
 	private Graduate graduate;
 
 	public DCsignalID() {
@@ -17,41 +24,48 @@ public class DCsignalID extends SignalIdentifier {
 
 	public DCsignalID(Graduate grad) {
 		if (grad == null)
-			throw new NullPointerException();
+		    throw new NullPointerException();
 		graduate = grad;
 	}
 
-	double zeroTemperature = 273 + 22;
+	@XmlElement
+	double			zeroTemperature		= 273 + 22;
 
 	// gain for 1100 = 682
 	// gain for 0100 = 271
 
-	double gain = 270;
+	@XmlElement
+	double			amplifierGain		= 270;
 
-	final double ADCgain = 32767.5;
+	@XmlElement
+	final double	adcMaxVoltageCode	= 32767.5;
 
-	final double ADCmaxVoltage = 10;
+	@XmlElement
+	final double	adcMaxVoltage		= 10;
 
 	public double getVoltage(double ADCvalue) {
-		return ((ADCvalue / ADCgain) * ADCmaxVoltage) / gain;
+		return ((ADCvalue / adcMaxVoltageCode)
+		        * adcMaxVoltage)
+		        / amplifierGain;
 	}
 
 	public double getTemperature(double voltage) {
 		if (graduate == null)
-			return -1;
-		return graduate.getTemperature(voltage, zeroTemperature);
+		    throw new NullPointerException(
+		            "Cannot convert voltage to temperature. No graduate information found.");
+		return graduate.getTemperature(voltage,
+		        zeroTemperature);
 	}
 
 	public void setGain(double gain) {
 		if (gain != 0)
-			this.gain = gain;
+		    this.amplifierGain = gain;
 	}
 
 	public Graduate getGraduate() {
 		return graduate;
 	}
 
-	@XmlElement
 	public Graduate setGraduate(Graduate newgrad) {
 		this.graduate = newgrad;
 		return this.graduate;
@@ -59,18 +73,24 @@ public class DCsignalID extends SignalIdentifier {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null) return false;
-		if (o == this) return true;
-		if (!(o instanceof DCsignalID)) return false;
+		return Predicates.areEqual(DCsignalID.class, this,
+		        o, Arrays.asList(DCsignalID::getGraduate,
+		                a -> a.amplifierGain,
+		                a -> a.zeroTemperature,
+		                a -> a.adcMaxVoltageCode,
+		                a -> a.adcMaxVoltage));
+	}
 
-		Predicate<Function<DCsignalID, Object>> equalizer = (
-				Function<DCsignalID, Object> f) -> {
-			return f.apply(this).equals(f.apply((DCsignalID) o));
-		};
-		return equalizer.test(DCsignalID::getGraduate)
-				&& equalizer.test(a -> a.gain)
-				&& equalizer.test(a -> a.zeroTemperature)
-				&& equalizer.test(a -> a.ADCgain)
-				&& equalizer.test(a -> a.ADCmaxVoltage);
+	@Override
+	public int hashCode() {
+		return HashCoder.hashCode(graduate, amplifierGain,
+		        zeroTemperature);
+	}
+
+	@Override
+	public String toString() {
+		return Utils.stringOfObject(adcMaxVoltage,
+		        adcMaxVoltageCode, amplifierGain,
+		        zeroTemperature, graduate);
 	}
 }

@@ -15,7 +15,7 @@ import java.util.Map;
 public class ZeroCrossingFactory {
 
 	final private static Map<File, ZeroCrossing> cache = synchronizedMap(
-			new Hashtable<>());
+	        new Hashtable<>());
 
 	/**
 	 * Выдаёт файл юстировки. Если файл уже открывался, то берется файл из кэша,
@@ -29,6 +29,7 @@ public class ZeroCrossingFactory {
 		if (file == null) throw new NullPointerException();
 		if (cache == null) return null;
 
-		return cache.computeIfAbsent(file, ZeroCrossing::new);
+		return cache.computeIfAbsent(file,
+		        ZeroCrossing::new);
 	}
 }

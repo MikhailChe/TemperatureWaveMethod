@@ -72,12 +72,12 @@ public class MeasurementViewer extends JPanel {
 		try {
 
 			double temperature = m.temperature.get(0).value;
-			List<Data<Number, Number>> dataPoints = m.tCond.stream()
+			List<Data<Number, Number>> dataPoints = m.diffusivity.stream()
 					.map(t -> new Data<Number, Number>(temperature, t.diffusivity))
 					.collect(toList());
 			Iterator<Data<Number, Number>> iter = dataPoints.iterator();
 			Platform.runLater(() -> {
-				matchSeriesSize(m.tCond.size());
+				matchSeriesSize(m.diffusivity.size());
 				chart.getData().stream().map(Series::getData)
 						.forEachOrdered(data -> data.add(iter.next()));
 			});

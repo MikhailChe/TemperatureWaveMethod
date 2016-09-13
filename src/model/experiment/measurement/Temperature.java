@@ -1,11 +1,16 @@
 package model.experiment.measurement;
 
 import java.io.IOException;
-import java.io.Serializable;
+import java.util.Arrays;
 
 import javax.xml.bind.JAXB;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
+import controller.lambda.HashCoder;
+import controller.lambda.Predicates;
 import model.experiment.signalID.DCsignalID;
 import model.experiment.signalID.SignalIdentifier;
 
@@ -17,20 +22,16 @@ import model.experiment.signalID.SignalIdentifier;
  * @author Mike
  *
  */
+@XmlAccessorType(XmlAccessType.NONE)
+public class Temperature {
 
-public class Temperature implements Serializable {
-
-	/**
-	* 
-	*/
-	private static final long	serialVersionUID	= 4120156102719235528L;
 	/**
 	 * Значение температуры
 	 */
-
-	public double				value;
-
-	public double				signalLevel;
+	@XmlAttribute(name = "kelvins")
+	public double		value;
+	@XmlElement(name = "voltage")
+	public double		signalLevel;
 	/**
 	 * Идентификатор канала данных, с помощью которых была вычислена эта
 	 * температура
@@ -40,7 +41,7 @@ public class Temperature implements Serializable {
 	 * 
 	 */
 	@XmlElement
-	public DCsignalID			signalID;
+	public DCsignalID	signalID;
 
 	public Temperature() {
 		value = 0;
@@ -62,13 +63,27 @@ public class Temperature implements Serializable {
 	}
 
 	private void writeObject(java.io.ObjectOutputStream out)
-			throws IOException {
+	        throws IOException {
 		JAXB.marshal(this, out);
 	}
 
 	private void readObject(java.io.ObjectInputStream in)
-			throws IOException, ClassNotFoundException {
+	        throws IOException, ClassNotFoundException {
 		JAXB.unmarshal(in, this.getClass());
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return Predicates.areEqual(Temperature.class, this,
+		        o,
+		        Arrays.asList(a -> a.signalID,
+		                a -> a.signalLevel, a -> a.value));
+	}
+
+	@Override
+	public int hashCode() {
+		return HashCoder.hashCode(signalID, signalLevel,
+		        value);
 	}
 
 }

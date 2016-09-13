@@ -141,7 +141,7 @@ public class ExperimentUploader {
 	}
 
 	private void uploadMeasurement(Measurement m, Integer id) {
-		IntStream.range(0, m.tCond.size()).forEach(channel -> mysql.queryUpdate(
+		IntStream.range(0, m.diffusivity.size()).forEach(channel -> mysql.queryUpdate(
 				String.format("INSERT INTO `%s` SET " + "`id_sample` = ?,"
 						+ "`id_channel` = ?," + "`temperature` = ?,"
 						+ "`timestamp` = ?," + "`frequency` = ?,"
@@ -149,9 +149,9 @@ public class ExperimentUploader {
 						measuresTableName),
 				id, channel, m.temperature.get(
 						0).value,
-				m.time, m.frequency, m.tCond.get(
+				m.time, m.frequency, m.diffusivity.get(
 						channel).amplitude,
-				m.tCond.get(
+				m.diffusivity.get(
 						0).diffusivity));
 	}
 }

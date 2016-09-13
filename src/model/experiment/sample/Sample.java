@@ -2,33 +2,37 @@ package model.experiment.sample;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 
+import controller.lambda.HashCoder;
+import controller.lambda.Predicates;
 import model.experiment.measurement.Measurement;
 
-public class Sample implements Serializable {
+@XmlAccessorType(XmlAccessType.NONE)
+public class Sample {
 
-	/**
-	 * 
-	 */
-	private static final long								serialVersionUID	= 5445072467730687777L;
-	private String											name				= "Default_name";
-	private double											length				= 0;
-	private String											comment				= "Default_comment";
+	@XmlAttribute
+	private String											name			= "Default_name";
+	@XmlAttribute
+	private double											length			= 0;
+	private String											comment			= "Default_comment";
 
-	private PropertyChangeSupport							mPcs				= new PropertyChangeSupport(
-			this);
+	private PropertyChangeSupport							mPcs			= new PropertyChangeSupport(
+	        this);
 
-	private transient final static FileNameExtensionFilter	extensionFilter		= new FileNameExtensionFilter(
-			"Файл образца (*.smpl)", "smpl");
+	private transient final static FileNameExtensionFilter	extensionFilter	= new FileNameExtensionFilter(
+	        "Файл образца (*.smpl)", "smpl");
 
-	public List<Measurement>								measurements		= new ArrayList<>();;
+	@XmlElement
+	public List<Measurement>								measurements	= new ArrayList<>();;
 
 	public Sample() {
 		super();
@@ -61,7 +65,8 @@ public class Sample implements Serializable {
 	public void setLength(double length) {
 		double oldLength = this.length;
 		this.length = length;
-		mPcs.firePropertyChange("length", oldLength, this.length);
+		mPcs.firePropertyChange("length", oldLength,
+		        this.length);
 	}
 
 	public String getComment() {
@@ -71,31 +76,23 @@ public class Sample implements Serializable {
 	public void setComment(String comment) {
 		String oldComment = this.comment;
 		this.comment = comment;
-		mPcs.firePropertyChange("comment", oldComment, this.comment);
+		mPcs.firePropertyChange("comment", oldComment,
+		        this.comment);
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == this)
-			return true;
-		if (o == null)
-			return false;
-
-		if (!(o instanceof Sample))
-			return false;
-		Predicate<Function<Sample, Object>> equalizer = (
-				Function<Sample, Object> f) -> {
-			return f.apply(this).equals(f.apply((Sample) o));
-		};
-		return equalizer.test(Sample::getLength)
-				&& equalizer.test(Sample::getName)
-				&& equalizer.test(Sample::getComment);
+		return Predicates.areEqual(Sample.class, this,
+		        (Sample) o,
+		        Arrays.asList(Sample::getLength,
+		                Sample::getName,
+		                Sample::getComment));
 	}
 
 	@Override
 	public int hashCode() {
-		return this.name.hashCode() + this.comment.hashCode()
-				+ Double.hashCode(this.length);
+		return HashCoder.hashCode(this.name, this.comment,
+		        this.length);
 	}
 
 	@Override
@@ -129,22 +126,27 @@ public class Sample implements Serializable {
 				return 0;
 			}
 
-			if (o1.temperature.get(0).value == o2.temperature.get(0).value) {
+			if (o1.temperature
+			        .get(0).value == o2.temperature
+			                .get(0).value) {
 				return 0;
 			}
-			if (o1.temperature.get(0).value > o2.temperature.get(0).value) {
+			if (o1.temperature.get(0).value > o2.temperature
+			        .get(0).value) {
 				return 1;
 			}
 			return -1;
 		});
 	}
 
-	public void addPropertyChangeListener(PropertyChangeListener listener) {
+	public void addPropertyChangeListener(
+	        PropertyChangeListener listener) {
 		mPcs.addPropertyChangeListener(listener);
 
 	}
 
-	public void removePropertyChangeListener(PropertyChangeListener listener) {
+	public void removePropertyChangeListener(
+	        PropertyChangeListener listener) {
 		mPcs.removePropertyChangeListener(listener);
 	}
 

@@ -1,7 +1,7 @@
 package model.experiment.workspace;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 
@@ -17,14 +17,22 @@ public class WorkspaceTest {
 	public void testSave() {
 		Workspace w = Workspace.getInstance();
 		w.setSampleFile(
-				new File("C:\\Users\\Mikhail\\Documents\\testnew.smpl"));
-		w.getSignalIDs().addAll(asList(new BaseSignalID(), new DCsignalID(),
-				new AdjustmentSignalID(), null));
+		        new File(
+		                "C:\\Users\\Mikhail\\Documents\\testnew.smpl"));
+		w.getSignalIDs().clear();
+		w.getSignalIDs().addAll(
+		        asList(new BaseSignalID(), new DCsignalID(),
+		                new AdjustmentSignalID(), null));
 		w.save();
 
 		Workspace deser = Workspace.open();
-		assertEquals(w.getSampleFile(), deser.getSampleFile());
-		assertEquals(w.getSample(), deser.getSample());
-		assertEquals(w.getSignalIDs(), deser.getSignalIDs());
+		assertNotNull(deser);
+
+		assertEquals(w.getSampleFile(),
+		        deser.getSampleFile());
+
+		assertEquals(w.getSignalIDs(),
+		        deser.getSignalIDs());
+
 	}
 }

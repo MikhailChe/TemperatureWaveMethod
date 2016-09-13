@@ -328,7 +328,7 @@ public class TWMComputer implements Callable<Measurement> {
 					tCond.frequency = EXPERIMENT_FREQUENCY;
 					tCond.signalID = id;
 
-					result.tCond.add(tCond);
+					result.diffusivity.add(tCond);
 
 				} else if (SHIFTS[currentChannel] instanceof DCsignalID) {
 					DCsignalID signID = (DCsignalID) SHIFTS[currentChannel];
@@ -344,7 +344,7 @@ public class TWMComputer implements Callable<Measurement> {
 					Diffusivity tCond = new Diffusivity();
 					tCond.amplitude = param.amplitude;
 					tCond.phase = -param.phase;
-					result.tCond.add(tCond);
+					result.diffusivity.add(tCond);
 				}
 			}
 			reader = null;

@@ -1,7 +1,14 @@
 package model.experiment.measurement;
 
-import java.io.Serializable;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+
+import controller.lambda.Predicates;
 import model.experiment.Analyzer.SignalParameters;
 import model.experiment.signalID.BaseSignalID;
 import model.experiment.signalID.SignalIdentifier;
@@ -12,39 +19,42 @@ import model.experiment.signalID.SignalIdentifier;
  * @author Mike
  *
  */
-public class Diffusivity implements Serializable {
-
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6849674773117070919L;
+@XmlAccessorType(XmlAccessType.NONE)
+public class Diffusivity {
 	/**
 	 * Объект класса, идентифицирующего канал, на котором проводились измерения
 	 * 
 	 * @see BaseSignalID
 	 * @see SignalIdentifier
 	 */
-	public BaseSignalID signalID;
+	@XmlElement
+	public BaseSignalID		signalID;
 	/**
 	 * Фаза сигнала
 	 */
-	public double phase;
+	@XmlElement
+	public double			phase;
 
-	public double frequency;
+	@XmlAttribute
+	public double			frequency;
 	/**
 	 * Амплитуда сигнала
 	 */
-	public double amplitude;
+	@XmlElement
+	public double			amplitude;
 	/**
 	 * коэффициент каппа
 	 */
-	public double kappa;
+	@XmlElement
+	public double			kappa;
 	/**
 	 * Значение коэффициента температуропроводности
 	 */
-	public double diffusivity;
+	@XmlElement
+	public double			diffusivity;
 
-	public SignalParameters initSignalParams;
+	@XmlElement
+	public SignalParameters	initSignalParams;
 
 	public Diffusivity() {
 		signalID = null;
@@ -62,15 +72,45 @@ public class Diffusivity implements Serializable {
 	@Override
 	public String toString() {
 
-		return String.format("%.0f;%.3f;%.3f;%.3f;%.3f;%.4e", amplitude,
-				initSignalParams == null ? 0
-						: Math.toDegrees(initSignalParams.phase),
-				signalID == null ? 0 : signalID.zc.getCurrentShift(frequency),
-				Math.toDegrees(phase), kappa, diffusivity);
+		return String.format(
+		        "%.0f;%.3f;%.3f;%.3f;%.3f;%.4e", amplitude,
+		        initSignalParams == null ? 0
+		                : Math.toDegrees(
+		                        initSignalParams.phase),
+		        signalID == null ? 0
+		                : signalID.zc
+		                        .getCurrentShift(frequency),
+		        Math.toDegrees(phase), kappa, diffusivity);
 	}
 
 	public String getHeader() {
 		return "Амплитуда;Начальная фаза;Нулеваая фаза;Скорректированная фаза;Каппа;Температуропроводность";
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (o == null) return false;
+		if (o == this) return true;
+		if (!(o instanceof Diffusivity)) return false;
+		Predicate<Function<Diffusivity, Object>> eq = Predicates
+		        .equalizer(this, (Diffusivity) o);
+		return eq.test(a -> a.amplitude)
+		        && eq.test(a -> a.diffusivity)
+		        && eq.test(a -> a.frequency)
+		        && eq.test(a -> a.initSignalParams)
+		        && eq.test(a -> a.kappa)
+		        && eq.test(a -> a.phase)
+		        && eq.test(a -> a.signalID);
+	}
+
+	@Override
+	public int hashCode() {
+		return Double.hashCode(amplitude)
+		        + Double.hashCode(diffusivity)
+		        + Double.hashCode(frequency)
+		        + initSignalParams.hashCode()
+		        + Double.hashCode(kappa)
+		        + Double.hashCode(phase)
+		        + signalID.hashCode();
+	}
 }
