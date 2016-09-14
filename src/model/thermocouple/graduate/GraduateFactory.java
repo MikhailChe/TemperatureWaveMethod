@@ -90,6 +90,9 @@ public class GraduateFactory {
 	 */
 
 	public static void saveBinary(File file, Graduate g) {
+		if (file == null)
+			throw new NullPointerException("file is null");
+		g.name = file.getName();
 		try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
 			oos.writeObject(g);
 			oos.flush();

@@ -35,6 +35,7 @@ public class GraduateFileCreator implements Runnable {
 			if (chooser.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION) {
 				chooser.saveCurrentSelection();
 				File outputFile = chooser.getSelectedFile();
+				
 				if (!outputFile.toString().toLowerCase().endsWith("." + Graduate.extensionFilter.getExtensions()[0])) {
 					outputFile = new File(outputFile.toString() + "." + Graduate.extensionFilter.getExtensions()[0]);
 				}
