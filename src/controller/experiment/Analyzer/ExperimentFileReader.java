@@ -4,6 +4,7 @@ import static java.nio.file.Files.readAllLines;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,23 +12,24 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class ExperimentFileReader {
-	private String[]		headerInfo;
-	private double			experimentFrequecny;
-	private double[][]		initialData;
-	private double[][]		croppedData;
-	private int				croppedDataPeriods	= 0;
+	private String[] headerInfo;
+	private double experimentFrequecny;
+	private double[][] initialData;
+	private double[][] croppedData;
+	private int croppedDataPeriods = 0;
 
-	private double[]		maxValues;
-	private double[]		minValues;
-	private List<Integer>	indicies			= null;
-	private int				leastSpace			= Integer.MAX_VALUE;
+	private double[] maxValues;
+	private double[] minValues;
+	private List<Integer> indicies = null;
+	private int leastSpace = Integer.MAX_VALUE;
+
+	private final long time;
 
 	public ExperimentFileReader(Path filepath) throws IOException {
-		List<String> strings = readAllLines(filepath,
-				StandardCharsets.UTF_8);
-
-		if (strings == null) throw new IOException(
-				"Couldn't load file content or file is empty");
+		List<String> strings = readAllLines(filepath, StandardCharsets.UTF_8);
+		time = Files.getLastModifiedTime(filepath).toMillis();
+		if (strings == null)
+			throw new IOException("Couldn't load file content or file is empty");
 		if (strings.size() <= 1)
 			throw new IOException("Invalid file.");
 
@@ -39,8 +41,8 @@ public class ExperimentFileReader {
 
 		int sizeToValidate = Integer.parseInt(headerInfo[0]);
 
-		if (strings.size() != sizeToValidate) throw new IOException(
-				"Size in the header doesn't match size of file");
+		if (strings.size() != sizeToValidate)
+			throw new IOException("Size in the header doesn't match size of file");
 
 		experimentFrequecny = (Integer.parseInt(headerInfo[1]) / 10.0);
 
@@ -81,18 +83,14 @@ public class ExperimentFileReader {
 			int[] indicies = getPulseIndicies();
 
 			int mindiff = IntStream.range(0, indicies.length - 1)
-					.mapToObj((i) -> new int[] { indicies[i], indicies[i + 1] })
-					.mapToInt((a) -> a[1] - a[0])
-					.filter(i -> i > 500)
-					.min()
-					.orElse(Integer.MAX_VALUE);
+					.mapToObj((i) -> new int[] { indicies[i], indicies[i + 1] }).mapToInt((a) -> a[1] - a[0])
+					.filter(i -> i > 500).min().orElse(Integer.MAX_VALUE);
 
 			int startIndex = indicies[0];
 			int stopIndex = indicies[indicies.length - 1];
 			croppedDataPeriods = (stopIndex - startIndex) / mindiff;
 			for (int i = 0; i < croppedData.length; i++) {
-				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex,
-						stopIndex);
+				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex, stopIndex);
 			}
 		}
 		return croppedData;
@@ -148,13 +146,16 @@ public class ExperimentFileReader {
 				}
 			}
 		}
-		Integer[] inds = (Integer[]) indicies
-				.toArray(new Integer[indicies.size()]);
+		Integer[] inds = (Integer[]) indicies.toArray(new Integer[indicies.size()]);
 		int[] outinds = new int[inds.length];
 		int i = 0;
 		for (int value : inds) {
 			outinds[i++] = value;
 		}
 		return outinds;
+	}
+
+	public long getTime() {
+		return time;
 	}
 }
