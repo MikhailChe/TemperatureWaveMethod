@@ -5,6 +5,7 @@ package view.experimentLauncher;
 
 import static model.experiment.sample.SampleFactory.saveSampleXML;
 
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 
@@ -22,12 +23,12 @@ import debug.Debug;
 import debug.JExceptionHandler;
 import model.experiment.sample.Sample;
 import model.experiment.sample.SampleFactory;
-import model.experiment.sample.SampleSettingsDialog;
 import model.experiment.signalID.SignalIdentifier;
 import model.experiment.workspace.Workspace;
 import view.MemorableDirectoryChooser;
 import view.experiment.Analyzer.Angstrem.AngstremAnalyzer;
 import view.experiment.folderWatch.FolderWatch;
+import view.experiment.sample.SampleSettingsDialog;
 import view.experiment.signalID.dialog.SignalIDSettingsDialog;
 
 /**
@@ -37,50 +38,51 @@ import view.experiment.signalID.dialog.SignalIDSettingsDialog;
 public class ExpLauncherMenu extends JMenuBar {
 	private static final long serialVersionUID = 2882344753047235272L;
 
-	/**
-	 * 
-	 */
+	final Workspace workspace = Workspace.getInstance();
+	final ExpLauncher parent;
 
-	public ExpLauncherMenu(ExpLauncher parent) {
-		Workspace workspace = Workspace.getInstance();
+	public void newSample(ActionEvent e) {
+		Sample sample = workspace.getSample();
+		if (sample != null) {
+			int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
+					"Хотите сохранить изменения в образце перед созданием нового?", "Не забудь сохраниться",
+					JOptionPane.YES_NO_CANCEL_OPTION);
+			if (shouldSaveOption == JOptionPane.NO_OPTION) {
+				sample = null;
+				System.gc();
+			}
+			if (shouldSaveOption == JOptionPane.YES_OPTION) {
+				saveSampleXML(workspace.getSampleFile().toString(), workspace.getSample());
+				sample = null;
+				System.gc();
+			}
+		}
+		if (sample == null) {
+			Sample s = SampleFactory.getSample();
+			int status = SampleSettingsDialog.showSampleSettings(parent, s);
+			if (status == SampleSettingsDialog.OK_BUTTON) {
+				workspace.setSample(s);
+				parent.setTitle(workspace.getSample().getName());
+				parent.statusBar.setText(String.format("%.6f", workspace.getSample().getLength()));
+				workspace.setSampleFile(null);
+			} else {
+				/* Добавить обработчик отказа */;
+			}
+		}
+	}
+
+	public ExpLauncherMenu(final ExpLauncher parent) {
+		this.parent = parent;
 		JMenu fileMenu = new JMenu("Файл");
 		this.add(fileMenu);
-
 		JMenuItem fileNewSample = new JMenuItem("Новый образец");
-		fileNewSample.addActionListener(e -> {
-			Sample sample = workspace.getSample();
-			if (sample != null) {
-				int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
-						"Хотите сохранить изменения в образце перед созданием нового?", "Не забудь сохраниться",
-						JOptionPane.YES_NO_CANCEL_OPTION);
-				if (shouldSaveOption == JOptionPane.NO_OPTION) {
-					sample = null;
-					System.gc();
-				}
-				if (shouldSaveOption == JOptionPane.YES_OPTION) {
-					saveSampleXML(workspace.getSampleFile().toString(), workspace.getSample());
-					sample = null;
-					System.gc();
-				}
-			}
-			if (sample == null) {
-				Sample s = SampleFactory.getSample();
-				int status = SampleSettingsDialog.showSampleSettings(parent, s);
-				if (status == SampleSettingsDialog.OK_BUTTON) {
-					workspace.setSample(s);
-					parent.setTitle(workspace.getSample().getName());
-					parent.statusBar.setText(String.format("%.6f", workspace.getSample().getLength()));
-					workspace.setSampleFile(null);
-				} else {
-					/* Добавить обработчик отказа */;
-				}
-
-			}
-		});
+		fileNewSample.addActionListener(this::newSample);
 		fileMenu.add(fileNewSample);
+
 		JMenu fileOpen = new JMenu("Открыть");
 		fileMenu.add(fileOpen);
 		JMenuItem fileOpenProject = new JMenuItem("Образец...");
+
 		fileOpenProject.addActionListener(e -> {
 			Sample sample;
 			if ((sample = workspace.getSample()) != null) {
@@ -125,8 +127,9 @@ public class ExpLauncherMenu extends JMenuBar {
 		fileOpen.add(fileOpenProject);
 
 		JMenuItem fileSave = new JMenuItem("Сохранить...");
-		fileSave.addActionListener(e -> {
+		fileSave.addActionListener(a -> {
 			workspace.save();
+
 			if (workspace.getSampleFile() != null) {
 				saveSampleXML(workspace.getSampleFile().toString(), workspace.getSample());
 			} else {
@@ -134,8 +137,8 @@ public class ExpLauncherMenu extends JMenuBar {
 				chooser.setMultiSelectionEnabled(false);
 				chooser.resetChoosableFileFilters();
 				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				chooser.addChoosableFileFilter(Sample.extensionFilter);
-				chooser.setFileFilter(Sample.extensionFilter);
+				chooser.addChoosableFileFilter(Sample.getExtensionfilter());
+				chooser.setFileFilter(Sample.getExtensionfilter());
 
 				int status = chooser.showSaveDialog(parent);
 				if (status == JFileChooser.APPROVE_OPTION) {
@@ -157,6 +160,7 @@ public class ExpLauncherMenu extends JMenuBar {
 		this.add(toolsMenu);
 		JMenuItem prepareZeroCrossing = new JMenuItem("Подготовить юстировку");
 		prepareZeroCrossing.addActionListener(e -> {
+
 			new Thread(new AdjustFileCreator(parent)).start();
 		});
 		toolsMenu.add(prepareZeroCrossing);
@@ -175,10 +179,11 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		JMenuItem toolsWatchFolder = new JMenuItem("Следить за папкой");
 		toolsWatchFolder.addActionListener(e -> {
+
 			try {
 				FolderWatch fw = FolderWatch.factory(parent);
 				fw.setVisible(true);
-			} catch (FileNotFoundException exc) {
+			} catch (Exception exc) {
 
 			}
 		});
@@ -197,6 +202,7 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		JMenuItem chooseChannels = new JMenuItem("Выбрать каналы");
 		chooseChannels.addActionListener(e -> {
+
 			if (workspace.getSignalIDs() != null) {
 				if (Debug.isDebug()) {
 					for (SignalIdentifier sd : workspace.getSignalIDs()) {
@@ -213,8 +219,8 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		JMenuItem sampleSettings = new JMenuItem("Настройки образца");
 		sampleSettings.addActionListener(e -> {
-			try {
 
+			try {
 				int status = SampleSettingsDialog.showSampleSettings(parent, workspace.getSample());
 
 				if (status == SampleSettingsDialog.OK_BUTTON) {
@@ -226,7 +232,6 @@ public class ExpLauncherMenu extends JMenuBar {
 				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 				e1.printStackTrace();
 			}
-
 		});
 		settingsMenu.add(sampleSettings);
 
@@ -236,7 +241,7 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenuItem angstromCompute = new JMenuItem("МТВ Ангстрема");
 		angstromCompute.addActionListener(e -> new AngstremAnalyzer());
 		angstromMenu.add(angstromCompute);
+
 	}
-	
-	
+
 }

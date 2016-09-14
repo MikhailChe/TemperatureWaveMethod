@@ -39,7 +39,7 @@ public class Graduate implements Serializable {
 	 */
 	public Graduate() {
 		grads = Collections.synchronizedNavigableMap(new TreeMap<>());
-		answerMap = new HashMap<>();
+		answerMap = Collections.synchronizedMap(new HashMap<>());
 	}
 
 	public String getName() {

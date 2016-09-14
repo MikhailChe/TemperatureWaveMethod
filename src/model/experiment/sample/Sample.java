@@ -20,19 +20,18 @@ import model.experiment.measurement.Measurement;
 public class Sample {
 
 	@XmlAttribute
-	private String											name			= "Default_name";
+	private String name = "Default_name";
 	@XmlAttribute
-	private double											length			= 0;
-	private String											comment			= "Default_comment";
+	private double length = 0;
+	private String comment = "Default_comment";
 
-	private PropertyChangeSupport							mPcs			= new PropertyChangeSupport(
-	        this);
+	private PropertyChangeSupport mPcs = new PropertyChangeSupport(this);
 
-	public transient final static FileNameExtensionFilter	extensionFilter	= new FileNameExtensionFilter(
-	        "Файл образца (*.smpl)", "smpl");
+	private transient final static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+			"Файл образца (*.smpl)", "smpl");
 
 	@XmlElement
-	public List<Measurement>								measurements	= new ArrayList<>();;
+	public List<Measurement> measurements = new ArrayList<>();;
 
 	public Sample() {
 		super();
@@ -49,6 +48,7 @@ public class Sample {
 	}
 
 	public String getName() {
+
 		return name;
 	}
 
@@ -65,8 +65,7 @@ public class Sample {
 	public void setLength(double length) {
 		double oldLength = this.length;
 		this.length = length;
-		mPcs.firePropertyChange("length", oldLength,
-		        this.length);
+		mPcs.firePropertyChange("length", oldLength, this.length);
 	}
 
 	public String getComment() {
@@ -76,23 +75,18 @@ public class Sample {
 	public void setComment(String comment) {
 		String oldComment = this.comment;
 		this.comment = comment;
-		mPcs.firePropertyChange("comment", oldComment,
-		        this.comment);
+		mPcs.firePropertyChange("comment", oldComment, this.comment);
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		return Predicates.areEqual(Sample.class, this,
-		        (Sample) o,
-		        Arrays.asList(Sample::getLength,
-		                Sample::getName,
-		                Sample::getComment));
+		return Predicates.areEqual(Sample.class, this, (Sample) o,
+				Arrays.asList(Sample::getLength, Sample::getName, Sample::getComment));
 	}
 
 	@Override
 	public int hashCode() {
-		return HashCoder.hashCode(this.name, this.comment,
-		        this.length);
+		return HashCoder.hashCode(this.name, this.comment, this.length);
 	}
 
 	@Override
@@ -126,27 +120,22 @@ public class Sample {
 				return 0;
 			}
 
-			if (o1.temperature
-			        .get(0).value == o2.temperature
-			                .get(0).value) {
+			if (o1.temperature.get(0).value == o2.temperature.get(0).value) {
 				return 0;
 			}
-			if (o1.temperature.get(0).value > o2.temperature
-			        .get(0).value) {
+			if (o1.temperature.get(0).value > o2.temperature.get(0).value) {
 				return 1;
 			}
 			return -1;
 		});
 	}
 
-	public void addPropertyChangeListener(
-	        PropertyChangeListener listener) {
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		mPcs.addPropertyChangeListener(listener);
 
 	}
 
-	public void removePropertyChangeListener(
-	        PropertyChangeListener listener) {
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
 		mPcs.removePropertyChangeListener(listener);
 	}
 
