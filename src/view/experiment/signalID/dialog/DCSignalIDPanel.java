@@ -25,7 +25,7 @@ public class DCSignalIDPanel extends SignalIDPanel {
 						"Канал постоянной составляющей", TitledBorder.LEADING, TitledBorder.TOP, null,
 						new Color(0, 0, 0))));
 		if (id.getGraduate() != null) {
-			this.fileNameField.setText(id.getGraduate().fromFile.toString());
+			this.fileNameField.setText(id.getGraduate().toString());
 		}
 		this.fileOpenButtton.addActionListener(e -> {
 			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(DCSignalIDPanel.class);
@@ -40,7 +40,7 @@ public class DCSignalIDPanel extends SignalIDPanel {
 				File file = chooser.getSelectedFile();
 				Graduate newgrad = GraduateFactory.forBinary(file);
 				id.setGraduate(newgrad);
-				this.fileNameField.setText(id.getGraduate().fromFile.toString());
+				this.fileNameField.setText("Градуировка: " + newgrad);
 			}
 		});
 

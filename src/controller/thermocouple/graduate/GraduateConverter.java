@@ -1,9 +1,10 @@
-package model.thermocouple.graduate;
+package controller.thermocouple.graduate;
 
 import java.awt.Component;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -11,6 +12,9 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.swing.JFileChooser;
+
+import model.thermocouple.graduate.Graduate;
+import model.thermocouple.graduate.GraduateFactory;
 
 /**
  * Преобразователь градуировки из термоЭДС в температуру с помощью файла
@@ -34,19 +38,20 @@ public class GraduateConverter {
 			return;
 		if (fileChooser.getSelectedFile() == null)
 			return;
+		Path graduateFilePath = fileChooser.getSelectedFile().toPath();
 
 		Graduate graduate = null;
 
-		graduate = GraduateFactory.forBinary(fileChooser.getSelectedFile());
+		graduate = GraduateFactory.forBinary(graduateFilePath.toFile());
 
 		if (graduate == null) {
-			graduate = GraduateFactory.forFile(fileChooser.getSelectedFile());
+			graduate = GraduateFactory.forTextFile(graduateFilePath);
 		}
 
 		if (graduate == null)
 			return;
 
-		fileChooser.setDialogTitle("Какой файл преобзовать?");
+		fileChooser.setDialogTitle("Какой файл преобразовать?");
 		status = fileChooser.showOpenDialog(parent);
 		if (status != JFileChooser.APPROVE_OPTION)
 			return;

@@ -1,10 +1,12 @@
-package model.thermocouple.graduate;
+package controller.thermocouple.graduate;
 
 import java.awt.Component;
 import java.io.File;
 
 import javax.swing.JFileChooser;
 
+import model.thermocouple.graduate.Graduate;
+import model.thermocouple.graduate.GraduateFactory;
 import view.MemorableDirectoryChooser;
 
 public class GraduateFileCreator implements Runnable {
@@ -36,7 +38,7 @@ public class GraduateFileCreator implements Runnable {
 				if (!outputFile.toString().toLowerCase().endsWith("." + Graduate.extensionFilter.getExtensions()[0])) {
 					outputFile = new File(outputFile.toString() + "." + Graduate.extensionFilter.getExtensions()[0]);
 				}
-				GraduateFactory.forFile(inputFile).save(outputFile);
+				GraduateFactory.saveBinary(outputFile, GraduateFactory.forTextFile(inputFile.toPath()));
 			}
 		}
 
