@@ -31,7 +31,7 @@ public class Graduate implements Serializable {
 	@XmlElement
 	NavigableMap<Double, Double> grads;
 	private Map<Double, Double> answerMap;
-
+	@XmlElement
 	String name;
 
 	/**
@@ -42,7 +42,6 @@ public class Graduate implements Serializable {
 		answerMap = new HashMap<>();
 	}
 
-	@XmlElement
 	public String getName() {
 		return name;
 	}
