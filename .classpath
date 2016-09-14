@@ -5,5 +5,4 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="lib" path="libs/mysql-connector-java-5.1.39-bin.jar"/>
 	<classpathentry kind="output" path="bin"/>
-	<referencedentry kind="lib" path="libs/jfreechart-1.0.19/lib/jfreechart-1.0.19.jar" sourcepath="libs/jfreechart-1.0.19/source"/>
 </classpath>

@@ -28,7 +28,7 @@ public class Sample {
 	private PropertyChangeSupport							mPcs			= new PropertyChangeSupport(
 	        this);
 
-	private transient final static FileNameExtensionFilter	extensionFilter	= new FileNameExtensionFilter(
+	public transient final static FileNameExtensionFilter	extensionFilter	= new FileNameExtensionFilter(
 	        "Файл образца (*.smpl)", "smpl");
 
 	@XmlElement

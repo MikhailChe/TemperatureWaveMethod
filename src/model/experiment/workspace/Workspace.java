@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.xml.bind.DataBindingException;
 import javax.xml.bind.JAXB;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -94,10 +95,16 @@ public class Workspace {
 				Debug.println(
 				        "Opening sample binary "
 				                + samplefile);
-				sample = SampleFactory
-				        .forBinary(
-				                samplefile
-				                        .toString());
+				try {
+					sample = SampleFactory.forXML(
+					        samplefile
+					                .toString());
+				} catch (DataBindingException e) {
+
+				}
+				if (sample == null) {
+					samplefile = null;
+				}
 			}
 		}
 		return sample;

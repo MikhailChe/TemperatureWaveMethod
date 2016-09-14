@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import javax.swing.JFileChooser;
 import javax.swing.ProgressMonitorInputStream;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.xml.bind.JAXB;
 
 import debug.Debug;
 import view.MemorableDirectoryChooser;
@@ -22,21 +23,28 @@ public class SampleFactory {
 		return new Sample();
 	}
 
+	public static Sample forXML(String filename) {
+		return JAXB.unmarshal(new File(filename),
+		        Sample.class);
+	}
+
+	@Deprecated
 	public static Sample forBinary(String filename) {
 		Debug.println("Opening samplefile " + filename);
 
 		try (ObjectInputStream ois = new ObjectInputStream(
-				new ProgressMonitorInputStream(null, "Открытие",
-						new FileInputStream(filename)))) {
+		        new ProgressMonitorInputStream(null,
+		                "Открытие",
+		                new FileInputStream(filename)))) {
 			Object o = ois.readObject();
 			if (o instanceof Sample) {
 				Sample sample = (Sample) o;
 				Debug.println("Opened sample binary");
 				if (isDebug())
-					if (sample.getName() == null)
-						Debug.println("Sample name empty (null)");
+				    if (sample.getName() == null)
+					Debug.println("Sample name empty (null)");
 					else
-						Debug.println("Sample name: " + sample.getName());
+					Debug.println("Sample name: " + sample.getName());
 
 				return sample;
 			}
@@ -44,32 +52,50 @@ public class SampleFactory {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+		} catch (ClassCastException e) {
+			return forXML(filename);
 		}
 		Debug.println("Problems openning sample file");
 		return null;
 	}
 
-	public static File saveSample(String filename, final Sample sample) {
+	public static File saveSampleXML(final String filename,
+	        final Sample sample) {
+		if (filename != null) {
+			JAXB.marshal(filename, new File(filename));
+			return new File(filename);
+		}
+		throw new NullPointerException("filename is null");
+	}
+
+	@Deprecated
+	public static File saveSample(String filename,
+	        final Sample sample) {
 		if (filename == null) {
 			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(
-					SampleFactory.class);
-			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			        SampleFactory.class);
+			chooser.setFileSelectionMode(
+			        JFileChooser.FILES_ONLY);
 			chooser.setMultiSelectionEnabled(false);
 			chooser.resetChoosableFileFilters();
-			FileNameExtensionFilter filter = Sample.getExtensionfilter();
+			FileNameExtensionFilter filter = Sample
+			        .getExtensionfilter();
 			chooser.setFileFilter(filter);
 			chooser.addChoosableFileFilter(filter);
-			if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+			if (chooser.showSaveDialog(
+			        null) == JFileChooser.APPROVE_OPTION) {
 				chooser.saveCurrentSelection();
-				filename = chooser.getSelectedFile().toString();
-				if (!filename.toLowerCase().endsWith(".smpl")) {
+				filename = chooser.getSelectedFile()
+				        .toString();
+				if (!filename.toLowerCase()
+				        .endsWith(".smpl")) {
 					filename += ".smpl";
 				}
 			}
 		}
 		if (filename != null) {
 			try (ObjectOutputStream oos = new ObjectOutputStream(
-					new FileOutputStream(filename))) {
+			        new FileOutputStream(filename))) {
 				oos.writeObject(sample);
 				return new File(filename);
 			} catch (IOException e) {
