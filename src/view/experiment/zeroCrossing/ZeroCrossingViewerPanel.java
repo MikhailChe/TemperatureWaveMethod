@@ -60,18 +60,20 @@ public class ZeroCrossingViewerPanel extends JFXPanel {
 
 	public ZeroCrossing setZeroCrossing(ZeroCrossing newZC) {
 		this.shifts = newZC;
-		Platform.runLater(() -> {
-			Debug.println(
-					"Запущена процедура по добавлению данных в другом потоке.");
-			List<Data<Number, Number>> list = chart.getData().get(0).getData();
-			list.clear();
-			for (double x = .1; x < 30; x += .1) {
-				Data<Number, Number> data = new Data<>(x,
-						shifts.getCurrentShift(x));
-				list.add(data);
-			}
-			Debug.println("Процедура добавления данных выполнена");
-		});
+		if (this.shifts != null)
+			Platform.runLater(() -> {
+				Debug.println(
+						"Запущена процедура по добавлению данных в другом потоке.");
+				List<Data<Number, Number>> list = chart.getData().get(0)
+						.getData();
+				list.clear();
+				for (double x = .1; x < 30; x += .1) {
+					Data<Number, Number> data = new Data<>(x,
+							shifts.getCurrentShift(x));
+					list.add(data);
+				}
+				Debug.println("Процедура добавления данных выполнена");
+			});
 
 		return this.shifts;
 	}

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workspace>
-    <samplefile>C:\Users\Mikhail\Documents\testnew.smpl</samplefile>
+    <samplefile>C:\Users\Mikhail\Documents\5%</samplefile>
     <signalIDs>
-        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
         <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="dCsignalID">
             <zeroTemperature>295.0</zeroTemperature>
             <amplifierGain>270.0</amplifierGain>
             <adcMaxVoltageCode>32767.5</adcMaxVoltageCode>
             <adcMaxVoltage>10.0</adcMaxVoltage>
         </signalIDs>
-        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="adjustmentSignalID"/>
-        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
+        <signalIDs xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="baseSignalID"/>
     </signalIDs>
 </workspace>
