@@ -9,21 +9,23 @@ public class Debug {
 	}
 
 	public static void print(Object s) {
-		if (debug)
-		    System.out.print(s.toString());
+		if (s != null)
+			if (debug)
+				System.out.print(s.toString());
 	}
 
 	public static void println(Object o) {
-		println(o.toString());
+		if (o != null)
+			println(o.toString());
 	}
 
 	public static void println(String s) {
 		if (debug)
-		    System.out.println(s);
+			System.out.println(s);
 	}
 
 	public static void println() {
 		if (debug)
-		    System.out.println();
+			System.out.println();
 	}
 }

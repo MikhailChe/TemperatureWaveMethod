@@ -63,7 +63,7 @@ public class FolderWatch extends JDialog implements Runnable {
 
 		File folder;
 		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-			fileChooser.saveCurrentSelection();
+			Debug.println("Approved");
 			folder = fileChooser.getSelectedFile();
 			if (folder == null) {
 				throw new FileNotFoundException();
@@ -71,12 +71,15 @@ public class FolderWatch extends JDialog implements Runnable {
 		} else {
 			throw new FileNotFoundException();
 		}
+		Debug.println("Returning new FolderWatch");
 		return new FolderWatch(parent, folder);
 	}
 
 	private FolderWatch(JFrame parent, File folder) {
 		super(parent, false);
+		Debug.println("Called constructor");
 		this.folder = folder;
+		Debug.println("Setting folder");
 
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -90,13 +93,15 @@ public class FolderWatch extends JDialog implements Runnable {
 
 			}
 		});
+		Debug.println("Added listener");
 
 		this.setTitle("Я смотрю за " + folder.getAbsolutePath());
-
+		Debug.println("Set title");
 		signalLevelPanel
 				.setBorder(BorderFactory.createTitledBorder("Уровень сигнала"));
+		Debug.println("set border");
 		signalLevelPanel.add(signalLevelLabel);
-
+		Debug.println("signalLevelLabel");
 		temperaturePanel
 				.setBorder(BorderFactory.createTitledBorder("Температура"));
 		temperaturePanel.add(temperatureLabel);
@@ -105,13 +110,17 @@ public class FolderWatch extends JDialog implements Runnable {
 
 		numbersContainer.add(signalLevelPanel);
 		numbersContainer.add(temperaturePanel);
+		Debug.println("Added all the panels");
 
 		this.getContentPane().setLayout(new BorderLayout(16, 16));
+		Debug.println("Set layout");
 		this.getContentPane().add(numbersContainer, BorderLayout.NORTH);
 		this.getContentPane().add(measurementViewer);
 		this.pack();
+		Debug.println("Constructor finished");
 
 		new Thread(this).start();
+		Debug.println("started worker");
 	}
 
 	public void checkNewFile() {
@@ -144,6 +153,7 @@ public class FolderWatch extends JDialog implements Runnable {
 	}
 
 	public void updateValuesForFile(File f) {
+		Debug.println("updating values for file " + f);
 		TWMComputer exc = new TWMComputer(f);
 		Measurement m = exc.call();
 		if (m.temperature == null || m.temperature.isEmpty()) {

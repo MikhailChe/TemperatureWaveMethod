@@ -29,7 +29,8 @@ public class ExperimentFileReader {
 		List<String> strings = readAllLines(filepath, StandardCharsets.UTF_8);
 		time = Files.getLastModifiedTime(filepath).toMillis();
 		if (strings == null)
-			throw new IOException("Couldn't load file content or file is empty");
+			throw new IOException(
+					"Couldn't load file content or file is empty");
 		if (strings.size() <= 1)
 			throw new IOException("Invalid file.");
 
@@ -42,7 +43,8 @@ public class ExperimentFileReader {
 		int sizeToValidate = Integer.parseInt(headerInfo[0]);
 
 		if (strings.size() != sizeToValidate)
-			throw new IOException("Size in the header doesn't match size of file");
+			throw new IOException(
+					"Size in the header doesn't match size of file");
 
 		experimentFrequecny = (Integer.parseInt(headerInfo[1]) / 10.0);
 
@@ -83,14 +85,18 @@ public class ExperimentFileReader {
 			int[] indicies = getPulseIndicies();
 
 			int mindiff = IntStream.range(0, indicies.length - 1)
-					.mapToObj((i) -> new int[] { indicies[i], indicies[i + 1] }).mapToInt((a) -> a[1] - a[0])
-					.filter(i -> i > 500).min().orElse(Integer.MAX_VALUE);
+					.mapToObj((i) -> new int[] { indicies[i], indicies[i + 1] })
+					.mapToInt((a) -> a[1] - a[0]).filter(i -> i > 500).min()
+					.orElse(Integer.MAX_VALUE);
 
 			int startIndex = indicies[0];
 			int stopIndex = indicies[indicies.length - 1];
-			croppedDataPeriods = (stopIndex - startIndex) / mindiff;
+			croppedDataPeriods = (int) Math
+					.round((((double) stopIndex) - ((double) startIndex))
+							/ ((double) mindiff));
 			for (int i = 0; i < croppedData.length; i++) {
-				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex, stopIndex);
+				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex,
+						stopIndex);
 			}
 		}
 		return croppedData;
@@ -107,7 +113,7 @@ public class ExperimentFileReader {
 		return initialData;
 	}
 
-	public double[] getDataColumn(int channel) {
+	private double[] getDataColumn(int channel) {
 		if (channel < 0)
 			channel = 0;
 		if (channel >= initialData.length)
@@ -124,10 +130,18 @@ public class ExperimentFileReader {
 			indicies = new ArrayList<>(100);
 			double[] refsignal = getDataColumn(0);
 			boolean trigger = false;
+			boolean firstSlope = true;
 			double threshold = (maxValues[0] + minValues[0]) / 2;
 
 			int lastIndex = -1;
 			for (int i = 0; i < refsignal.length; i++) {
+				if (firstSlope) {
+					if (refsignal[i] > threshold) {
+						continue;
+					} else {
+						firstSlope = !firstSlope;
+					}
+				}
 				if (refsignal[i] > threshold) {
 					if (!trigger) {
 						trigger = true;
@@ -146,7 +160,8 @@ public class ExperimentFileReader {
 				}
 			}
 		}
-		Integer[] inds = (Integer[]) indicies.toArray(new Integer[indicies.size()]);
+		Integer[] inds = (Integer[]) indicies
+				.toArray(new Integer[indicies.size()]);
 		int[] outinds = new int[inds.length];
 		int i = 0;
 		for (int value : inds) {

@@ -35,103 +35,75 @@ public class AdjustFileCreator implements Runnable {
 	@Override
 	public void run() {
 		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(
-		        TWMComputer.class);
-		fileChooser.setDialogTitle(
-		        "Выберите папку для обработки юстировки");
+				TWMComputer.class);
+		fileChooser.setDialogTitle("Выберите папку для обработки юстировки");
 		fileChooser.setMultiSelectionEnabled(false);
-		fileChooser.setFileSelectionMode(
-		        JFileChooser.DIRECTORIES_ONLY);
+		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-		Integer channelNumber = (Integer) JOptionPane
-		        .showInputDialog(parent,
-		                "Выберите номер канала для выполнения юстировки",
-		                "Каналы юстировки",
-		                JOptionPane.QUESTION_MESSAGE,
-		                null,
-		                new Integer[] { 1, 2, 3, 4, 5 },
-		                new Integer(1));
+		Integer channelNumber = (Integer) JOptionPane.showInputDialog(parent,
+				"Выберите номер канала для выполнения юстировки",
+				"Каналы юстировки", JOptionPane.QUESTION_MESSAGE, null,
+				new Integer[] { 1, 2, 3, 4, 5 }, new Integer(1));
 
-		if (channelNumber == null) return;
+		if (channelNumber == null)
+			return;
 
-		if (fileChooser.showOpenDialog(
-		        parent) != JFileChooser.APPROVE_OPTION)
-		    return;
+		if (fileChooser.showOpenDialog(parent) != JFileChooser.APPROVE_OPTION)
+			return;
 		fileChooser.saveCurrentSelection();
 
-		Path folder = fileChooser.getSelectedFile()
-		        .toPath();
-		// File[] files = Files.list(folder)
-		// .filter(p -> p.getFileName()
-		// .toString()
-		// .matches("^[0-9]+.txt$"));
+		Path folder = fileChooser.getSelectedFile().toPath();
+
 		File[] files = folder.toFile().listFiles(
-		        pathname -> pathname.getName()
-		                .matches("^[0-9]+.txt$"));
-		Stream<Path> filePaths = Arrays.asList(files)
-		        .stream()
-		        .map(f -> f.toPath());
-		fileChooser = new MemorableDirectoryChooser(
-		        this.getClass());
+				pathname -> pathname.getName().matches("^[0-9]+.txt$"));
+		Stream<Path> filePaths = Arrays.asList(files).stream()
+				.map(f -> f.toPath());
+		fileChooser = new MemorableDirectoryChooser(this.getClass());
 		fileChooser.setDialogTitle(
-		        "Выберите папку для сохранения юстировочных данных");
-		fileChooser.setFileSelectionMode(
-		        JFileChooser.DIRECTORIES_ONLY);
+				"Выберите папку для сохранения юстировочных данных");
+		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		fileChooser.setMultiSelectionEnabled(false);
-		if (fileChooser
-		        .showSaveDialog(
-		                parent) != JFileChooser.APPROVE_OPTION)
-		    return;
+		if (fileChooser.showSaveDialog(parent) != JFileChooser.APPROVE_OPTION)
+			return;
 		fileChooser.saveCurrentSelection();
-		Path resultFolder = fileChooser.getSelectedFile()
-		        .toPath();
+		Path resultFolder = fileChooser.getSelectedFile().toPath();
 
 		Path resultFile = resultFolder
-		        .resolve(System.currentTimeMillis() + "ch"
-		                + channelNumber + "."
-		                + ZeroCrossing.extensionFilter
-		                        .getExtensions()[0]);
+				.resolve(System.currentTimeMillis() + "ch" + channelNumber + "."
+						+ ZeroCrossing.extensionFilter.getExtensions()[0]);
 
-		try (BufferedWriter bw = Files.newBufferedWriter(
-		        resultFile,
-		        StandardOpenOption.CREATE_NEW,
-		        StandardOpenOption.WRITE)) {
+		try (BufferedWriter bw = Files.newBufferedWriter(resultFile,
+				StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
 			ProgressMonitor pm = new ProgressMonitor(parent,
-			        "Папка обрабатывается слишком долго",
-			        "", 0,
-			        files.length);
+					"Папка обрабатывается слишком долго", "", 0, files.length);
 
 			AtomicInteger progIter = new AtomicInteger(0);
 			filePaths.forEach(path -> {
 				ExperimentFileReader reader = null;
 				try {
-					reader = new ExperimentFileReader(
-					        path);
+					reader = new ExperimentFileReader(path);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				if (reader == null)
-				    return;
+					return;
 
-				double[][] croppedData = reader
-				        .getCroppedData();
+				double[][] croppedData = reader.getCroppedData();
 				if (channelNumber >= croppedData.length) {
 					JOptionPane.showMessageDialog(parent,
-					        "Выбранного канала не существует в одном или нескольких файлах",
-					        "Ошибка",
-					        JOptionPane.ERROR_MESSAGE);
+							"Выбранного канала не существует в одном или нескольких файлах",
+							"Ошибка", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				final int FREQ_INDEX = reader
-				        .getCroppedDataPeriodsCount() * 2;
-				SignalParameters param = TWMComputer
-				        .getSignalParameters(
-				                croppedData[channelNumber],
-				                FREQ_INDEX);
+				// TODO: DRY - DON'T REPEAT YOURSELF!!!!
+				final int FREQ_INDEX = reader.getCroppedDataPeriodsCount();
+				SignalParameters param = TWMComputer.getSignalParameters(
+						croppedData[channelNumber], FREQ_INDEX);
 				try {
 					bw.write(String.format("%.1f\t%.3f\r\n",
-					        reader.getExperimentFrequency(),
-					        Math.toDegrees(-param.phase)));
+							reader.getExperimentFrequency(),
+							Math.toDegrees(-param.phase)));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -145,23 +117,21 @@ public class AdjustFileCreator implements Runnable {
 			Toolkit.getDefaultToolkit().beep();
 		} catch (IOException e) {
 			JExceptionHandler.getExceptionHanlder()
-			        .uncaughtException(
-			                Thread.currentThread(), e);
+					.uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 		}
 
-		ZeroCrossing zc = ZeroCrossingFactory
-		        .forFile(resultFile.toFile());
-		ZeroCrossingViewerPanel zcvp = new ZeroCrossingViewerPanel(
-		        zc);
+		// TODO: this should be done in AWT thread. Use
+		// SwingUtilities.invokeLater...
 
-		JDialog dialog = new JDialog(parent,
-		        "Файл юстировки");
+		ZeroCrossing zc = ZeroCrossingFactory.forFile(resultFile.toFile());
+		ZeroCrossingViewerPanel zcvp = new ZeroCrossingViewerPanel(zc);
+
+		JDialog dialog = new JDialog(parent, "Файл юстировки");
 		dialog.getContentPane().add(zcvp);
 		dialog.pack();
 		dialog.setModal(true);
-		dialog.setDefaultCloseOperation(
-		        JDialog.DISPOSE_ON_CLOSE);
+		dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		dialog.setVisible(true);
 	}
 }
