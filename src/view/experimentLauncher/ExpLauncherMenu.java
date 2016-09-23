@@ -7,7 +7,6 @@ import static model.experiment.sample.SampleFactory.saveSampleXML;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
