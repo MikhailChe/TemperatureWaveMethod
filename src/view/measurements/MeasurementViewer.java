@@ -92,8 +92,10 @@ public class MeasurementViewer extends JPanel {
 		chart = new ScatterChart<>(xAxis, yAxis);
 		chart.setTitle("Измерения");
 
-		Scene scene = new Scene(chart);
-		chartPanel.setScene(scene);
+		Platform.runLater(() -> {
+			Scene scene = new Scene(chart);
+			chartPanel.setScene(scene);
+		});
 
 		this.setLayout(new BorderLayout());
 		this.add(chartPanel, BorderLayout.CENTER);
