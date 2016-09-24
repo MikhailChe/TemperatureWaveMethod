@@ -57,7 +57,6 @@ public class GraduateFactory {
 
 				double innerTemperature = currentTemperature;
 				double innerTemperatureIncrement = 10.0 / vtgValStrings.size();
-				// TODO: This can be rewriten as java8 code
 				for (String voltageStr : vtgValStrings) {
 
 					try {
