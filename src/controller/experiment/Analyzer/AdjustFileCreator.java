@@ -89,7 +89,11 @@ public class AdjustFileCreator implements Runnable {
 							JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				// TODO: DRY - DON'T REPEAT YOURSELF!!!!
+				// TODO: следуюшая строка опирается на то факт, что опорный
+				// сигнал той же самой частоты, что и полезный сигнал. Теперь
+				// так и есть, раньше это было не так. Кажется, нужно что-то
+				// сделать, чтобы в будущем можно было обрабатывать старые
+				// файлы...
 				final int FREQ_INDEX = reader.getCroppedDataPeriodsCount();
 				SignalParameters param = TWMComputer.getSignalParameters(croppedData[channelNumber], FREQ_INDEX);
 				try {
