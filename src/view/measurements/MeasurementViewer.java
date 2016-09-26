@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.SoftBevelBorder;
 
 import javafx.application.Platform;
@@ -24,14 +25,14 @@ import javafx.util.StringConverter;
 import model.experiment.measurement.Measurement;
 
 public class MeasurementViewer extends JPanel {
-	private static final long serialVersionUID = 3555290921726804677L;
+	private static final long			serialVersionUID	= 3555290921726804677L;
 
-	final ScatterChart<Number, Number> chart;
-	final JFXPanel chartPanel;
+	final ScatterChart<Number, Number>	chart;
+	final JFXPanel						chartPanel;
 
 	final class MeasurementProperty {
-		final double freq;
-		final int channel;
+		final double	freq;
+		final int		channel;
 
 		public MeasurementProperty(Measurement m, int channel) {
 			this.freq = m.frequency;
@@ -60,18 +61,14 @@ public class MeasurementViewer extends JPanel {
 
 	public MeasurementViewer() {
 		super();
-		Dimension d = new Dimension(640, 480);
-		setPreferredSize(d);
-		setBorder(new SoftBevelBorder(SoftBevelBorder.LOWERED));
+
+		chanForProp = Collections.synchronizedMap(new Hashtable<>());
 
 		chartPanel = new JFXPanel();
-
 		NumberAxis xAxis = new NumberAxis(200, 300, 20);
 		NumberAxis yAxis = new NumberAxis(0, 2E-5, 1E-6);
-
 		xAxis.setLabel("Температура");
 		yAxis.setLabel("Коэффициент температуропроводности");
-
 		yAxis.setTickUnit(1E-6);
 		yAxis.setTickLabelFormatter(new StringConverter<Number>() {
 			@Override
@@ -88,26 +85,32 @@ public class MeasurementViewer extends JPanel {
 
 		xAxis.setAutoRanging(true);
 		xAxis.setForceZeroInRange(false);
-
 		chart = new ScatterChart<>(xAxis, yAxis);
-		chart.setTitle("Измерения");
 
-		Platform.runLater(() -> {
-			Scene scene = new Scene(chart);
-			chartPanel.setScene(scene);
+		SwingUtilities.invokeLater(() -> {
+			Dimension d = new Dimension(640, 480);
+			setPreferredSize(d);
+			setBorder(new SoftBevelBorder(SoftBevelBorder.LOWERED));
+
+			chart.setTitle("Измерения");
+
+			Platform.runLater(() -> {
+				Scene scene = new Scene(chart);
+				chartPanel.setScene(scene);
+			});
+
+			this.setLayout(new BorderLayout());
+			this.add(chartPanel, BorderLayout.CENTER);
 		});
-
-		this.setLayout(new BorderLayout());
-		this.add(chartPanel, BorderLayout.CENTER);
-
-		chanForProp = Collections.synchronizedMap(new Hashtable<>());
 	}
 
 	public void addMeasurement(Measurement m) {
 		try {
 			double temperature = m.temperature.get(0).value;
-			List<Data<Number, Number>> dataPoints = m.diffusivity.stream().map(
-					t -> new Data<Number, Number>(temperature, t.diffusivity))
+			List<Data<Number, Number>> dataPoints = m.diffusivity.stream()
+					.map(
+							t -> new Data<Number, Number>(temperature,
+									t.diffusivity))
 					.collect(toList());
 			Platform.runLater(() -> {
 				for (int i = 0; i < dataPoints.size(); i++) {

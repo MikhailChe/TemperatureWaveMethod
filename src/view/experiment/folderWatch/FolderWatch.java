@@ -17,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import controller.experiment.Analyzer.TWMComputer;
 import debug.Debug;
@@ -34,18 +35,18 @@ public class FolderWatch extends JDialog implements Runnable {
 	public File[]				filesInFolder;
 	public File					folder;
 
-	MeasurementViewer			measurementViewer	= new MeasurementViewer();
-	Container					numbersContainer	= new Container();
+	final MeasurementViewer		measurementViewer	= new MeasurementViewer();
+	final Container				numbersContainer	= new Container();
 
-	JPanel						signalLevelPanel	= new JPanel();
-	JLabel						signalLevelLabel	= new JLabel(
+	final JPanel				signalLevelPanel	= new JPanel();
+	final JLabel				signalLevelLabel	= new JLabel(
 			"Здесь будет термоЭДС");
 
-	JPanel						temperaturePanel	= new JPanel();
-	JLabel						temperatureLabel	= new JLabel(
+	final JPanel				temperaturePanel	= new JPanel();
+	final JLabel				temperatureLabel	= new JLabel(
 			"Здесь будет температура");
 
-	List<JTDiffLabelSet>		tCondPanels			= new ArrayList<>();
+	final List<JTDiffLabelSet>	tCondPanels			= new ArrayList<>();
 
 	public static FolderWatch factory(JFrame parent)
 			throws FileNotFoundException {
@@ -94,33 +95,29 @@ public class FolderWatch extends JDialog implements Runnable {
 			}
 		});
 		Debug.println("Added listener");
+		SwingUtilities.invokeLater(() -> {
 
-		this.setTitle("Я смотрю за " + folder.getAbsolutePath());
-		Debug.println("Set title");
-		signalLevelPanel
-				.setBorder(BorderFactory.createTitledBorder("Уровень сигнала"));
-		Debug.println("set border");
-		signalLevelPanel.add(signalLevelLabel);
-		Debug.println("signalLevelLabel");
-		temperaturePanel
-				.setBorder(BorderFactory.createTitledBorder("Температура"));
-		temperaturePanel.add(temperatureLabel);
+			this.setTitle("Я смотрю за " + folder.getAbsolutePath());
+			signalLevelPanel
+					.setBorder(BorderFactory
+							.createTitledBorder("Уровень сигнала"));
+			signalLevelPanel.add(signalLevelLabel);
+			temperaturePanel
+					.setBorder(BorderFactory.createTitledBorder("Температура"));
+			temperaturePanel.add(temperatureLabel);
 
-		numbersContainer.setLayout(new GridLayout(0, 2, 16, 16));
+			numbersContainer.setLayout(new GridLayout(0, 2, 16, 16));
 
-		numbersContainer.add(signalLevelPanel);
-		numbersContainer.add(temperaturePanel);
-		Debug.println("Added all the panels");
+			numbersContainer.add(signalLevelPanel);
+			numbersContainer.add(temperaturePanel);
 
-		this.getContentPane().setLayout(new BorderLayout(16, 16));
-		Debug.println("Set layout");
-		this.getContentPane().add(numbersContainer, BorderLayout.NORTH);
-		this.getContentPane().add(measurementViewer);
-		this.pack();
-		Debug.println("Constructor finished");
+			this.getContentPane().setLayout(new BorderLayout(16, 16));
+			this.getContentPane().add(numbersContainer, BorderLayout.NORTH);
+			this.getContentPane().add(measurementViewer);
+			SwingUtilities.invokeLater(() -> this.pack());
 
-		new Thread(this).start();
-		Debug.println("started worker");
+			new Thread(this).start();
+		});
 	}
 
 	public void checkNewFile() {
