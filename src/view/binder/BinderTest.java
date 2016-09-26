@@ -26,8 +26,7 @@ public class BinderTest {
 		private static final long serialVersionUID = 8405129845336949775L;
 		private String name = "";
 		private boolean correct = false;
-		final private PropertyChangeSupport pcs = new PropertyChangeSupport(
-				this);
+		final private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
 		public String getName() {
 			return name;
@@ -50,8 +49,7 @@ public class BinderTest {
 			pcs.firePropertyChange("correct", old, this.correct);
 		}
 
-		public void addPropertyChangeListener(String property,
-				PropertyChangeListener listener) {
+		public void addPropertyChangeListener(String property, PropertyChangeListener listener) {
 			pcs.addPropertyChangeListener(property, listener);
 		}
 
@@ -66,13 +64,13 @@ public class BinderTest {
 	public void initBean() {
 		bean = new SimpleBean();
 	}
-@Test
+
+	@Test
 	public void testBinding() throws InterruptedException {
 
 		JTextField field = new JTextField();
 
-		boundJTextField(bean, "name", bean::addPropertyChangeListener,
-				bean::setName, field);
+		boundJTextField(bean, "name", bean::addPropertyChangeListener, bean::setName, field);
 
 		org.junit.Assert.assertEquals("", bean.getName());
 		org.junit.Assert.assertEquals("", field.getText());
@@ -84,8 +82,7 @@ public class BinderTest {
 		frame.setVisible(true);
 
 		for (int i = 0; i < 10; i++) {
-			System.out
-					.println(i + " " + field.getText() + " " + bean.getName());
+			System.out.println(i + " " + field.getText() + " " + bean.getName());
 			if (i == 1) {
 				bean.setName("YO");
 			}
@@ -97,11 +94,11 @@ public class BinderTest {
 		org.junit.Assert.assertEquals("YO", bean.getName());
 
 	}
-@Test
+
+	@Test
 	public void testCheckBox() {
 		JCheckBox box = new JCheckBox();
-		boundJCheckBox(bean, "correct", bean::addPropertyChangeListener,
-				bean::setCorrect, box);
+		boundJCheckBox(bean, "correct", bean::addPropertyChangeListener, bean::setCorrect, box);
 
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -116,8 +113,7 @@ public class BinderTest {
 			if (i == 5) {
 				bean.setCorrect(false);
 			}
-			System.out.println(
-					i + " " + box.isSelected() + " " + bean.isCorrect());
+			System.out.println(i + " " + box.isSelected() + " " + bean.isCorrect());
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -130,22 +126,20 @@ public class BinderTest {
 	@Test
 	public void checkIntrospection() {
 		try {
-			BeanInfo info = java.beans.Introspector
-					.getBeanInfo(bean.getClass());
+			BeanInfo info = java.beans.Introspector.getBeanInfo(bean.getClass());
 			System.out.println(info);
 			System.out.println("\r\n");
 			System.out.println(info.getBeanDescriptor());
 			System.out.println("\r\n");
-			System.out.println(asList(info.getPropertyDescriptors()).stream()
-					.map(a -> a.toString()).collect(joining("\r\n")));
+			System.out.println(
+					asList(info.getPropertyDescriptors()).stream().map(a -> a.toString()).collect(joining("\r\n")));
 			System.out.println("\r\n");
-			System.out.println(asList(info.getMethodDescriptors()).stream()
-					.map(a -> a.toString()).collect(joining("\r\n")));
+			System.out.println(
+					asList(info.getMethodDescriptors()).stream().map(a -> a.toString()).collect(joining("\r\n")));
 			System.out.println("\r\n");
-			System.out.println(asList(info.getEventSetDescriptors()).stream()
-					.map(a -> a.toString()).collect(joining("\r\n")));
+			System.out.println(
+					asList(info.getEventSetDescriptors()).stream().map(a -> a.toString()).collect(joining("\r\n")));
 		} catch (IntrospectionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
