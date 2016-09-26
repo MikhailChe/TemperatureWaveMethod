@@ -35,10 +35,10 @@ import view.experiment.signalID.dialog.SignalIDSettingsDialog;
  *
  */
 public class ExpLauncherMenu extends JMenuBar {
-	private static final long serialVersionUID = 2882344753047235272L;
+	private static final long	serialVersionUID	= 2882344753047235272L;
 
-	final Workspace workspace = Workspace.getInstance();
-	final ExpLauncher parent;
+	final Workspace				workspace			= Workspace.getInstance();
+	final ExpLauncher			parent;
 
 	public void newSample(ActionEvent e) {
 		Sample sample = workspace.getSample();
@@ -117,12 +117,15 @@ public class ExpLauncherMenu extends JMenuBar {
 					if (fileChooser.getSelectedFile() != null) {
 						sample = SampleFactory.forXML(fileChooser
 								.getSelectedFile().getAbsolutePath());
-						workspace.setSampleFile(fileChooser.getSelectedFile());
-						workspace.setSample(null);
-						System.out.println(sample);
-						parent.setTitle(sample.getName());
-						parent.statusBar.setText(
-								String.format("%.6f", sample.getLength()));
+						if (sample != null) {
+							workspace.setSampleFile(
+									fileChooser.getSelectedFile());
+							workspace.setSample(null);
+							System.out.println(sample);
+							parent.setTitle(sample.getName());
+							parent.statusBar.setText(
+									String.format("%.6f", sample.getLength()));
+						}
 					}
 				}
 
