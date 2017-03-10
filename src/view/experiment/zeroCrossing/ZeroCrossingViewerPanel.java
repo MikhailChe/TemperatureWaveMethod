@@ -19,13 +19,14 @@ public class ZeroCrossingViewerPanel extends JFXPanel {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -7118964792998797256L;
+	private static final long			serialVersionUID	= -7118964792998797256L;
 
-	private ZeroCrossing shifts;
-	private LineChart<Number, Number> chart;
+	private ZeroCrossing				shifts;
+	private LineChart<Number, Number>	chart;
 
 	public ZeroCrossingViewerPanel(ZeroCrossing zc) {
 		super();
+	
 		Debug.println("Был вызван суперконструктор");
 		setPreferredSize(new Dimension(256, 256));
 		setMinimumSize(getPreferredSize());
@@ -55,16 +56,23 @@ public class ZeroCrossingViewerPanel extends JFXPanel {
 		Debug.println("Устанавливаем сцену в панель");
 		Platform.runLater(() -> this.setScene(scene));
 		Debug.println("Сцена создана. Добавляем данные о юстировке");
-		setZeroCrossing(zc);
+		if (zc != null)
+			setZeroCrossing(zc);
 	}
 
 	public ZeroCrossing setZeroCrossing(ZeroCrossing newZC) {
-		this.shifts = newZC;
+		if (newZC != null) {
+			this.shifts = newZC;
+		} else {
+			// TODO: null pointer exception?
+			Debug.println("Новые данные нулевые");
+		}
 		if (this.shifts != null)
 			Platform.runLater(() -> {
 				Debug.println(
 						"Запущена процедура по добавлению данных в другом потоке.");
-				List<Data<Number, Number>> list = chart.getData().get(0)
+				List<Data<Number, Number>> list = chart.getData()
+						.get(0)
 						.getData();
 				list.clear();
 				for (double x = .1; x < 30; x += .1) {

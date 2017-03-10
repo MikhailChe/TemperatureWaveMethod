@@ -95,6 +95,7 @@ public class MeasurementViewer extends JPanel {
 			chart.setTitle("Измерения");
 
 			Platform.runLater(() -> {
+				System.out.println("Добавляю диаграмму");
 				Scene scene = new Scene(chart);
 				chartPanel.setScene(scene);
 			});
@@ -120,7 +121,7 @@ public class MeasurementViewer extends JPanel {
 				}
 			});
 		} catch (NullPointerException ignore) {
-
+			
 		}
 	}
 
