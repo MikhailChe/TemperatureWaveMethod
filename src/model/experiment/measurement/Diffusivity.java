@@ -54,6 +54,9 @@ public class Diffusivity {
 	public double			diffusivity;
 
 	@XmlElement
+	public double			capacitance;
+
+	@XmlElement
 	public SignalParameters	initSignalParams;
 
 	public Diffusivity() {
@@ -73,18 +76,18 @@ public class Diffusivity {
 	public String toString() {
 
 		return String.format(
-		        "%.0f;%.3f;%.3f;%.3f;%.3f;%.4e", amplitude,
-		        initSignalParams == null ? 0
-		                : Math.toDegrees(
-		                        initSignalParams.phase),
-		        signalID == null ? 0
-		                : signalID.zc
-		                        .getCurrentShift(frequency),
-		        Math.toDegrees(phase), kappa, diffusivity);
+				"%.0f;%.3f;%.3f;%.3f;%.3f;%.4e;%.3f", amplitude,
+				initSignalParams == null ? 0
+						: Math.toDegrees(
+								initSignalParams.phase),
+				signalID == null ? 0
+						: signalID.zc
+								.getCurrentShift(frequency),
+				Math.toDegrees(phase), kappa, diffusivity, capacitance);
 	}
 
 	public String getHeader() {
-		return "Амплитуда;Начальная фаза;Нулеваая фаза;Скорректированная фаза;Каппа;Температуропроводность";
+		return "Амплитуда;Начальная фаза;Нулеваая фаза;Скорректированная фаза;Каппа;Температуропроводность;Теплоёмкость";
 	}
 
 	@Override
@@ -93,24 +96,25 @@ public class Diffusivity {
 		if (o == this) return true;
 		if (!(o instanceof Diffusivity)) return false;
 		Predicate<Function<Diffusivity, Object>> eq = Predicates
-		        .equalizer(this, (Diffusivity) o);
+				.equalizer(this, (Diffusivity) o);
 		return eq.test(a -> a.amplitude)
-		        && eq.test(a -> a.diffusivity)
-		        && eq.test(a -> a.frequency)
-		        && eq.test(a -> a.initSignalParams)
-		        && eq.test(a -> a.kappa)
-		        && eq.test(a -> a.phase)
-		        && eq.test(a -> a.signalID);
+				&& eq.test(a -> a.diffusivity)
+				&& eq.test(a -> a.frequency)
+				&& eq.test(a -> a.initSignalParams)
+				&& eq.test(a -> a.kappa)
+				&& eq.test(a -> a.phase)
+				&& eq.test(a -> a.signalID)
+				&& eq.test(a -> a.capacitance);
 	}
 
 	@Override
 	public int hashCode() {
 		return Double.hashCode(amplitude)
-		        + Double.hashCode(diffusivity)
-		        + Double.hashCode(frequency)
-		        + initSignalParams.hashCode()
-		        + Double.hashCode(kappa)
-		        + Double.hashCode(phase)
-		        + signalID.hashCode();
+				+ Double.hashCode(diffusivity)
+				+ Double.hashCode(frequency)
+				+ initSignalParams.hashCode()
+				+ Double.hashCode(kappa)
+				+ Double.hashCode(phase)
+				+ signalID.hashCode();
 	}
 }

@@ -120,8 +120,8 @@ public class MeasurementViewer extends JPanel {
 					ser.getData().add(dataPoints.get(i));
 				}
 			});
-		} catch (NullPointerException ignore) {
-			
+		} catch (Exception ignore) {
+
 		}
 	}
 

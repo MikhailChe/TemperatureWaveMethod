@@ -169,7 +169,12 @@ public class TWMComputer implements Callable<Measurement> {
 	public static SignalParameters getSignalParameters(double[] signal,
 			int frequency) {
 		double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
-		double phase = FFT.getArgument(fourierForFreq, 0);
+		double phase = FFT.getArgument(fourierForFreq, 0) + Math.PI / 2.0d;
+		if (phase < -Math.PI) {
+			phase += 2.0 * Math.PI;
+		} else if (phase > Math.PI) {
+			phase -= 2.0 * Math.PI;
+		}
 		double amplitude = FFT.getAbs(fourierForFreq, 0) / signal.length;
 		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
 		double nullOffset = FFT.getAbs(nullOffsetFourier, 0) / signal.length;
@@ -275,8 +280,9 @@ public class TWMComputer implements Callable<Measurement> {
 					FREQ_INDEX);
 			for (int currentChannel = 1; currentChannel < Math.min(numCol,
 					SHIFTS.length); currentChannel++) {
-				if (SHIFTS[currentChannel] == null)
+				if (SHIFTS[currentChannel] == null) {
 					continue;
+				}
 				SignalParameters param = params[currentChannel];
 				if (SHIFTS[currentChannel] instanceof BaseSignalID) {
 					BaseSignalID id = (BaseSignalID) SHIFTS[currentChannel];
@@ -290,16 +296,16 @@ public class TWMComputer implements Callable<Measurement> {
 					double currentShift = zc
 							.getCurrentShift(EXPERIMENT_FREQUENCY);
 
-					double adjustAngle = targetAngle
+					double adjustedAngle = targetAngle
 							- Math.toRadians(currentShift);
-					double editedAngle = truncatePositive(
-							adjustAngle - Math.PI / 4.0);
 
+					double preKappaAngle = truncatePositive(
+							adjustedAngle - Math.PI / 4.0);
+
+					final double kappa = Math.sqrt(2) * (preKappaAngle);
+
+					adjustedAngle = truncatePositive(adjustedAngle);
 					targetAngle = truncatePositive(targetAngle);
-
-					final double kappa = Math.sqrt(2) * (editedAngle);
-
-					adjustAngle = truncatePositive(adjustAngle);
 
 					// kappa = PhysicsModel.searchKappaFor(-adjustAngle, 0.001);
 
@@ -308,15 +314,28 @@ public class TWMComputer implements Callable<Measurement> {
 					double A = (omega * length * length)
 							/ (kappa * kappa);
 
+					final double DENSITY = 8079;
+
+					// TODO: Добавить теплоёмкость в набор данных
+					double capacitance = 3.5E8 * kappa / (param.amplitude
+							* DENSITY * workspace.getSample().getLength()
+							* omega
+							* Math.sqrt(Math
+									.pow(Math.sinh(preKappaAngle),
+											2)
+									+ Math.pow(Math.sin(preKappaAngle),
+											2)));
+
 					Diffusivity tCond = new Diffusivity();
 
 					tCond.amplitude = param.amplitude;
 					tCond.kappa = kappa;
-					tCond.phase = adjustAngle;
+					tCond.phase = adjustedAngle;
 					tCond.diffusivity = A;
 					tCond.initSignalParams = param;
 					tCond.frequency = EXPERIMENT_FREQUENCY;
 					tCond.signalID = id;
+					tCond.capacitance = capacitance;
 
 					result.diffusivity.add(tCond);
 
@@ -354,6 +373,20 @@ public class TWMComputer implements Callable<Measurement> {
 		}
 		while (value > Math.PI * 2.0) {
 			value -= Math.PI * 2.0;
+		}
+		return value;
+	}
+
+	/**
+	 * @param value
+	 * @return negative angle (from 0 to 2 * Pi)
+	 */
+	public double truncateNegative(double value) {
+		while (value > 0) {
+			value -= Math.PI * 2.0;
+		}
+		while (value < -Math.PI * 2.0) {
+			value += Math.PI * 2.0;
 		}
 		return value;
 	}

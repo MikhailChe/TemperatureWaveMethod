@@ -150,6 +150,7 @@ public class FolderWatch extends JDialog implements Runnable {
 	}
 
 	public void updateValuesForFile(File f) {
+
 		Debug.println("updating values for file " + f);
 		TWMComputer exc = new TWMComputer(f);
 		Measurement m = exc.call();

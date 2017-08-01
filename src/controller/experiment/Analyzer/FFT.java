@@ -56,7 +56,7 @@ public class FFT {
 	/**
 	 * @param fftdata
 	 * @param index
-	 * @return argument (phase) for <b>index</b>th element of fftdata
+	 * @return argument (phase in radians) for <b>index</b>th element of fftdata
 	 */
 	public static double getArgument(double[] fftdata, int index) {
 		if (fftdata == null)

@@ -93,8 +93,8 @@ public class Measurement {
 	public static Measurement forBinary(String filename) {
 
 		try (ObjectInputStream ois = new ObjectInputStream(
-		        new FileInputStream(
-		                filename))) {
+				new FileInputStream(
+						filename))) {
 			Object o = ois.readObject();
 			if (o instanceof Measurement) {
 				return (Measurement) o;
@@ -124,16 +124,16 @@ public class Measurement {
 		if (o == this) return true;
 		if (!(o instanceof Measurement)) return false;
 		Predicate<Function<Measurement, Object>> eq = Predicates
-		        .equalizer(this, (Measurement) o);
+				.equalizer(this, (Measurement) o);
 		return eq.test(a -> a.frequency)
-		        && eq.test(a -> a.diffusivity)
-		        && eq.test(a -> a.temperature)
-		        && eq.test(a -> a.time);
+				&& eq.test(a -> a.diffusivity)
+				&& eq.test(a -> a.temperature)
+				&& eq.test(a -> a.time);
 	}
 
 	@Override
 	public int hashCode() {
 		return HashCoder.hashCode(frequency, diffusivity,
-		        temperature, time);
+				temperature, time);
 	}
 }
