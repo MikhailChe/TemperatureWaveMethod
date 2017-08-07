@@ -200,7 +200,8 @@ public class TWMComputer implements Callable<Measurement> {
 					} catch (java.nio.file.FileSystemException e) {
 						JExceptionHandler.getExceptionHanlder()
 								.uncaughtException(Thread.currentThread(), e);
-						e.printStackTrace();
+						//e.printStackTrace();
+						
 						exception = true;
 
 						JOptionPane.showMessageDialog(null,
