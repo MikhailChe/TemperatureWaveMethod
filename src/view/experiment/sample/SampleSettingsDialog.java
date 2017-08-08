@@ -47,11 +47,12 @@ public class SampleSettingsDialog extends JDialog {
 		format.setMaximumIntegerDigits(0);
 
 		NumberFormatter formatter = new NumberFormatter(format);
+
 		formatter.setAllowsInvalid(false);
 		formatter.setCommitsOnValidEdit(true);
 
 		length = new JFormattedTextField(formatter);
-		density = new JFormattedTextField(formatter);
+		density = new JFormattedTextField(NumberFormat.getNumberInstance());
 
 		Container pane = this.getContentPane();
 		BoxLayout layout = new BoxLayout(pane, BoxLayout.Y_AXIS);
@@ -108,9 +109,9 @@ public class SampleSettingsDialog extends JDialog {
 				}
 				density.commitEdit();
 				o = density.getValue();
-				if (o instanceof Double) {
-					Double val = (Double) o;
-					sample.setLength(val.doubleValue());
+				if (o instanceof Number) {
+					Number val = (Number) o;
+					sample.setDensity(val.doubleValue());
 				}
 			} catch (ParseException e1) {
 				e1.printStackTrace();

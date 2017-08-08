@@ -23,6 +23,7 @@ public class Sample {
 	private String											name			= "Default_name";
 	@XmlAttribute
 	private double											length			= 0;
+	@XmlAttribute
 	private double											density			= 0;
 	private String											comment			= "Default_comment";
 
@@ -40,6 +41,7 @@ public class Sample {
 		setComment("Default_comment");
 		setName("Default_name");
 		setLength(0D);
+		setDensity(1000D);
 	}
 
 	/**

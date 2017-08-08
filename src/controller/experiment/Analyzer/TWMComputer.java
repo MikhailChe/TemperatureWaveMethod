@@ -454,7 +454,7 @@ public class TWMComputer implements Callable<Measurement> {
 
 	/**
 	 * @param value
-	 * @return negative angle (from 0 to 2 * Pi)
+	 * @return negative angle (from 0 to -2 * Pi)
 	 */
 	public double truncateNegative(double value) {
 		while (value > 0) {
