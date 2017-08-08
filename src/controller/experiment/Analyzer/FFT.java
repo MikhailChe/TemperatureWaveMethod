@@ -2,6 +2,8 @@ package controller.experiment.Analyzer;
 
 import java.util.stream.IntStream;
 
+import com.sun.org.apache.xml.internal.security.Init;
+
 /**
  * @author Mikhail
  *
@@ -12,26 +14,53 @@ import java.util.stream.IntStream;
  */
 public class FFT {
 
+	/**
+	 * Функция производит вычисление мнимой и действительной части входного
+	 * сигнала realData на частоте index. This function calculates complex
+	 * number, that describes input signal realData at relative frequency index
+	 * 
+	 * @param realData
+	 *            входной сигнал
+	 * @param realData
+	 *            input signal
+	 * @param index
+	 *            частота (относительно длины входного сигнала)
+	 * @param index
+	 *            frequency (relative to input signal length)
+	 * 
+	 * 
+	 * @return complex number, that shows signal parameters.
+	 * @return комлпексное число, пока зывающее параметры сигнала
+	 */
 	public static double[] getFourierForIndex(double[] realData, int index) {
 		double real = 0, imag = 0;
-		double N = realData.length;
-		double twoPiIndexDivN = (2 * Math.PI * index) / N;
-		real = IntStream.range(0, realData.length)
+		final int N = realData.length;
+		double twoPiIndexDivN = (2 * Math.PI * index) / (double) N;
+		real = IntStream.range(0, N)
 				.mapToDouble(i -> Math.cos((twoPiIndexDivN * i)) * realData[i])
 				.parallel()
 				.sum();
 
-		imag = -IntStream.range(0, realData.length)
+		imag = -IntStream.range(0, N)
 				.mapToDouble(i -> Math.sin((twoPiIndexDivN * i)) * realData[i])
 				.parallel()
 				.sum();
-
 		return new double[] { real, imag };
 	}
 
 	/**
+	 * Функция выделяет действительную часть из массива, возвращаемого
+	 * преобразованием фурье. This function filters out real part of an array,
+	 * that was returned by FFT
+	 * 
 	 * @param fftdata
+	 *            Входные данные. Формат - одномерный массив, где 2*n элементы -
+	 *            действительные, а (2*n)+1 элементы - мнимые
+	 * @param fftdata
+	 *            Input data of the following format: 1-d array, where 2*n
+	 *            elements - real part of complex number, (2*n)+1 - imaginary
 	 * @return array of real parts of fftdata array
+	 * @return массив только действительных чисел из массива комплексных
 	 */
 	public static double[] getReal(double[] fftdata) {
 		double[] real = new double[fftdata.length / 2];
@@ -42,8 +71,20 @@ public class FFT {
 	}
 
 	/**
+	 * Функция выделяет мнимую часть из массива, возвращаемого преобразованием
+	 * фурье.
+	 * 
+	 * This function filters out imaginary part of an array, that was returned
+	 * by FFT
+	 * 
 	 * @param fftdata
+	 *            Входные данные. Формат - одномерный массив, где 2*n элементы -
+	 *            действительные, а (2*n)+1 элементы - мнимые
+	 * @param fftdata
+	 *            Input data of the following format: 1-d array, where 2*n
+	 *            elements - real part of complex number, (2*n)+1 - imaginary
 	 * @return array of imaginary parts of fftdata array
+	 * @return массив только мнимыхчисел из массива комплексных
 	 */
 	public static double[] getImag(double[] fftdata) {
 		double[] imag = new double[fftdata.length / 2];
@@ -54,9 +95,26 @@ public class FFT {
 	}
 
 	/**
+	 * Вычисляет аргумент (угол) одного комплексного числа с индексом index из
+	 * массива комплексных чисел fftdata
+	 * 
+	 * Computer argument (angle) of index'th number from array if complex
+	 * numbers fftdata
+	 * 
 	 * @param fftdata
+	 *            Массив комплексных чисел, где 2*n - действительная часть
+	 *            числа, (2*n)+1 - мнимая часть числа
+	 * @param fftdata
+	 *            Array of complex number, where 2*n - real part of number,
+	 *            (2*n)+1 - imaginary part of it
 	 * @param index
+	 *            индекс в массиве комплексных чисел
+	 * @param index
+	 *            index in an array of complex numbers
+	 * 
 	 * @return argument (phase in radians) for <b>index</b>th element of fftdata
+	 *         <br/>
+	 *         аргумент (фаза в радианах) index-ого элемента из массива fftdata
 	 */
 	public static double getArgument(double[] fftdata, int index) {
 		if (fftdata == null)
@@ -65,9 +123,25 @@ public class FFT {
 	}
 
 	/**
+	 * Вычисляет модуль (длину) одного комплексного числа с индексом index из
+	 * массива комплексных чисел fftdata
+	 * 
+	 * Computer absolute value (length) of index'th number from array if complex
+	 * numbers fftdata
+	 * 
 	 * @param fftdata
+	 *            Массив комплексных чисел, где 2*n - действительная часть
+	 *            числа, (2*n)+1 - мнимая часть числа
+	 * @param fftdata
+	 *            Array of complex number, where 2*n - real part of number,
+	 *            (2*n)+1 - imaginary part of it
 	 * @param index
-	 * @return abs (absolute value) for <b>index</b>th element of fftdata
+	 *            индекс в массиве комплексных чисел
+	 * @param index
+	 *            index in an array of complex numbers
+	 * 
+	 * @return abs (length) for <b>index</b>th element of fftdata <br/>
+	 *         модуль (длину) index-ого элемента из массива fftdata
 	 */
 	public static double getAbs(double[] fftdata, int index) {
 		if (fftdata == null)
@@ -78,8 +152,18 @@ public class FFT {
 	}
 
 	/**
+	 * Вычисляет массив модулей (длин) комплексных чисел из массива fftdata
+	 * 
+	 * Computes an array of absolute values of complex numbers in fftdata array
+	 * 
 	 * @param fftdata
-	 * @return array of absolute values for fftdata
+	 *            массив комплексных чисел, где 2*n - действительная часть
+	 *            комплексного числа, 2*n+1- мнимая часть
+	 * @param fftdata
+	 *            array of complex numbers, where 2*n - real part of complex
+	 *            numbers, 2*n+1- imaginary part
+	 * @return массив модулей комплексных чисел fftdata<br/>
+	 *         array of absolute values for fftdata
 	 */
 	public static double[] getAbs(double[] fftdata) {
 		double[] output = new double[fftdata.length / 2];
@@ -91,9 +175,18 @@ public class FFT {
 	}
 
 	/**
+	 * Выдаёт частоту в Герцах, основываясь на частоте дискретизации и
+	 * относительной частоте (количестве периодов в цифровом сигнале)
+	 * 
 	 * @param fftindex
+	 *            количество периодов (относительная частота)
 	 * @param sampleRate
+	 *            частота дискретизации сигнала
 	 * @param maxIndex
+	 *            максимальное количество периодов цифровом сигнале, то есть
+	 *            такое количество периодов при котором частота равна частоте
+	 *            дискретизации
+	 * 
 	 *            maximum index of FFT, meaning that at this index frequency
 	 *            should be equal to sampleRate
 	 * @return frequency of fftindex according to sampleRate and maxIndex;

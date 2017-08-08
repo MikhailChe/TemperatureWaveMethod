@@ -23,13 +23,14 @@ public class SampleSettingsDialog extends JDialog {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -6024215129687729185L;
-	Sample sample = null;
-	JTextField name = new JTextField();
-	JTextField comment = new JTextField();
-	JFormattedTextField length = null;
+	private static final long	serialVersionUID	= -6024215129687729185L;
+	Sample						sample				= null;
+	JTextField					name				= new JTextField();
+	JTextField					comment				= new JTextField();
+	JFormattedTextField			length				= null;
+	JFormattedTextField			density				= null;
 
-	JButton okButton = new JButton("OK");
+	JButton						okButton			= new JButton("OK");
 
 	public SampleSettingsDialog(JFrame parent, Sample sample) {
 		super(parent, true);
@@ -50,6 +51,7 @@ public class SampleSettingsDialog extends JDialog {
 		formatter.setCommitsOnValidEdit(true);
 
 		length = new JFormattedTextField(formatter);
+		density = new JFormattedTextField(formatter);
 
 		Container pane = this.getContentPane();
 		BoxLayout layout = new BoxLayout(pane, BoxLayout.Y_AXIS);
@@ -72,9 +74,15 @@ public class SampleSettingsDialog extends JDialog {
 				BorderFactory.createTitledBorder("Толщина образца (метры)"));
 		lengthPanel.add(length);
 
+		JPanel densityPanel = new JPanel(new BorderLayout(8, 8));
+		densityPanel.setBorder(
+				BorderFactory.createTitledBorder("Плотность образца"));
+		densityPanel.add(density);
+
 		pane.add(namePanel);
 		pane.add(commentPanel);
 		pane.add(lengthPanel);
+		pane.add(densityPanel);
 
 		pane.add(okButton);
 
@@ -86,6 +94,7 @@ public class SampleSettingsDialog extends JDialog {
 		name.setText(sample.getName());
 		comment.setText(sample.getComment());
 		length.setValue(sample.getLength());
+		density.setValue(sample.getDensity());
 
 		okButton.addActionListener(e -> {
 			sample.setName(name.getText());
@@ -93,6 +102,12 @@ public class SampleSettingsDialog extends JDialog {
 			try {
 				length.commitEdit();
 				Object o = length.getValue();
+				if (o instanceof Double) {
+					Double val = (Double) o;
+					sample.setLength(val.doubleValue());
+				}
+				density.commitEdit();
+				o = density.getValue();
 				if (o instanceof Double) {
 					Double val = (Double) o;
 					sample.setLength(val.doubleValue());
@@ -106,10 +121,10 @@ public class SampleSettingsDialog extends JDialog {
 		});
 	}
 
-	private int status = CANCEL_BUTTON;
+	private int				status			= CANCEL_BUTTON;
 
-	public static final int OK_BUTTON = 0;
-	public static final int CANCEL_BUTTON = 1;
+	public static final int	OK_BUTTON		= 0;
+	public static final int	CANCEL_BUTTON	= 1;
 
 	public static int showSampleSettings(JFrame parent, Sample sample) {
 		SampleSettingsDialog d = new SampleSettingsDialog(parent, sample);

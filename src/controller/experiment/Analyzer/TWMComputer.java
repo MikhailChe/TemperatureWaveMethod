@@ -39,11 +39,13 @@ public class TWMComputer implements Callable<Measurement> {
 
 	public static List<Measurement> computeFolder(File folder, Window parent,
 			ProgressMonitor opm) {
+		// Начальные проверки
 		if (!folder.isDirectory())
 			return null;
 		if (!folder.exists())
 			return null;
 
+		// Создаём и заполняем список файлами из выбранной папки
 		List<File> files = new ArrayList<>();
 		files.addAll(Arrays.asList(folder.listFiles(
 				pathname -> pathname.getName().matches("^[0-9]+.txt$"))));
@@ -51,6 +53,7 @@ public class TWMComputer implements Callable<Measurement> {
 		if (files.size() <= 0)
 			return null;
 
+		// Создаём выходной файл
 		BufferedWriter bw = null;
 		File resultFile = tryToCreateResultFile(folder);
 		if (resultFile == null)
@@ -66,6 +69,7 @@ public class TWMComputer implements Callable<Measurement> {
 		if (bw == null)
 			return null;
 
+		// Создаём пул потоков для параллельного вычисления
 		ExecutorService pool = ForkJoinPool.commonPool();
 		List<Future<Measurement>> futuresSet = new ArrayList<>();
 		ProgressMonitor pm = new ProgressMonitor(parent,
@@ -75,17 +79,29 @@ public class TWMComputer implements Callable<Measurement> {
 		if (opm.isCanceled() || pm.isCanceled()) {
 			return null;
 		}
+		// Запускаем параллельные вычисления для каждого файла
 		files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f))));
 
 		int currentProgress = 0;
 		boolean header = true;
 		List<Measurement> measurements = new ArrayList<>();
-
+		// Ожидаем окончания измзерений
 		for (Future<Measurement> future : futuresSet) {
-			if (opm.isCanceled() || pm.isCanceled()) {
-				return null;
-			}
+			// Если в прогресс-монтиоре нажали отмену - отменяем всё
 			try {
+				// Ждёмс завершения текущего расчёта. Не забываем запрашивать
+				// состояние у графического интерфейса
+				while (!future.isDone()) {
+					if (opm.isCanceled() || pm.isCanceled()) {
+						// TODO: возможны сбои в работе
+						// Убиваем пул потоков, которые всё-ещё обрабатывают
+						// файлы
+						pool.shutdownNow();
+						return null;
+					}
+					Thread.yield();
+				}
+
 				Measurement answer = future.get();
 				if (answer != null) {
 					Workspace workspace = Workspace.getInstance();
@@ -114,6 +130,14 @@ public class TWMComputer implements Callable<Measurement> {
 			}
 		}
 		pm.close();
+		try {
+			bw.flush();
+			bw.close();
+		} catch (IOException e) {
+			JExceptionHandler.getExceptionHanlder()
+					.uncaughtException(Thread.currentThread(), e);
+			e.printStackTrace();
+		}
 
 		if (JOptionPane.showConfirmDialog(parent,
 				"Загрузить данные в базу?") == JOptionPane.OK_OPTION) {
@@ -136,14 +160,7 @@ public class TWMComputer implements Callable<Measurement> {
 			}
 		}
 
-		try {
-			bw.flush();
-			bw.close();
-		} catch (IOException e) {
-			JExceptionHandler.getExceptionHanlder()
-					.uncaughtException(Thread.currentThread(), e);
-			e.printStackTrace();
-		}
+		// Отркываем файл для просмотра на десктопе
 		if (Desktop.isDesktopSupported()) {
 			try {
 				Desktop.getDesktop().open(resultFile);
@@ -156,6 +173,7 @@ public class TWMComputer implements Callable<Measurement> {
 		return measurements;
 	}
 
+	// Выдаём параметры всех сигналов
 	public static SignalParameters[] getAllSignalParameters(double[][] signals,
 			int frequency) {
 		SignalParameters[] params = new SignalParameters[signals.length];
@@ -166,9 +184,36 @@ public class TWMComputer implements Callable<Measurement> {
 		return params;
 	}
 
+	/**
+	 * Выдаём параметры сигнала. Для этого вычисляем Фурье для частоты
+	 * эксперимента и для нулевой частоты.
+	 * 
+	 * Во-первых достаём оттуда фазу. Фазу сдвигаем на 90 градусов, чтобы она
+	 * была по синусу, а не по косинусу. Роли в итоговых вычислениях это не
+	 * играет, так как мы используем разницу фаз, зато с человеческой точки
+	 * зрения смотреть на синусовую фазу приятнее.
+	 *
+	 * Затём привязываем фазу к диапазону -Pi..Pi
+	 * 
+	 * Амплитуда сигнала берётся из того же преобразования Фурье. Для
+	 * нормализации делим её на длину входных данных
+	 * 
+	 * Постоянная составляющая также берётся из Фурье сделанного для нулевой
+	 * частоты. По своей сути, фурье для нулевой частоты это такой дикий способ
+	 * попросить взять среднее арифметическое от данных. Однако для поддержания
+	 * целостности кода в ущерб производительности берём Фурье.
+	 * 
+	 * Записываем это всё в параметры и отправляем вызывавшему
+	 * 
+	 * @param signal
+	 * @param frequency
+	 * @return
+	 */
 	public static SignalParameters getSignalParameters(double[] signal,
 			int frequency) {
 		double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
+		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
+
 		double phase = FFT.getArgument(fourierForFreq, 0) + Math.PI / 2.0d;
 		if (phase < -Math.PI) {
 			phase += 2.0 * Math.PI;
@@ -176,7 +221,6 @@ public class TWMComputer implements Callable<Measurement> {
 			phase -= 2.0 * Math.PI;
 		}
 		double amplitude = FFT.getAbs(fourierForFreq, 0) / signal.length;
-		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
 		double nullOffset = FFT.getAbs(nullOffsetFourier, 0) / signal.length;
 
 		SignalParameters params = new SignalParameters(phase, amplitude,
@@ -185,6 +229,12 @@ public class TWMComputer implements Callable<Measurement> {
 		return params;
 	}
 
+	/**
+	 * Создаём файл. Если файл открыт пользователем, то ждём пока он его закроет
+	 * 
+	 * @param folder
+	 * @return
+	 */
 	public static File tryToCreateResultFile(File folder) {
 		File resultFile;
 		final String formatStringOfReulstFile = "result-%s.tsv";
@@ -200,8 +250,8 @@ public class TWMComputer implements Callable<Measurement> {
 					} catch (java.nio.file.FileSystemException e) {
 						JExceptionHandler.getExceptionHanlder()
 								.uncaughtException(Thread.currentThread(), e);
-						//e.printStackTrace();
-						
+						// e.printStackTrace();
+
 						exception = true;
 
 						JOptionPane.showMessageDialog(null,
@@ -270,6 +320,8 @@ public class TWMComputer implements Callable<Measurement> {
 		// Set low priority, so that other threads could easily read the file
 		result.time = reader.getTime();
 		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+		// ===========
+
 		int numCol = reader.getColumnCount();
 		if (numCol > 1) {
 
@@ -290,54 +342,11 @@ public class TWMComputer implements Callable<Measurement> {
 					ZeroCrossing zc = id.zc;
 					if (zc == null)
 						continue;
-
-					double signalAngle = param.phase;
-
-					double targetAngle = -signalAngle;
 					double currentShift = zc
 							.getCurrentShift(EXPERIMENT_FREQUENCY);
-
-					double adjustedAngle = targetAngle
-							- Math.toRadians(currentShift);
-
-					double preKappaAngle = truncatePositive(
-							adjustedAngle - Math.PI / 4.0);
-
-					final double kappa = Math.sqrt(2) * (preKappaAngle);
-
-					adjustedAngle = truncatePositive(adjustedAngle);
-					targetAngle = truncatePositive(targetAngle);
-
-					// kappa = PhysicsModel.searchKappaFor(-adjustAngle, 0.001);
-
-					final double omega = 2.0d * Math.PI * EXPERIMENT_FREQUENCY;
-					final double length = workspace.getSample().getLength();
-					double A = (omega * length * length)
-							/ (kappa * kappa);
-
-					final double DENSITY = 8079;
-
-					// TODO: Добавить теплоёмкость в набор данных
-					double capacitance = 3.5E8 * kappa / (param.amplitude
-							* DENSITY * workspace.getSample().getLength()
-							* omega
-							* Math.sqrt(Math
-									.pow(Math.sinh(preKappaAngle),
-											2)
-									+ Math.pow(Math.sin(preKappaAngle),
-											2)));
-
-					Diffusivity tCond = new Diffusivity();
-
-					tCond.amplitude = param.amplitude;
-					tCond.kappa = kappa;
-					tCond.phase = adjustedAngle;
-					tCond.diffusivity = A;
-					tCond.initSignalParams = param;
-					tCond.frequency = EXPERIMENT_FREQUENCY;
+					Diffusivity tCond = getPhysicalProperties(param,
+							currentShift, EXPERIMENT_FREQUENCY);
 					tCond.signalID = id;
-					tCond.capacitance = capacitance;
-
 					result.diffusivity.add(tCond);
 
 				} else if (SHIFTS[currentChannel] instanceof DCsignalID) {
@@ -362,6 +371,71 @@ public class TWMComputer implements Callable<Measurement> {
 			System.gc();
 		}
 		return result;
+	}
+
+	public Diffusivity getPhysicalProperties(final SignalParameters PARAM,
+			final double CURRENT_SHIFT, final double EXPERIMENT_FREQUENCY) {
+
+		// Берём начальный сигнал. По идее он может быть как положительным, так
+		// и отрицательным, но он представляет собой отставание
+		final double signalAngle = PARAM.phase;
+
+		// Но мы его всё-равно разворачиваем, чтобы сделать положительным
+		double targetAngle = -signalAngle;
+
+		// Вычитаем из него сдвиг по фазу
+		double adjustedAngle = targetAngle
+				- Math.toRadians(CURRENT_SHIFT);
+
+		// подгатавливаем угол для вычисления капы для этого вычитаем из него 45
+		// градусов
+		// и принуждаем к тому чтобы оставаться позитивным
+		final double preKappaAngle = truncatePositive(
+				adjustedAngle - Math.PI / 4.0);
+
+		// Теперь умножаем на корень из двух и получаем капу
+		final double kappa = Math.sqrt(2) * (preKappaAngle);
+
+		// выравниваем углы в положительную сторону
+		adjustedAngle = truncatePositive(adjustedAngle);
+		targetAngle = truncatePositive(targetAngle);
+
+		// Здесь мы могли бы использовать физическую модель для определения
+		// каппы, но она, как оказалось, не даёт большого прироста в точности,
+		// но сильно влияет на производительность
+		// kappa = PhysicsModel.searchKappaFor(-adjustAngle, 0.001);
+
+		final double omega = 2.0d * Math.PI * EXPERIMENT_FREQUENCY;
+		final double length = workspace.getSample().getLength();
+		// каноническая формула
+		double A = (omega * length * length)
+				/ (kappa * kappa);
+
+		// final double DENSITY = 8079;
+		final double DENSITY = workspace.getSample().getDensity();
+
+		final double HEAT_FLUX = 1E8;
+
+		// вычисляем теплоёмкость
+		double capacitance = HEAT_FLUX * kappa / (PARAM.amplitude
+				* DENSITY * workspace.getSample().getLength()
+				* omega
+				* Math.sqrt(Math
+						.pow(Math.sinh(preKappaAngle),
+								2)
+						+ Math.pow(Math.sin(preKappaAngle),
+								2)));
+
+		Diffusivity tCond = new Diffusivity();
+
+		tCond.amplitude = PARAM.amplitude;
+		tCond.kappa = kappa;
+		tCond.phase = adjustedAngle;
+		tCond.diffusivity = A;
+		tCond.initSignalParams = PARAM;
+		tCond.frequency = EXPERIMENT_FREQUENCY;
+		tCond.capacitance = capacitance;
+		return tCond;
 	}
 
 	/**

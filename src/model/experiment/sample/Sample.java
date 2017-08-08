@@ -20,18 +20,20 @@ import model.experiment.measurement.Measurement;
 public class Sample {
 
 	@XmlAttribute
-	private String name = "Default_name";
+	private String											name			= "Default_name";
 	@XmlAttribute
-	private double length = 0;
-	private String comment = "Default_comment";
+	private double											length			= 0;
+	private double											density			= 0;
+	private String											comment			= "Default_comment";
 
-	private PropertyChangeSupport mPcs = new PropertyChangeSupport(this);
+	private PropertyChangeSupport							mPcs			= new PropertyChangeSupport(
+			this);
 
-	private transient final static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+	private transient final static FileNameExtensionFilter	extensionFilter	= new FileNameExtensionFilter(
 			"Файл образца (*.smpl)", "smpl");
 
 	@XmlElement
-	public List<Measurement> measurements = new ArrayList<>();;
+	public List<Measurement>								measurements	= new ArrayList<>();;
 
 	public Sample() {
 		super();
@@ -68,6 +70,16 @@ public class Sample {
 		mPcs.firePropertyChange("length", oldLength, this.length);
 	}
 
+	public double getDensity() {
+		return density;
+	}
+
+	public void setDensity(double density) {
+		double oldDensity = this.density;
+		this.density = density;
+		mPcs.firePropertyChange("density", oldDensity, this.density);
+	}
+
 	public String getComment() {
 		return comment;
 	}
@@ -81,7 +93,8 @@ public class Sample {
 	@Override
 	public boolean equals(Object o) {
 		return Predicates.areEqual(Sample.class, this, (Sample) o,
-				Arrays.asList(Sample::getLength, Sample::getName, Sample::getComment));
+				Arrays.asList(Sample::getLength, Sample::getName,
+						Sample::getComment));
 	}
 
 	@Override
