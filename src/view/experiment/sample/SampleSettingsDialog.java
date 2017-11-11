@@ -52,7 +52,9 @@ public class SampleSettingsDialog extends JDialog {
 		formatter.setCommitsOnValidEdit(true);
 
 		length = new JFormattedTextField(formatter);
+
 		density = new JFormattedTextField(NumberFormat.getNumberInstance());
+		density.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
 
 		Container pane = this.getContentPane();
 		BoxLayout layout = new BoxLayout(pane, BoxLayout.Y_AXIS);
