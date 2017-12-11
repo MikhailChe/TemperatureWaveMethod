@@ -18,6 +18,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 
 import debug.JExceptionHandler;
 import model.experiment.Analyzer.SignalParameters;
@@ -123,7 +124,7 @@ public class AdjustFileCreator implements Runnable {
 			dialog.getContentPane().add(zcvp);
 			dialog.pack();
 			dialog.setModal(true);
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+			dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 			dialog.setVisible(true);
 		});
 	}

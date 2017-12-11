@@ -11,4 +11,5 @@ public class TWaveStart {
 		Platform.setImplicitExit(false);
 		new ExpLauncher();
 	}
+
 }

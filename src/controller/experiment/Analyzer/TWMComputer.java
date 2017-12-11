@@ -1,5 +1,8 @@
 package controller.experiment.Analyzer;
 
+import static controller.experiment.Analyzer.PhaseUtils.truncateNegative;
+import static controller.experiment.Analyzer.PhaseUtils.truncatePositive;
+
 import java.awt.Desktop;
 import java.awt.Window;
 import java.io.BufferedWriter;
@@ -37,8 +40,7 @@ import model.experiment.zeroCrossing.ZeroCrossing;
 
 public class TWMComputer implements Callable<Measurement> {
 
-	public static List<Measurement> computeFolder(File folder, Window parent,
-			ProgressMonitor opm) {
+	public static List<Measurement> computeFolder(File folder, Window parent, ProgressMonitor opm) {
 		// Начальные проверки
 		if (!folder.isDirectory())
 			return null;
@@ -47,135 +49,120 @@ public class TWMComputer implements Callable<Measurement> {
 
 		// Создаём и заполняем список файлами из выбранной папки
 		List<File> files = new ArrayList<>();
-		files.addAll(Arrays.asList(folder.listFiles(
-				pathname -> pathname.getName().matches("^[0-9]+.txt$"))));
+		files.addAll(Arrays.asList(folder.listFiles(pathname -> pathname.getName().matches("^[0-9]+.txt$"))));
 
 		if (files.size() <= 0)
 			return null;
 
 		// Создаём выходной файл
-		BufferedWriter bw = null;
 		File resultFile = tryToCreateResultFile(folder);
 		if (resultFile == null)
 			return null;
-		try {
-			bw = Files.newBufferedWriter(resultFile.toPath(),
-					StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+		try (BufferedWriter bw = Files.newBufferedWriter(resultFile.toPath(), StandardOpenOption.CREATE_NEW,
+				StandardOpenOption.WRITE)) {
+
+			// Создаём пул потоков для параллельного вычисления
+			ExecutorService pool = ForkJoinPool.commonPool();
+			List<Future<Measurement>> futuresSet = new ArrayList<>();
+			ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
+			pm.setMillisToDecideToPopup(1000);
+			pm.setMaximum(files.size());
+			if (opm.isCanceled() || pm.isCanceled()) {
+				return null;
+			}
+			// Запускаем параллельные вычисления для каждого файла
+			files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f))));
+
+			int currentProgress = 0;
+			boolean header = true;
+			List<Measurement> measurements = new ArrayList<>();
+			// Ожидаем окончания измзерений
+			for (Future<Measurement> future : futuresSet) {
+				// Если в прогресс-монтиоре нажали отмену - отменяем всё
+				try {
+					// Ждёмс завершения текущего расчёта. Не забываем запрашивать
+					// состояние у графического интерфейса
+					while (!future.isDone()) {
+						if (opm.isCanceled() || pm.isCanceled()) {
+							// TODO: возможны сбои в работе
+							// Убиваем пул потоков, которые всё-ещё обрабатывают
+							// файлы
+							pool.shutdownNow();
+							return null;
+						}
+						Thread.yield();
+					}
+
+					Measurement answer = future.get();
+					if (answer != null) {
+						Workspace workspace = Workspace.getInstance();
+						Sample sample;
+						if ((sample = workspace.getSample()) != null) {
+							measurements.add(answer);
+							if (sample.measurements != null) {
+								sample.measurements.add(answer);
+							}
+						}
+						if (header) {
+							header = false;
+							// Add magic UTF-8 BOM
+							bw.write(new String(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF }));
+							bw.write(String.format("%s%n", answer.getHeader()));
+						}
+						bw.write(String.format("%s%n", answer));
+					}
+					pm.setProgress(++currentProgress);
+				} catch (InterruptedException | ExecutionException | IOException e) {
+					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
+					e.printStackTrace();
+				}
+			}
+			pm.close();
+			try {
+				bw.flush();
+				bw.close();
+			} catch (IOException e) {
+				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
+				e.printStackTrace();
+			}
+
+			if (JOptionPane.showConfirmDialog(parent, "Загрузить данные в базу?") == JOptionPane.OK_OPTION) {
+				try {
+					ExperimentUploader eu = new ExperimentUploader();
+
+					eu.uploadExperimentResults(futuresSet.stream().map(future -> {
+						try {
+							return future.get();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						return null;
+					}).collect(Collectors.toList()), Workspace.getInstance().getSample());
+				} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException
+						| IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+			// Отркываем файл для просмотра на десктопе
+			if (Desktop.isDesktopSupported()) {
+				try {
+					Desktop.getDesktop().open(resultFile);
+				} catch (IOException e) {
+					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
+					e.printStackTrace();
+				}
+			}
+			return measurements;
 		} catch (IOException e1) {
-			JExceptionHandler.getExceptionHanlder()
-					.uncaughtException(Thread.currentThread(), e1);
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 			e1.printStackTrace();
 		}
-		if (bw == null)
-			return null;
-
-		// Создаём пул потоков для параллельного вычисления
-		ExecutorService pool = ForkJoinPool.commonPool();
-		List<Future<Measurement>> futuresSet = new ArrayList<>();
-		ProgressMonitor pm = new ProgressMonitor(parent,
-				"Папка обрабатывается слишком долго", "", 0, 1);
-		pm.setMillisToDecideToPopup(1000);
-		pm.setMaximum(files.size());
-		if (opm.isCanceled() || pm.isCanceled()) {
-			return null;
-		}
-		// Запускаем параллельные вычисления для каждого файла
-		files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f))));
-
-		int currentProgress = 0;
-		boolean header = true;
-		List<Measurement> measurements = new ArrayList<>();
-		// Ожидаем окончания измзерений
-		for (Future<Measurement> future : futuresSet) {
-			// Если в прогресс-монтиоре нажали отмену - отменяем всё
-			try {
-				// Ждёмс завершения текущего расчёта. Не забываем запрашивать
-				// состояние у графического интерфейса
-				while (!future.isDone()) {
-					if (opm.isCanceled() || pm.isCanceled()) {
-						// TODO: возможны сбои в работе
-						// Убиваем пул потоков, которые всё-ещё обрабатывают
-						// файлы
-						pool.shutdownNow();
-						return null;
-					}
-					Thread.yield();
-				}
-
-				Measurement answer = future.get();
-				if (answer != null) {
-					Workspace workspace = Workspace.getInstance();
-					Sample sample;
-					if ((sample = workspace.getSample()) != null) {
-						measurements.add(answer);
-						if (sample.measurements != null) {
-							sample.measurements.add(answer);
-						}
-					}
-					if (header) {
-						header = false;
-						// Add magic UTF-8 BOM
-						bw.write(new String(new byte[] { (byte) 0xEF,
-								(byte) 0xBB, (byte) 0xBF }));
-						bw.write(String.format("%s%n", answer.getHeader()));
-					}
-					bw.write(String.format("%s%n", answer));
-				}
-				pm.setProgress(++currentProgress);
-			} catch (InterruptedException | ExecutionException
-					| IOException e) {
-				JExceptionHandler.getExceptionHanlder()
-						.uncaughtException(Thread.currentThread(), e);
-				e.printStackTrace();
-			}
-		}
-		pm.close();
-		try {
-			bw.flush();
-			bw.close();
-		} catch (IOException e) {
-			JExceptionHandler.getExceptionHanlder()
-					.uncaughtException(Thread.currentThread(), e);
-			e.printStackTrace();
-		}
-
-		if (JOptionPane.showConfirmDialog(parent,
-				"Загрузить данные в базу?") == JOptionPane.OK_OPTION) {
-			try {
-				ExperimentUploader eu = new ExperimentUploader();
-
-				eu.uploadExperimentResults(futuresSet.stream().map(future -> {
-					try {
-						return future.get();
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					return null;
-				}).collect(Collectors.toList()),
-						Workspace.getInstance().getSample());
-			} catch (InstantiationException | IllegalAccessException
-					| ClassNotFoundException | SQLException
-					| IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		// Отркываем файл для просмотра на десктопе
-		if (Desktop.isDesktopSupported()) {
-			try {
-				Desktop.getDesktop().open(resultFile);
-			} catch (IOException e) {
-				JExceptionHandler.getExceptionHanlder()
-						.uncaughtException(Thread.currentThread(), e);
-				e.printStackTrace();
-			}
-		}
-		return measurements;
+		return null;
 	}
 
 	// Выдаём параметры всех сигналов
-	public static SignalParameters[] getAllSignalParameters(double[][] signals,
-			int frequency) {
+	public static SignalParameters[] getAllSignalParameters(double[][] signals, int frequency) {
 		SignalParameters[] params = new SignalParameters[signals.length];
 		for (int i = 0; i < signals.length; i++) {
 			double[] signal = signals[i];
@@ -185,18 +172,18 @@ public class TWMComputer implements Callable<Measurement> {
 	}
 
 	/**
-	 * Выдаём параметры сигнала. Для этого вычисляем Фурье для частоты
-	 * эксперимента и для нулевой частоты.
+	 * Выдаём параметры сигнала. Для этого вычисляем Фурье для частоты эксперимента
+	 * и для нулевой частоты.
 	 * 
-	 * Во-первых достаём оттуда фазу. Фазу сдвигаем на 90 градусов, чтобы она
-	 * была по синусу, а не по косинусу. Роли в итоговых вычислениях это не
-	 * играет, так как мы используем разницу фаз, зато с человеческой точки
-	 * зрения смотреть на синусовую фазу приятнее.
+	 * Во-первых достаём оттуда фазу. Фазу сдвигаем на 90 градусов, чтобы она была
+	 * по синусу, а не по косинусу. Роли в итоговых вычислениях это не играет, так
+	 * как мы используем разницу фаз, зато с человеческой точки зрения смотреть на
+	 * синусовую фазу приятнее.
 	 *
 	 * Затём привязываем фазу к диапазону -Pi..Pi
 	 * 
-	 * Амплитуда сигнала берётся из того же преобразования Фурье. Для
-	 * нормализации делим её на длину входных данных
+	 * Амплитуда сигнала берётся из того же преобразования Фурье. Для нормализации
+	 * делим её на длину входных данных
 	 * 
 	 * Постоянная составляющая также берётся из Фурье сделанного для нулевой
 	 * частоты. По своей сути, фурье для нулевой частоты это такой дикий способ
@@ -209,22 +196,22 @@ public class TWMComputer implements Callable<Measurement> {
 	 * @param frequency
 	 * @return
 	 */
-	public static SignalParameters getSignalParameters(double[] signal,
-			int frequency) {
+	public static SignalParameters getSignalParameters(double[] signal, int frequency) {
 		double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
 		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
 
-		double phase = FFT.getArgument(fourierForFreq, 0) + Math.PI / 2.0d;
-		if (phase < -Math.PI) {
-			phase += 2.0 * Math.PI;
-		} else if (phase > Math.PI) {
-			phase -= 2.0 * Math.PI;
-		}
+		double phase = FFT.getArgument(fourierForFreq, 0) + Math.PI / 2.0;
+		// while (phase < -Math.PI) {
+		// phase += 2.0 * Math.PI;
+		// }
+		// while (phase > Math.PI) {
+		// phase -= 2.0 * Math.PI;
+		// }
+		truncateNegative(phase);
 		double amplitude = FFT.getAbs(fourierForFreq, 0) / signal.length;
 		double nullOffset = FFT.getAbs(nullOffsetFourier, 0) / signal.length;
 
-		SignalParameters params = new SignalParameters(phase, amplitude,
-				nullOffset);
+		SignalParameters params = new SignalParameters(phase, amplitude, nullOffset);
 
 		return params;
 	}
@@ -239,8 +226,7 @@ public class TWMComputer implements Callable<Measurement> {
 		File resultFile;
 		final String formatStringOfReulstFile = "result-%s.tsv";
 		try {
-			resultFile = new File(folder,
-					String.format(formatStringOfReulstFile, folder.getName()));
+			resultFile = new File(folder, String.format(formatStringOfReulstFile, folder.getName()));
 			if (resultFile.exists()) {
 				boolean exception = false;
 				do {
@@ -248,35 +234,29 @@ public class TWMComputer implements Callable<Measurement> {
 					try {
 						Files.delete(resultFile.toPath());
 					} catch (java.nio.file.FileSystemException e) {
-						JExceptionHandler.getExceptionHanlder()
-								.uncaughtException(Thread.currentThread(), e);
+						JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 						// e.printStackTrace();
 
 						exception = true;
 
-						JOptionPane.showMessageDialog(null,
-								resultFile.toString(),
+						JOptionPane.showMessageDialog(null, resultFile.toString(),
 								"Пожалуйста, закройте файл с результатами.\n"
 										+ "Иначе я не смогу записать туда новые результаты.\n"
 										+ "При необходимости Вы можете сохранить копию файла вручную\n"
 										+ "Я подожду и не буду трогать этот файл, пока Вы не закроете это окно\n",
 								JOptionPane.ERROR_MESSAGE);
-						System.err.printf("Пожалуйста, закройте файл: %s",
-								resultFile.toString());
+						System.err.printf("Пожалуйста, закройте файл: %s", resultFile.toString());
 						try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e1) {
-							JExceptionHandler.getExceptionHanlder()
-									.uncaughtException(Thread.currentThread(),
-											e1);
+							JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 							e1.printStackTrace();
 						}
 					}
 				} while (exception);
 			}
 		} catch (IOException e) {
-			JExceptionHandler.getExceptionHanlder()
-					.uncaughtException(Thread.currentThread(), e);
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 			return null;
 		}
@@ -284,12 +264,12 @@ public class TWMComputer implements Callable<Measurement> {
 	}
 
 	// Non-static functions
-	final private File		file;
+	final private File file;
 
-	final private Workspace	workspace;
+	final private Workspace workspace;
 
-	public Measurement		result;
-	SignalIdentifier[]		SHIFTS;
+	public Measurement result;
+	SignalIdentifier[] SHIFTS;
 
 	public TWMComputer(File filename) {
 		this.file = filename;
@@ -297,13 +277,13 @@ public class TWMComputer implements Callable<Measurement> {
 		List<SignalIdentifier> signalIDs;
 		if ((signalIDs = workspace.getSignalIDs()) != null) {
 			if (signalIDs.size() > 0) {
-				this.SHIFTS = (SignalIdentifier[]) signalIDs
-						.toArray(new SignalIdentifier[signalIDs.size()]);
+				this.SHIFTS = (SignalIdentifier[]) signalIDs.toArray(new SignalIdentifier[signalIDs.size()]);
 			}
 		}
 
 	}
 
+	@Override
 	public Measurement call() {
 		ExperimentFileReader reader = null;
 		result = new Measurement();
@@ -312,8 +292,7 @@ public class TWMComputer implements Callable<Measurement> {
 		try {
 			reader = new ExperimentFileReader(file.toPath());
 		} catch (Exception e) {
-			JExceptionHandler.getExceptionHanlder()
-					.uncaughtException(Thread.currentThread(), e);
+			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
 			e.printStackTrace();
 			return result;
 		}
@@ -329,10 +308,8 @@ public class TWMComputer implements Callable<Measurement> {
 			double[][] croppedData = reader.getCroppedData();
 			final int FREQ_INDEX = reader.getCroppedDataPeriodsCount();
 			result.frequency = EXPERIMENT_FREQUENCY;
-			SignalParameters[] params = getAllSignalParameters(croppedData,
-					FREQ_INDEX);
-			for (int currentChannel = 1; currentChannel < Math.min(numCol,
-					SHIFTS.length); currentChannel++) {
+			SignalParameters[] params = getAllSignalParameters(croppedData, FREQ_INDEX);
+			for (int currentChannel = 1; currentChannel < Math.min(numCol, SHIFTS.length); currentChannel++) {
 				if (SHIFTS[currentChannel] == null) {
 					continue;
 				}
@@ -342,10 +319,8 @@ public class TWMComputer implements Callable<Measurement> {
 					ZeroCrossing zc = id.zc;
 					if (zc == null)
 						continue;
-					double currentShift = zc
-							.getCurrentShift(EXPERIMENT_FREQUENCY);
-					Diffusivity tCond = getPhysicalProperties(param,
-							currentShift, EXPERIMENT_FREQUENCY);
+					double currentShift = zc.getCurrentShift(EXPERIMENT_FREQUENCY);
+					Diffusivity tCond = getPhysicalProperties(param, currentShift, EXPERIMENT_FREQUENCY);
 					tCond.signalID = id;
 					result.diffusivity.add(tCond);
 
@@ -356,8 +331,7 @@ public class TWMComputer implements Callable<Measurement> {
 
 					// t.value = params.nullOffset;
 					t.signalLevel = signID.getVoltage(param.nullOffset);
-					t.value = signID.getTemperature(
-							signID.getVoltage(param.nullOffset) * 1000.0);
+					t.value = signID.getTemperature(signID.getVoltage(param.nullOffset) * 1000.0);
 					result.temperature.add(t);
 				} else if (SHIFTS[currentChannel] instanceof AdjustmentSignalID) {
 					Diffusivity tCond = new Diffusivity();
@@ -373,25 +347,28 @@ public class TWMComputer implements Callable<Measurement> {
 		return result;
 	}
 
-	public Diffusivity getPhysicalProperties(final SignalParameters PARAM,
-			final double CURRENT_SHIFT, final double EXPERIMENT_FREQUENCY) {
+	public Diffusivity getPhysicalProperties(final SignalParameters PARAM, final double CURRENT_SHIFT,
+			final double EXPERIMENT_FREQUENCY) {
 
 		// Берём начальный сигнал. По идее он может быть как положительным, так
-		// и отрицательным, но он представляет собой отставание
-		final double signalAngle = PARAM.phase;
+		// и отрицательным, но он представляет собой отставание, а отставание обычно
+		// отрицательное
+		final double signalAngle = truncateNegative(PARAM.phase);
 
 		// Но мы его всё-равно разворачиваем, чтобы сделать положительным
 		double targetAngle = -signalAngle;
+		// То есть получается сигнал, который отстаёт на targetAngle градусов
 
-		// Вычитаем из него сдвиг по фазу
-		double adjustedAngle = targetAngle
-				- Math.toRadians(CURRENT_SHIFT);
+		// Вычитаем из него сдвиг по фазе. Сдвиг уже также был повёрнут в положительную
+		// сторону
+		// то есть сдвиг так же представляет собой отставание на CURRENT_SHIFT градусов.
+		double adjustedAngle = truncatePositive(targetAngle - Math.toRadians(CURRENT_SHIFT));
 
 		// подгатавливаем угол для вычисления капы для этого вычитаем из него 45
 		// градусов
-		// и принуждаем к тому чтобы оставаться позитивным
-		final double preKappaAngle = truncatePositive(
-				adjustedAngle - Math.PI / 4.0);
+		// и принуждаем к тому чтобы оставаться позитивным.
+		// Это вряд ли может случиться. Обычно это значит, что всё плохо
+		final double preKappaAngle = truncatePositive(adjustedAngle - Math.PI / 4.0);
 
 		// Теперь умножаем на корень из двух и получаем капу
 		final double kappa = Math.sqrt(2) * (preKappaAngle);
@@ -408,8 +385,7 @@ public class TWMComputer implements Callable<Measurement> {
 		final double omega = 2.0d * Math.PI * EXPERIMENT_FREQUENCY;
 		final double length = workspace.getSample().getLength();
 		// каноническая формула
-		double A = (omega * length * length)
-				/ (kappa * kappa);
+		double A = (omega * length * length) / (kappa * kappa);
 
 		// final double DENSITY = 8079;
 		final double DENSITY = workspace.getSample().getDensity();
@@ -417,14 +393,8 @@ public class TWMComputer implements Callable<Measurement> {
 		final double HEAT_FLUX = 1E8;
 
 		// вычисляем теплоёмкость
-		double capacitance = HEAT_FLUX * kappa / (PARAM.amplitude
-				* DENSITY * workspace.getSample().getLength()
-				* omega
-				* Math.sqrt(Math
-						.pow(Math.sinh(preKappaAngle),
-								2)
-						+ Math.pow(Math.sin(preKappaAngle),
-								2)));
+		double capacitance = HEAT_FLUX * kappa / (PARAM.amplitude * DENSITY * workspace.getSample().getLength() * omega
+				* Math.sqrt(Math.pow(Math.sinh(preKappaAngle), 2) + Math.pow(Math.sin(preKappaAngle), 2)));
 
 		Diffusivity tCond = new Diffusivity();
 
@@ -438,31 +408,4 @@ public class TWMComputer implements Callable<Measurement> {
 		return tCond;
 	}
 
-	/**
-	 * @param value
-	 * @return positive angle (from 0 to 2 * Pi)
-	 */
-	public double truncatePositive(double value) {
-		while (value < 0) {
-			value += Math.PI * 2.0;
-		}
-		while (value > Math.PI * 2.0) {
-			value -= Math.PI * 2.0;
-		}
-		return value;
-	}
-
-	/**
-	 * @param value
-	 * @return negative angle (from 0 to -2 * Pi)
-	 */
-	public double truncateNegative(double value) {
-		while (value > 0) {
-			value -= Math.PI * 2.0;
-		}
-		while (value < -Math.PI * 2.0) {
-			value += Math.PI * 2.0;
-		}
-		return value;
-	}
 }
