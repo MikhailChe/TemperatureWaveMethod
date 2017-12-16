@@ -2,6 +2,7 @@ package debug;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -12,8 +13,7 @@ import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-public class JExceptionHandler extends JFrame
-		implements UncaughtExceptionHandler {
+public class JExceptionHandler extends JFrame implements UncaughtExceptionHandler {
 
 	/**
 	 * 
@@ -35,7 +35,7 @@ public class JExceptionHandler extends JFrame
 		super("Ошибки программы");
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 		addWindowStateListener(e -> {
-			if (JFrame.getFrames().length <= 1) {
+			if (Frame.getFrames().length <= 1) {
 				JExceptionHandler.this.dispose();
 			}
 		});
@@ -45,8 +45,7 @@ public class JExceptionHandler extends JFrame
 		listModel = new DefaultListModel<>();
 		list = new JList<>(listModel);
 
-		SwingUtilities.invokeLater(
-				() -> getContentPane().add(list, BorderLayout.CENTER));
+		SwingUtilities.invokeLater(() -> getContentPane().add(list, BorderLayout.CENTER));
 	}
 
 	@Override

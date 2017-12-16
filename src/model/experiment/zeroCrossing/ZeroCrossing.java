@@ -29,15 +29,15 @@ import controller.lambda.Predicates;
  */
 @XmlAccessorType(NONE)
 public class ZeroCrossing {
-	final public static FileNameExtensionFilter	extensionFilter	= new FileNameExtensionFilter(
-	        "Файл юстировки текстовы (*.zc)", "zc");
+	final public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+			"Файл юстировки текстовы (*.zc)", "zc");
 
 	@XmlAttribute
-	final public File							forFile;
+	final public File forFile;
 	@XmlElement
-	final private NavigableMap<Double, Double>	shifts;
+	final private NavigableMap<Double, Double> shifts;
 
-	final private Map<Double, Double>			answerMap;
+	final private Map<Double, Double> answerMap;
 
 	/**
 	 * Защищенный конструктор для создания юстировки из файла
@@ -50,23 +50,18 @@ public class ZeroCrossing {
 		this(new File(""));
 	}
 
-	public ZeroCrossing(File filename)
-	        throws IllegalArgumentException {
+	public ZeroCrossing(File filename) throws IllegalArgumentException {
 		this.forFile = filename;
-		shifts = synchronizedNavigableMap(
-		        new TreeMap<Double, Double>());
+		shifts = synchronizedNavigableMap(new TreeMap<Double, Double>());
 		answerMap = new HashMap<Double, Double>();
 
 	}
 
 	private void initialize() {
 		if (!shifts.isEmpty())
-		    return;
+			return;
 
-		try (Scanner s = new Scanner(
-		        new BufferedInputStream(
-		                new FileInputStream(
-		                        forFile)))) {
+		try (Scanner s = new Scanner(new BufferedInputStream(new FileInputStream(forFile)))) {
 
 			while (s.hasNext()) {
 				double key = 0;
@@ -87,8 +82,7 @@ public class ZeroCrossing {
 			s.close();
 		} catch (FileNotFoundException e) {
 			// e.printStackTrace();
-			System.err.println(this.getClass().getName()
-			        + " : file not found " + forFile);
+			System.err.println(this.getClass().getName() + " : file not found " + forFile);
 		}
 	}
 
@@ -100,8 +94,7 @@ public class ZeroCrossing {
 	 *            частота в Гц
 	 * @return значение текущего сдвига фаз для выбранной частоты
 	 */
-	public synchronized double getCurrentShift(
-	        double frequency) {
+	public synchronized double getCurrentShift(double frequency) {
 
 		if (answerMap.containsKey(frequency)) {
 			Double answer = answerMap.get(frequency);
@@ -110,7 +103,7 @@ public class ZeroCrossing {
 			}
 		}
 		if (shifts.isEmpty())
-		    initialize();
+			initialize();
 		if (shifts.containsKey(frequency)) {
 			Double value = shifts.get(frequency);
 			if (value == null) {
@@ -119,66 +112,58 @@ public class ZeroCrossing {
 			answerMap.put(frequency, ((double) (value)));
 			return value;
 		} else {
-			Double nearestHigherKey = shifts
-			        .higherKey(frequency);
-			Double nearsetLowerKey = shifts
-			        .lowerKey(frequency);
+			Double nearestHigherKey = shifts.higherKey(frequency);
+			Double nearsetLowerKey = shifts.lowerKey(frequency);
 			Double nearestHigherValue = null;
 			Double nearestLowerValue = null;
-			if (nearsetLowerKey == null
-			        && nearestHigherKey == null) {
+			if (nearsetLowerKey == null && nearestHigherKey == null) {
 				throw new NullPointerException();
 			} else if (nearsetLowerKey == null) {
-				nearestHigherValue = shifts
-				        .get(nearestHigherKey);
+				nearestHigherValue = shifts.get(nearestHigherKey);
 				if (nearestHigherValue == null) {
 					throw new NullPointerException();
 				}
-				answerMap.put(frequency,
-				        nearestHigherValue);
+				answerMap.put(frequency, nearestHigherValue);
 				return nearestHigherValue;
 			} else if (nearestHigherKey == null) {
-				nearestLowerValue = shifts
-				        .get(nearsetLowerKey);
+				nearestLowerValue = shifts.get(nearsetLowerKey);
 				if (nearestLowerValue == null) {
 					throw new NullPointerException();
 				}
 				answerMap.put(frequency, nearestLowerValue);
 				return nearestLowerValue;
 			} else {
-				nearestHigherValue = shifts
-				        .get(nearestHigherKey);
-				nearestLowerValue = shifts
-				        .get(nearsetLowerKey);
-				if (nearestHigherValue == null
-				        || nearestLowerValue == null) {
+				nearestHigherValue = shifts.get(nearestHigherKey);
+				nearestLowerValue = shifts.get(nearsetLowerKey);
+				if (nearestHigherValue == null || nearestLowerValue == null) {
 					throw new NullPointerException();
 				}
-				double diff = nearestHigherKey
-				        - nearsetLowerKey;
+				double diff = nearestHigherKey - nearsetLowerKey;
 				if (diff == 0) {
 					throw new NullPointerException();
 				}
-				double lowerDiff = frequency
-				        - nearsetLowerKey;
-				double higherDiff = nearestHigherKey
-				        - frequency;
+				double lowerDiff = frequency - nearsetLowerKey;
+				double higherDiff = nearestHigherKey - frequency;
 				double lowerK = 1 - (lowerDiff / diff);
 				double higherK = 1 - (higherDiff / diff);
-				double value = nearestLowerValue * lowerK
-				        + nearestHigherValue
-				                * higherK;
+				double value = nearestLowerValue * lowerK + nearestHigherValue * higherK;
 				answerMap.put(frequency, value);
 				return value;
 			}
 		}
 	}
 
+	public double maxShift() {
+		return shifts.values().stream().mapToDouble(a -> a).max().orElse(Double.NaN);
+	}
+
+	public double minShift() {
+		return shifts.values().stream().mapToDouble(a -> a).min().orElse(Double.NaN);
+	}
+
 	@Override
 	public boolean equals(Object o) {
-		return Predicates.areEqual(ZeroCrossing.class, this,
-		        o,
-		        Arrays.asList(a -> a.forFile));
+		return Predicates.areEqual(ZeroCrossing.class, this, o, Arrays.asList(a -> a.forFile));
 	}
 
 	@Override

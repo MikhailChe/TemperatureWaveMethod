@@ -16,31 +16,25 @@ public class Mysql {
 	final Connection conn_id;
 
 	public Mysql(String address, String user, String password, String database)
-			throws InstantiationException, IllegalAccessException,
-			ClassNotFoundException, SQLException {
-		this(address, "3306", user, password, database, "mysql",
-				"com.mysql.jdbc.Driver");
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
+		this(address, "3306", user, password, database, "mysql", "com.mysql.jdbc.Driver");
 	}
 
-	public Mysql(String address, String port, String user, String password,
-			String database, String driverName, String driverClassName)
-			throws InstantiationException, IllegalAccessException,
-			ClassNotFoundException, SQLException {
+	public Mysql(String address, String port, String user, String password, String database, String driverName,
+			String driverClassName)
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		Class.forName(driverClassName).newInstance();
 
-		String connectionUrl = "jdbc:" + driverName + "://" + address + ":"
-				+ port + "/" + database
+		String connectionUrl = "jdbc:" + driverName + "://" + address + ":" + port + "/" + database
 				+ "?useUnicode=true&characterEncoding=utf-8";
 		conn_id = DriverManager.getConnection(connectionUrl, user, password);
 	}
 
-	public PreparedStatement prepareStatement(String query)
-			throws SQLException {
+	public PreparedStatement prepareStatement(String query) throws SQLException {
 		return conn_id.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 	}
 
-	public PreparedStatement parametrizedPreparedStatement(String query,
-			Object... args) throws SQLException {
+	public PreparedStatement parametrizedPreparedStatement(String query, Object... args) throws SQLException {
 		PreparedStatement stmt = prepareStatement(query);
 		Debug.println(query);
 		for (int i = 0; i < args.length; i++) {
@@ -69,8 +63,7 @@ public class Mysql {
 
 	public ResultSet query(String prepString, Object... args) {
 		try {
-			return parametrizedPreparedStatement(prepString, args)
-					.executeQuery();
+			return parametrizedPreparedStatement(prepString, args).executeQuery();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -78,8 +71,7 @@ public class Mysql {
 	}
 
 	public ResultSet queryUpdate(String query, Object... args) {
-		try {
-			PreparedStatement stmt = parametrizedPreparedStatement(query, args);
+		try (PreparedStatement stmt = parametrizedPreparedStatement(query, args)) {
 			stmt.executeUpdate();
 			stmt.getGeneratedKeys();
 		} catch (SQLException e) {
@@ -98,23 +90,20 @@ public class Mysql {
 			if (displaySize[i - 1] > 32) {
 				displaySize[i - 1] = 32;
 			}
-			System.out.printf("%" + displaySize[i - 1] + "s|", set.getMetaData()
-					.getColumnLabel(i));
+			System.out.printf("%" + displaySize[i - 1] + "s|", set.getMetaData().getColumnLabel(i));
 		}
 		System.out.println();
 
 		while (set.next()) {
 			for (int i = 1; i <= columnCount; i++) {
-				System.out.printf("%" + displaySize[i - 1] + "s|", set
-						.getString(i));
+				System.out.printf("%" + displaySize[i - 1] + "s|", set.getString(i));
 			}
 			System.out.println();
 		}
 	}
 
-	public static void main(String[] args) throws InstantiationException,
-			IllegalAccessException, ClassNotFoundException, SQLException,
-			IOException {
+	public static void main(String[] args)
+			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, IOException {
 
 		ExperimentUploader eu = new ExperimentUploader();
 		Sample s = new Sample();

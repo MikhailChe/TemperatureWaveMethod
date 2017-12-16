@@ -1,6 +1,7 @@
 package view.experiment.Analyzer.drawing;
 
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -24,8 +25,7 @@ public class Drawer {
 	public static Path choosePath(String[] args, Component parent) {
 		Path selectedFile = null;
 		if (args.length == 0) {
-			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(
-					Drawer.class);
+			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(Drawer.class);
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
 				selectedFile = chooser.getSelectedFile().toPath();
@@ -49,28 +49,24 @@ public class Drawer {
 		return ereader;
 	}
 
-	public static void openNewTabs(ExperimentFileReader reader,
-			JDrawingTabsPlane plane) {
+	public static void openNewTabs(ExperimentFileReader reader, JDrawingTabsPlane plane) {
 		if (reader == null) {
 			return;
 		}
 		for (double[] data : reader.getCroppedData()) {
 
-			double[] fft = FFT.getFourierForIndex(data,
-					reader.getCroppedDataPeriodsCount() * 2);
+			double[] fft = FFT.getFourierForIndex(data, reader.getCroppedDataPeriodsCount() * 2);
 
 			double angle = FFT.getArgument(fft, 0);
 			double amplitude = FFT.getAbs(fft, 0) * 2.0 / data.length;
 
 			double[] fftZeroFreq = FFT.getFourierForIndex(data, 0);
-			double zeroAmplitudeShift = FFT.getAbs(fftZeroFreq, 0)
-					/ data.length;
+			double zeroAmplitudeShift = FFT.getAbs(fftZeroFreq, 0) / data.length;
 
 			double[] accordingWave = new double[data.length];
 			for (int i = 0; i < data.length; i++) {
 				accordingWave[i] = Math.cos(
-						2.0 * Math.PI * reader.getCroppedDataPeriodsCount()
-								* 2.0 * ((double) i / (double) data.length)
+						2.0 * Math.PI * reader.getCroppedDataPeriodsCount() * 2.0 * ((double) i / (double) data.length)
 								+ angle)
 						* amplitude + zeroAmplitudeShift;
 			}
@@ -80,9 +76,7 @@ public class Drawer {
 				zeroCrossageLine[i] = zeroAmplitudeShift;
 			}
 
-			plane.addSignalTab(
-					new double[][] { data, accordingWave, zeroCrossageLine },
-					null);
+			plane.addSignalTab(new double[][] { data, accordingWave, zeroCrossageLine }, null);
 		}
 	}
 
@@ -131,8 +125,7 @@ public class Drawer {
 		bar.add(settingsMenu);
 
 		// Settings -> showIndicies, I - Mnemonic
-		JCheckBoxMenuItem showIndiciesMenuItem = new JCheckBoxMenuItem(
-				"Show Indicies",
+		JCheckBoxMenuItem showIndiciesMenuItem = new JCheckBoxMenuItem("Show Indicies",
 				JGraphImagePlane.shouldShowIndicies);
 		showIndiciesMenuItem.setMnemonic(KeyEvent.VK_I);
 		settingsMenu.add(showIndiciesMenuItem);
@@ -140,7 +133,7 @@ public class Drawer {
 		frame.setJMenuBar(bar);
 		frame.pack();
 		frame.setVisible(true);
-		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
 		showIndiciesMenuItem.addChangeListener(e -> {
 

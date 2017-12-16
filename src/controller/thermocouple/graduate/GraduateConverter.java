@@ -24,11 +24,18 @@ import model.thermocouple.graduate.GraduateFactory;
  * @author Mikey
  *
  */
-public class GraduateConverter {
+public class GraduateConverter implements Runnable {
 
 	JFileChooser fileChooser;
 
+	Component parent;
+
 	public GraduateConverter(Component parent) {
+		this.parent = parent;
+	}
+
+	@Override
+	public void run() {
 		fileChooser = new JFileChooser();
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 

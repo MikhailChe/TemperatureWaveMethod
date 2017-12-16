@@ -49,8 +49,6 @@ public class ExpLauncher extends JFrame {
 		}
 		pack();
 		setLocationRelativeTo(null);
-		setVisible(true);
-
 	}
 
 	public ExpLauncher() {

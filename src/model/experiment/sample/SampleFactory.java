@@ -36,18 +36,17 @@ public class SampleFactory {
 	public static Sample forBinary(String filename) {
 		Debug.println("Opening samplefile " + filename);
 
-		try (ObjectInputStream ois = new ObjectInputStream(
-				new ProgressMonitorInputStream(null, "Открытие",
-						new FileInputStream(filename)))) {
+		try (FileInputStream fis = new FileInputStream(filename);
+				ObjectInputStream ois = new ObjectInputStream(new ProgressMonitorInputStream(null, "Открытие", fis))) {
 			Object o = ois.readObject();
 			if (o instanceof Sample) {
 				Sample sample = (Sample) o;
 				Debug.println("Opened sample binary");
 				if (isDebug())
 					if (sample.getName() == null)
-					Debug.println("Sample name empty (null)");
+						Debug.println("Sample name empty (null)");
 					else
-					Debug.println("Sample name: " + sample.getName());
+						Debug.println("Sample name: " + sample.getName());
 
 				return sample;
 			}
@@ -62,8 +61,7 @@ public class SampleFactory {
 		return null;
 	}
 
-	public static File saveSampleXML(final String filename,
-			final Sample sample) {
+	public static File saveSampleXML(final String filename, final Sample sample) {
 		if (filename != null) {
 			JAXB.marshal(sample, new File(filename));
 			return new File(filename);
@@ -74,8 +72,7 @@ public class SampleFactory {
 	@Deprecated
 	public static File saveSample(String filename, final Sample sample) {
 		if (filename == null) {
-			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(
-					SampleFactory.class);
+			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(SampleFactory.class);
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			chooser.setMultiSelectionEnabled(false);
 			chooser.resetChoosableFileFilters();
@@ -91,8 +88,7 @@ public class SampleFactory {
 			}
 		}
 		if (filename != null) {
-			try (ObjectOutputStream oos = new ObjectOutputStream(
-					new FileOutputStream(filename))) {
+			try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
 				oos.writeObject(sample);
 				return new File(filename);
 			} catch (IOException e) {

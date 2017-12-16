@@ -95,6 +95,8 @@ public class SignalIDSettingsDialog extends JDialog {
 				case 2:
 					space.getSignalIDs().add(null);
 					break;
+				default:
+					break;
 				}
 				SwingUtilities.invokeLater(() -> {
 					initialized = false;

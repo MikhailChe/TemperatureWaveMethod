@@ -11,6 +11,7 @@ import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.SoftBevelBorder;
 
 import javafx.application.Platform;
@@ -25,14 +26,14 @@ import javafx.util.StringConverter;
 import model.experiment.measurement.Measurement;
 
 public class MeasurementViewer extends JPanel {
-	private static final long			serialVersionUID	= 3555290921726804677L;
+	private static final long serialVersionUID = 3555290921726804677L;
 
-	final ScatterChart<Number, Number>	chart;
-	final JFXPanel						chartPanel;
+	final ScatterChart<Number, Number> chart;
+	final JFXPanel chartPanel;
 
 	final class MeasurementProperty {
-		final double	freq;
-		final int		channel;
+		final double freq;
+		final int channel;
 
 		public MeasurementProperty(Measurement m, int channel) {
 			this.freq = m.frequency;
@@ -90,7 +91,7 @@ public class MeasurementViewer extends JPanel {
 		SwingUtilities.invokeLater(() -> {
 			Dimension d = new Dimension(640, 480);
 			setPreferredSize(d);
-			setBorder(new SoftBevelBorder(SoftBevelBorder.LOWERED));
+			setBorder(new SoftBevelBorder(BevelBorder.LOWERED));
 
 			chart.setTitle("Измерения");
 
@@ -109,10 +110,7 @@ public class MeasurementViewer extends JPanel {
 		try {
 			double temperature = m.temperature.get(0).value;
 			List<Data<Number, Number>> dataPoints = m.diffusivity.stream()
-					.map(
-							t -> new Data<Number, Number>(temperature,
-									t.diffusivity))
-					.collect(toList());
+					.map(t -> new Data<Number, Number>(temperature, t.diffusivity)).collect(toList());
 			Platform.runLater(() -> {
 				for (int i = 0; i < dataPoints.size(); i++) {
 					MeasurementProperty mp = new MeasurementProperty(m, i);
