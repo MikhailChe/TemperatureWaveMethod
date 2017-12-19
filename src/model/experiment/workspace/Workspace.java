@@ -1,7 +1,6 @@
 package model.experiment.workspace;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,13 +22,13 @@ import model.experiment.signalID.SignalIdentifier;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Workspace {
 
-	final static String			defaultWorkspace	= "workspace.xml";
-	private static Workspace	instance			= null;
+	final static String defaultWorkspace = "workspace.xml";
+	private static Workspace instance = null;
 
 	public synchronized static Workspace getInstance() {
 		if (instance == null) {
 			Debug.println(
-			        "Opening instance");
+					"Opening instance");
 			instance = open();
 		}
 		return instance;
@@ -37,18 +36,18 @@ public class Workspace {
 
 	public synchronized static Workspace open() {
 		Debug.println(
-		        "Opening default workspace [static Workspace.open()]");
+				"Opening default workspace [static Workspace.open()]");
 		Workspace opened = null;
 		try {
 			opened = open(defaultWorkspace);
 		} catch (Exception ignore) {
 			System.out.println(
-			        "Could not open " + defaultWorkspace);
+					"Could not open " + defaultWorkspace);
 		}
 
 		if (opened == null) {
 			Debug.println(
-			        "There was no workspace file, creating new one");
+					"There was no workspace file, creating new one");
 			opened = new Workspace();
 			opened.save();
 		}
@@ -57,50 +56,50 @@ public class Workspace {
 	}
 
 	public synchronized static Workspace open(
-	        String filename) {
+			String filename) {
 		Debug.println(
-		        "Opening workspace [static Workspace.open("
-		                + filename
-		                + ")]");
+				"Opening workspace [static Workspace.open("
+						+ filename
+						+ ")]");
 
 		File f = new File(filename);
 		if (!f.exists())
-		    return null;
+			return null;
 		return JAXB.unmarshal(
-		        new File(filename),
-		        Workspace.class);
+				new File(filename),
+				Workspace.class);
 	}
 
 	public synchronized static void save(
-	        String filename,
-	        Workspace w) {
+			String filename,
+			Workspace w) {
 		w.save(filename);
 	}
 
-	private transient Sample		sample;
+	private transient Sample sample;
 	@XmlElement
-	private File					samplefile;
+	private File samplefile;
 
 	@XmlElementWrapper(nillable = true)
-	private List<SignalIdentifier>	signalIDs;
+	private List<SignalIdentifier> signalIDs;
 
 	private Workspace() {
 		Debug.println(
-		        "Workpsace contructor called");
+				"Workpsace contructor called");
 	}
 
 	public Sample getSample() {
 		if (sample == null) {
 			if (samplefile != null) {
 				Debug.println(
-				        "Opening sample binary "
-				                + samplefile);
+						"Opening sample xml file "
+								+ samplefile);
 				try {
 					sample = SampleFactory.forXML(
-					        samplefile
-					                .toString());
+							samplefile
+									.toString());
 				} catch (DataBindingException e) {
-
+					Debug.println("Ошибка сбора данных из файла образца: " + e.getLocalizedMessage());
 				}
 				if (sample == null) {
 					samplefile = null;
@@ -122,36 +121,27 @@ public class Workspace {
 		return signalIDs;
 	}
 
-	private void readObject(
-	        java.io.ObjectInputStream in)
-	        throws IOException,
-	        ClassNotFoundException {
-		in.defaultReadObject();
-		Debug.println(
-		        "Deserializing workspace");
-	}
-
 	public synchronized void save() {
 		save(defaultWorkspace);
 	}
 
 	public synchronized void save(
-	        String filename) {
+			String filename) {
 		Debug.println(
-		        "Сохраняю рабочее пространство "
-		                + filename);
+				"Сохраняю рабочее пространство "
+						+ filename);
 		JAXB.marshal(this,
-		        new File(filename));
+				new File(filename));
 	}
 
 	public Sample setSample(
-	        Sample newsample) {
+			Sample newsample) {
 		sample = newsample;
 		return sample;
 	}
 
 	public File setSampleFile(
-	        File newsamplefile) {
+			File newsamplefile) {
 		samplefile = newsamplefile;
 		save();
 		return samplefile;
@@ -160,8 +150,8 @@ public class Workspace {
 	@Override
 	public boolean equals(Object o) {
 		return Predicates.areEqual(Workspace.class, this, o,
-		        Arrays.asList(Workspace::getSampleFile,
-		                Workspace::getSignalIDs));
+				Arrays.asList(Workspace::getSampleFile,
+						Workspace::getSignalIDs));
 	}
 
 	@Override
