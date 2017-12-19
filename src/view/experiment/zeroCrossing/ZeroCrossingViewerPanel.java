@@ -59,24 +59,26 @@ public class ZeroCrossingViewerPanel extends JFXPanel {
 		Debug.println("Устанавливаем сцену в панель");
 		Platform.runLater(() -> this.setScene(scene));
 		Debug.println("Сцена создана. Добавляем данные о юстировке");
-		setZeroCrossing(zc);
+		if (zc != null)
+			setZeroCrossing(zc);
 	}
 
 	private void rescale() {
 		double MINANGLE = 0;
-		if (this.shifts.minShift() < -180) {
+		double minShift = this.shifts.minShift();
+		if (minShift < -180) {
 			MINANGLE = -360;
-		} else if (this.shifts.minShift() < 0) {
+		} else if (minShift < 0) {
 			MINANGLE = -180;
 		}
 
 		double MAXANGLE = 0;
-		if (this.shifts.maxShift() > 180) {
+		double maxShift = this.shifts.maxShift();
+		if (maxShift > 180) {
 			MAXANGLE = 360;
-		} else if (this.shifts.maxShift() > 0) {
+		} else if (maxShift > 0) {
 			MAXANGLE = 180;
 		}
-
 		yAxis.setLowerBound(MINANGLE);
 		yAxis.setUpperBound(MAXANGLE);
 
@@ -89,9 +91,9 @@ public class ZeroCrossingViewerPanel extends JFXPanel {
 			// TODO: null pointer exception?
 			Debug.println("Новые данные нулевые");
 		}
-		rescale();
-		if (this.shifts != null)
+		if (this.shifts != null) {
 			Platform.runLater(() -> {
+				rescale();
 				Debug.println("Запущена процедура по добавлению данных в другом потоке.");
 				List<Data<Number, Number>> list = chart.getData().get(0).getData();
 				list.clear();
@@ -101,6 +103,7 @@ public class ZeroCrossingViewerPanel extends JFXPanel {
 				}
 				Debug.println("Процедура добавления данных выполнена");
 			});
+		}
 
 		return this.shifts;
 	}
