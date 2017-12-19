@@ -33,7 +33,7 @@ public class FFT {
 	public static double[] getFourierForIndex(final double[] realData, final int index) {
 		double real = 0, imag = 0;
 		final int N = realData.length;
-		final double twoPiIndexDivN = (2.0 * Math.PI * index) / (double) N;
+		final double twoPiIndexDivN = (2.0 * Math.PI * index) / N;
 		real = +IntStream.range(0, N).parallel().mapToDouble(i -> Math.cos(twoPiIndexDivN * i) * realData[i]).sum();
 		imag = -IntStream.range(0, N).parallel().mapToDouble(i -> Math.sin(twoPiIndexDivN * i) * realData[i]).sum();
 		return new double[] { real, imag };

@@ -31,7 +31,7 @@ public class JDrawingPlane extends JScrollPane {
 		this();
 		addGraph(array);
 
-		setViewportView((new JGraphImagePlane((double[][]) graphs.toArray(new double[graphs.size()][]))));
+		setViewportView((new JGraphImagePlane(graphs.toArray(new double[graphs.size()][]))));
 	}
 
 	public JDrawingPlane(double[][] arrays) {
@@ -41,6 +41,6 @@ public class JDrawingPlane extends JScrollPane {
 				break;
 			}
 		}
-		setViewportView((new JGraphImagePlane((double[][]) graphs.toArray(new double[graphs.size()][]))));
+		setViewportView((new JGraphImagePlane(graphs.toArray(new double[graphs.size()][]))));
 	}
 }

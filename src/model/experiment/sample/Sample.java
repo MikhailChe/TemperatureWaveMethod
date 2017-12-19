@@ -20,21 +20,21 @@ import model.experiment.measurement.Measurement;
 public class Sample {
 
 	@XmlAttribute
-	private String											name			= "Default_name";
+	private String name = "Default_name";
 	@XmlAttribute
-	private double											length			= 0;
+	private double length = 0;
 	@XmlAttribute
-	private double											density			= 0;
-	private String											comment			= "Default_comment";
+	private double density = 0;
+	private String comment = "Default_comment";
 
-	private PropertyChangeSupport							mPcs			= new PropertyChangeSupport(
+	private PropertyChangeSupport mPcs = new PropertyChangeSupport(
 			this);
 
-	private transient final static FileNameExtensionFilter	extensionFilter	= new FileNameExtensionFilter(
+	private transient final static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
 			"Файл образца (*.smpl)", "smpl");
 
 	@XmlElement
-	public List<Measurement>								measurements	= new ArrayList<>();;
+	public List<Measurement> measurements = new ArrayList<>();
 
 	public Sample() {
 		super();

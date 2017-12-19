@@ -33,7 +33,7 @@ public class MySQLCredentials {
 		database = lines.get(3);
 	}
 
-	public void fillWithDefaults(Path path) {
+	public static void fillWithDefaults(Path path) {
 		try {
 			Files.write(path, Arrays.asList("address", "username", "password", "database"), StandardOpenOption.CREATE);
 		} catch (IOException e) {

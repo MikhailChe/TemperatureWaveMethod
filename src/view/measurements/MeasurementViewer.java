@@ -106,11 +106,14 @@ public class MeasurementViewer extends JPanel {
 		});
 	}
 
+	@SuppressWarnings("unused")
 	public void addMeasurement(Measurement m) {
 		try {
 			double temperature = m.temperature.get(0).value;
-			List<Data<Number, Number>> dataPoints = m.diffusivity.stream()
-					.map(t -> new Data<Number, Number>(temperature, t.diffusivity)).collect(toList());
+			List<Data<Number, Number>> dataPoints = m.diffusivity
+					.stream()
+					.map(t -> new Data<Number, Number>(temperature, t.diffusivity))
+					.collect(toList());
 			Platform.runLater(() -> {
 				for (int i = 0; i < dataPoints.size(); i++) {
 					MeasurementProperty mp = new MeasurementProperty(m, i);
@@ -119,7 +122,7 @@ public class MeasurementViewer extends JPanel {
 				}
 			});
 		} catch (Exception ignore) {
-
+			// Всё нормально, просто при добавлении произошли какие-то проблемы
 		}
 	}
 

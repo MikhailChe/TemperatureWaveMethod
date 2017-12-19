@@ -1,4 +1,7 @@
-package view.experiment.Analyzer.Angstrem;
+﻿package view.experiment.Analyzer.Angstrem;
+
+import static controller.experiment.Analyzer.FFT.getAbs;
+import static controller.experiment.Analyzer.PhaseUtils.truncatePositive;
 
 import java.awt.GridLayout;
 import java.io.IOException;
@@ -39,24 +42,24 @@ public class AngstremCombinedPlane extends JPanel {
 		setLayout(new GridLayout(5, 2, 5, 5));
 
 		JFormattedTextField periodSeconds = new JFormattedTextField(NumberFormat.getInstance());
-		periodSeconds.setText("86400");
-		add(new JLabel("Общий период измерений (секунды)"));
+		periodSeconds.setText("86400"); //$NON-NLS-1$
+		add(new JLabel(Messages.getString("AngstremCombinedPlane.period_seconds"))); //$NON-NLS-1$
 		add(periodSeconds);
 
 		JFormattedTextField intervalSeconds = new JFormattedTextField(NumberFormat.getInstance());
-		intervalSeconds.setText("1800");
-		add(new JLabel("Интервал между измерениями (секунды)"));
+		intervalSeconds.setText("1800"); //$NON-NLS-1$
+		add(new JLabel(Messages.getString("AngstremCombinedPlane.interval_seconds"))); //$NON-NLS-1$
 		add(intervalSeconds);
 
 		JFormattedTextField distanceMilimeters = new JFormattedTextField(NumberFormat.getInstance());
-		distanceMilimeters.setText("200");
-		add(new JLabel("Расстояние между датчиками (мм)"));
+		distanceMilimeters.setText("200"); //$NON-NLS-1$
+		add(new JLabel(Messages.getString("AngstremCombinedPlane.sensors_distance"))); //$NON-NLS-1$
 		add(distanceMilimeters);
 
 		JFileChooser fileChooser = new JFileChooser();
-		JButton fileChooserOpenButton = new JButton("Открыть...");
+		JButton fileChooserOpenButton = new JButton(Messages.getString("AngstremCombinedPlane.file_open")); //$NON-NLS-1$
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-		JLabel chosenFileName = new JLabel("Имя файла");
+		JLabel chosenFileName = new JLabel(Messages.getString("AngstremCombinedPlane.file_name")); //$NON-NLS-1$
 		fileChooserOpenButton.addActionListener((e) -> {
 			int action = fileChooser.showOpenDialog(AngstremCombinedPlane.this);
 			if ((action & JFileChooser.APPROVE_OPTION) == JFileChooser.APPROVE_OPTION) {
@@ -67,30 +70,30 @@ public class AngstremCombinedPlane extends JPanel {
 		add(chosenFileName);
 
 		add(new JLabel());
-		JButton calculateButton = new JButton("Выполнить расчёты");
+		JButton calculateButton = new JButton(Messages.getString("AngstremCombinedPlane.calculate")); //$NON-NLS-1$
 
 		calculateButton.addActionListener((e) -> {
 			try {
 				periodSeconds.commitEdit();
 			} catch (ParseException e1) {
-				JOptionPane.showMessageDialog(AngstremCombinedPlane.this, "Ошибка формата",
-						"Убедитесь, что вы записали число", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(AngstremCombinedPlane.this, Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
+						Messages.getString("AngstremCombinedPlane.makeSure_isNumber"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 				e1.printStackTrace();
 			}
 			try {
 				intervalSeconds.commitEdit();
 			} catch (ParseException e1) {
-				JOptionPane.showMessageDialog(AngstremCombinedPlane.this, "Ошибка формата",
-						"Убедитесь, что вы записали число", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(AngstremCombinedPlane.this, Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
+						Messages.getString("AngstremCombinedPlane.makeSure_isNumber"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 				e1.printStackTrace();
 			}
 			try {
 				distanceMilimeters.commitEdit();
 			} catch (ParseException e1) {
-				JOptionPane.showMessageDialog(AngstremCombinedPlane.this, "Ошибка формата",
-						"Убедитесь, что вы записали число", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(AngstremCombinedPlane.this, Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
+						Messages.getString("AngstremCombinedPlane.makeSure_isNumber"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 				e1.printStackTrace();
 			}
@@ -131,14 +134,14 @@ public class AngstremCombinedPlane extends JPanel {
 	 * @param measurementDistance
 	 * @param fftVals
 	 */
-	private void calculateDiffusivity(long measurementPeriod, long measurementDistance, double[][][] fftVals) {
+	private static void calculateDiffusivity(long measurementPeriod, long measurementDistance, double[][][] fftVals) {
 		double frequency = 1.0 / measurementPeriod;
 		double omega = 2.0 * Math.PI * frequency;
 		double l = measurementDistance / 1000.0;
 
-		String[] columnNames = { "������", "������", "����������� ����������������������", "����������", "����� ����",
-				"����1", "����2" };
-		List<Object[]> data = new ArrayList<Object[]>();
+		String[] columnNames = { Messages.getString("AngstremCombinedPlane.Channels"), Messages.getString("AngstremCombinedPlane.Period"), Messages.getString("AngstremCombinedPlane.Diffusivity"), Messages.getString("AngstremCombinedPlane.Distance"), Messages.getString("AngstremCombinedPlane.PhaseDiff"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+				Messages.getString("AngstremCombinedPlane.Phase1"), Messages.getString("AngstremCombinedPlane.Phase2") }; //$NON-NLS-1$ //$NON-NLS-2$
+		List<Object[]> data = new ArrayList<>();
 		for (int channel1 = 0; channel1 < fftVals.length; channel1++) {
 			for (int channel2 = channel1 + 1; channel2 < fftVals.length; channel2++) {
 				for (int periodNumber = 0; periodNumber < fftVals[channel1].length; periodNumber++) {
@@ -150,7 +153,7 @@ public class AngstremCombinedPlane extends JPanel {
 
 					double deltaPhi = phi1 - phi2;
 					double temperatureDiffusivity = getTDiffusivity(omega, l * (channel2 - channel1), deltaPhi);
-					data.add(new Object[] { "" + (channel1 + 1) + " <->" + (channel2 + 1) + "", periodNumber + 1,
+					data.add(new Object[] { "" + (channel1 + 1) + " <->" + (channel2 + 1) + "", periodNumber + 1, //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 							new Double(temperatureDiffusivity), new Double(l * (channel2 - channel1)),
 							new Double(deltaPhi), new Double(phi1), new Double(phi2) });
 				}
@@ -159,24 +162,24 @@ public class AngstremCombinedPlane extends JPanel {
 
 		UIManager.getDefaults().setDefaultLocale(Locale.getDefault());
 
-		JTable table = new JTable((Object[][]) data.toArray(new Object[data.size()][]), columnNames);
+		JTable table = new JTable(data.toArray(new Object[data.size()][]), columnNames);
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
-		JFrame frame = new JFrame("������� ������");
+		JFrame frame = new JFrame(Messages.getString("AngstremCombinedPlane.Angstem_Wave_Method")); //$NON-NLS-1$
 		frame.setContentPane(scrollPane);
 		frame.pack();
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 	}
 
-	private double[][][] subdivideData(double[][] data, int totalAmountOfPeriods, int samplesInOnePeriod) {
+	private static double[][][] subdivideData(double[][] data, int totalAmountOfPeriods, int samplesInOnePeriod) {
 		double[][][] subdividedData = new double[data.length][][];
 		for (int channel = 0; channel < data.length; channel++) {
 			subdividedData[channel] = new double[totalAmountOfPeriods][];
 			for (int periodNumber = 0; periodNumber < totalAmountOfPeriods; periodNumber++) {
 				subdividedData[channel][periodNumber] = Arrays.copyOfRange(data[channel],
-						(int) (periodNumber * samplesInOnePeriod), (int) ((periodNumber + 1) * samplesInOnePeriod));
+						periodNumber * samplesInOnePeriod, (periodNumber + 1) * samplesInOnePeriod);
 			}
 
 			subdividedData[channel] = new double[1][];
@@ -186,22 +189,11 @@ public class AngstremCombinedPlane extends JPanel {
 		return subdividedData;
 	}
 
-	private double NormalizePhase(double phase) {
-
-		while (phase > 2.0 * Math.PI) {
-			phase -= Math.PI;
-		}
-		while (phase < 0) {
-			phase += Math.PI;
-		}
-		return phase;
-	}
-
-	public double getTDiffusivity(double omega, double l, double phi) {
+	public static double getTDiffusivity(double omega, double l, double phi) {
 		return (omega * (l * l)) / (2.0 * ((phi) * (phi)));
 	}
 
-	public void outputCalculatedSineWave(final double[][][] subdividedData, final int totalAmountOfPeriods,
+	public static void outputCalculatedSineWave(final double[][][] subdividedData, final int totalAmountOfPeriods,
 			final double[][][] fftVals, final PrintStream out) {
 		for (int periodNumber = 0; periodNumber < fftVals[0].length; periodNumber++) {
 			for (int sample = 0; sample < subdividedData[0][periodNumber].length; sample++) {
@@ -210,21 +202,21 @@ public class AngstremCombinedPlane extends JPanel {
 					double val = Math.cos(2.0 * Math.PI * (totalAmountOfPeriods / subdividedData[channel].length)
 							* sample / subdividedData[channel][periodNumber].length
 							+ fftVals[channel][periodNumber][ARG]) * 100;
-					out.print(val + "\t");
+					out.print(val + "\t"); //$NON-NLS-1$
 				}
 			}
 		}
 	}
 
-	public void fillInFftVals(double[][][] subdividedData, int samplesInOnePeriod, double[][][] fftVals) {
+	public static void fillInFftVals(double[][][] subdividedData, int samplesInOnePeriod, double[][][] fftVals) {
 		for (int channel = 0; channel < subdividedData.length; channel++) {
 			for (int periodNumber = 0; periodNumber < subdividedData[channel].length; periodNumber++) {
 				double[] fftSample = FFT.getFourierForIndex(subdividedData[channel][periodNumber],
 						subdividedData[channel][periodNumber].length / samplesInOnePeriod);
 
-				fftVals[channel][periodNumber][ARG] = NormalizePhase(FFT.getArgument(fftSample, 0));
+				fftVals[channel][periodNumber][ARG] = truncatePositive(FFT.getArgument(fftSample, 0));
 
-				fftVals[channel][periodNumber][AMP] = 2.0 * FFT.getAbs(fftSample, 0)
+				fftVals[channel][periodNumber][AMP] = 2.0 * getAbs(fftSample, 0)
 						/ subdividedData[channel][periodNumber].length;
 			}
 		}

@@ -8,7 +8,7 @@ import org.junit.Test;
 public class SampleTest {
 
 	@Test
-	public final void testSampleEquals() {
+	public void testSampleEquals() {
 		Sample s1 = new Sample();
 		s1.setName("OK");
 		s1.setLength(0.001127);

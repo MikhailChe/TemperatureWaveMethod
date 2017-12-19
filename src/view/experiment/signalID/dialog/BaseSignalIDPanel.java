@@ -26,7 +26,7 @@ public class BaseSignalIDPanel extends SignalIDPanel {
 	ZeroCrossingViewerPanel zcPanel;
 
 	public BaseSignalIDPanel(BaseSignalID id) {
-		super(id);
+		super();
 		setBorder(new CompoundBorder(new EmptyBorder(16, 16, 16, 16),
 				new TitledBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null),
 						"Канал переменного сигнала", TitledBorder.LEADING, TitledBorder.TOP, null,

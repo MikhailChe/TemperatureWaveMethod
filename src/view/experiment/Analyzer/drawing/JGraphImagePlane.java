@@ -104,7 +104,7 @@ public class JGraphImagePlane extends JPanel {
 
 		private void doPop(MouseEvent e) {
 			ArraySelectionContextMenu menu = new ArraySelectionContextMenu();
-			menu.show(e.getComponent(), (int) e.getX(), (int) e.getY());
+			menu.show(e.getComponent(), e.getX(), e.getY());
 		}
 	}
 
@@ -191,6 +191,12 @@ public class JGraphImagePlane extends JPanel {
 		g2.dispose();
 	}
 
+	/**
+	 * @param y2
+	 *            unused
+	 * @param index2
+	 *            unused
+	 */
 	public void drawAdditionalData(Graphics2D g, int x1, int y1, int x2, int y2, int index1, int index2) {
 		if (shouldShowIndicies) {
 			final double i1fwidth = g.getFontMetrics().stringWidth("9999") * 1.1;

@@ -9,7 +9,7 @@ import org.junit.Test;
 public class PhaseUtilsTest {
 
 	@Test
-	public final void testTruncatePositive() {
+	public void testTruncatePositive() {
 		double test1 = Math.toRadians(-90);
 		double testOutput1 = truncatePositive(test1);
 
@@ -26,7 +26,7 @@ public class PhaseUtilsTest {
 	}
 
 	@Test
-	public final void testTruncateNegative() {
+	public void testTruncateNegative() {
 		double test1 = Math.toRadians(+90);
 		double testOutput1 = truncateNegative(test1);
 

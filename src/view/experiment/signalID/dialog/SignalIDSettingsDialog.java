@@ -64,7 +64,7 @@ public class SignalIDSettingsDialog extends JDialog {
 				} else if (sigid instanceof DCsignalID) {
 					panel = new DCSignalIDPanel((DCsignalID) sigid);
 				} else {
-					panel = new SignalIDPanel(null);
+					panel = new SignalIDPanel();
 				}
 				panel.deleteButton.addActionListener(e -> {
 					Workspace.getInstance().getSignalIDs().remove(sigid);

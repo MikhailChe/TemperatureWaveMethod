@@ -277,7 +277,7 @@ public class TWMComputer implements Callable<Measurement> {
 		List<SignalIdentifier> signalIDs;
 		if ((signalIDs = workspace.getSignalIDs()) != null) {
 			if (signalIDs.size() > 0) {
-				this.SHIFTS = (SignalIdentifier[]) signalIDs.toArray(new SignalIdentifier[signalIDs.size()]);
+				this.SHIFTS = signalIDs.toArray(new SignalIdentifier[signalIDs.size()]);
 			}
 		}
 

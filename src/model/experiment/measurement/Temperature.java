@@ -1,6 +1,5 @@
 package model.experiment.measurement;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 import javax.xml.bind.JAXB;
@@ -29,19 +28,18 @@ public class Temperature {
 	 * Значение температуры
 	 */
 	@XmlAttribute(name = "kelvins")
-	public double		value;
+	public double value;
 	@XmlElement(name = "voltage")
-	public double		signalLevel;
+	public double signalLevel;
 	/**
-	 * Идентификатор канала данных, с помощью которых была вычислена эта
-	 * температура
+	 * Идентификатор канала данных, с помощью которых была вычислена эта температура
 	 * 
 	 * @see DCsignalID
 	 * @see SignalIdentifier
 	 * 
 	 */
 	@XmlElement
-	public DCsignalID	signalID;
+	public DCsignalID signalID;
 
 	public Temperature() {
 		value = 0;
@@ -62,28 +60,26 @@ public class Temperature {
 		return "Температура";
 	}
 
-	private void writeObject(java.io.ObjectOutputStream out)
-	        throws IOException {
+	private void writeObject(java.io.ObjectOutputStream out) {
 		JAXB.marshal(this, out);
 	}
 
-	private void readObject(java.io.ObjectInputStream in)
-	        throws IOException, ClassNotFoundException {
+	private void readObject(java.io.ObjectInputStream in) {
 		JAXB.unmarshal(in, this.getClass());
 	}
 
 	@Override
 	public boolean equals(Object o) {
 		return Predicates.areEqual(Temperature.class, this,
-		        o,
-		        Arrays.asList(a -> a.signalID,
-		                a -> a.signalLevel, a -> a.value));
+				o,
+				Arrays.asList(a -> a.signalID,
+						a -> a.signalLevel, a -> a.value));
 	}
 
 	@Override
 	public int hashCode() {
 		return HashCoder.hashCode(signalID, signalLevel,
-		        value);
+				value);
 	}
 
 }

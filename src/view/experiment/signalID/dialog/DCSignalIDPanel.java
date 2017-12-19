@@ -19,7 +19,7 @@ public class DCSignalIDPanel extends SignalIDPanel {
 	private static final long serialVersionUID = -4908026409118547828L;
 
 	public DCSignalIDPanel(DCsignalID id) {
-		super(id);
+		super();
 		setBorder(new CompoundBorder(new EmptyBorder(16, 16, 16, 16),
 				new TitledBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null),
 						"Канал постоянной составляющей", TitledBorder.LEADING, TitledBorder.TOP, null,

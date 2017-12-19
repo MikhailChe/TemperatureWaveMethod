@@ -28,25 +28,25 @@ import view.MemorableDirectoryChooser;
 import view.measurements.MeasurementViewer;
 
 public class FolderWatch extends JDialog implements Runnable {
-	private static final long	serialVersionUID	= 1831549678406783975L;
+	private static final long serialVersionUID = 1831549678406783975L;
 
 	// private Workspace workspace;
 
-	public File[]				filesInFolder;
-	public File					folder;
+	public File[] filesInFolder;
+	public File folder;
 
-	final MeasurementViewer		measurementViewer	= new MeasurementViewer();
-	final Container				numbersContainer	= new Container();
+	final MeasurementViewer measurementViewer = new MeasurementViewer();
+	final Container numbersContainer = new Container();
 
-	final JPanel				signalLevelPanel	= new JPanel();
-	final JLabel				signalLevelLabel	= new JLabel(
+	final JPanel signalLevelPanel = new JPanel();
+	final JLabel signalLevelLabel = new JLabel(
 			"Здесь будет термоЭДС");
 
-	final JPanel				temperaturePanel	= new JPanel();
-	final JLabel				temperatureLabel	= new JLabel(
+	final JPanel temperaturePanel = new JPanel();
+	final JLabel temperatureLabel = new JLabel(
 			"Здесь будет температура");
 
-	final List<JTDiffLabelSet>	tCondPanels			= new ArrayList<>();
+	final List<JTDiffLabelSet> tCondPanels = new ArrayList<>();
 
 	public static FolderWatch factory(JFrame parent)
 			throws FileNotFoundException {

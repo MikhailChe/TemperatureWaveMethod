@@ -28,6 +28,7 @@ public class SampleFactory {
 		try {
 			return JAXB.unmarshal(new File(filename), Sample.class);
 		} catch (DataBindingException e) {
+			Debug.println(e.getLocalizedMessage());
 			return null;
 		}
 	}

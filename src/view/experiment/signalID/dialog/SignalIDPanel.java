@@ -27,7 +27,7 @@ public class SignalIDPanel extends JPanel {
 
 	protected JButton deleteButton;
 
-	public SignalIDPanel(SignalIdentifier id) {
+	public SignalIDPanel() {
 		super();
 		setBorder(new CompoundBorder(new EmptyBorder(16, 16, 16, 16),
 				new TitledBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null),

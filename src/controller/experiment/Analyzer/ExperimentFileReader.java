@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -20,7 +21,7 @@ public class ExperimentFileReader {
 
 	private double[] maxValues;
 	private double[] minValues;
-	private List<Integer> indicies = null;
+	private volatile List<Integer> indicies = null;
 	private int leastSpace = Integer.MAX_VALUE;
 
 	private final long time;
@@ -29,8 +30,7 @@ public class ExperimentFileReader {
 		List<String> strings = readAllLines(filepath, StandardCharsets.UTF_8);
 		time = Files.getLastModifiedTime(filepath).toMillis();
 		if (strings == null)
-			throw new IOException(
-					"Couldn't load file content or file is empty");
+			throw new IOException("Couldn't load file content or file is empty");
 		if (strings.size() <= 1)
 			throw new IOException("Invalid file.");
 
@@ -43,8 +43,7 @@ public class ExperimentFileReader {
 		int sizeToValidate = Integer.parseInt(headerInfo[0]);
 
 		if (strings.size() != sizeToValidate)
-			throw new IOException(
-					"Size in the header doesn't match size of file");
+			throw new IOException("Size in the header doesn't match size of file");
 
 		experimentFrequecny = (Integer.parseInt(headerInfo[1]) / 10.0);
 
@@ -82,21 +81,21 @@ public class ExperimentFileReader {
 		// TODO: Keep an eye on this
 		if (croppedData == null) {
 			croppedData = new double[initialData.length][];
-			int[] indicies = getPulseIndicies();
+			List<Integer> pulseIndicies = getPulseIndicies();
 
-			int mindiff = IntStream.range(0, indicies.length - 1)
-					.mapToObj((i) -> new int[] { indicies[i], indicies[i + 1] })
-					.mapToInt((a) -> a[1] - a[0]).filter(i -> i > 500).min()
+			int mindiff = IntStream
+					.range(0, pulseIndicies.size() - 1)
+					.parallel()
+					.map(i -> pulseIndicies.get(i + 1) - pulseIndicies.get(i))
+					.filter(i -> i > 500)
+					.min()
 					.orElse(Integer.MAX_VALUE);
 
-			int startIndex = indicies[0];
-			int stopIndex = indicies[indicies.length - 1];
-			croppedDataPeriods = (int) Math
-					.round((((double) stopIndex) - ((double) startIndex))
-							/ ((double) mindiff));
+			int startIndex = pulseIndicies.get(0);
+			int stopIndex = pulseIndicies.get(pulseIndicies.size() - 1);
+			croppedDataPeriods = (int) Math.round((((double) stopIndex) - ((double) startIndex)) / mindiff);
 			for (int i = 0; i < croppedData.length; i++) {
-				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex,
-						stopIndex);
+				croppedData[i] = Arrays.copyOfRange(initialData[i], startIndex, stopIndex);
 			}
 		}
 		return croppedData;
@@ -125,49 +124,53 @@ public class ExperimentFileReader {
 		return initialData.length;
 	}
 
-	public int[] getPulseIndicies() {
+	public List<Integer> getPulseIndicies() {
 		if (indicies == null) {
-			indicies = new ArrayList<>(100);
-			double[] refsignal = getDataColumn(0);
-			boolean trigger = false;
-			boolean firstSlope = true;
-			double threshold = (maxValues[0] + minValues[0]) / 2;
+			synchronized (this) {
+				if (indicies == null) {
+					List<Integer> idcs = new ArrayList<>(100);
+					double[] refsignal = getDataColumn(0);
+					boolean trigger = false;
+					boolean firstSlope = true;
+					double threshold = (maxValues[0] + minValues[0]) / 2;
 
-			int lastIndex = -1;
-			for (int i = 0; i < refsignal.length; i++) {
-				if (firstSlope) {
-					if (refsignal[i] > threshold) {
-						continue;
-					} else {
-						firstSlope = !firstSlope;
-					}
-				}
-				if (refsignal[i] > threshold) {
-					if (!trigger) {
-						trigger = true;
-						indicies.add(i);
-						if (lastIndex >= 0) {
-							if (i - lastIndex < leastSpace) {
-								leastSpace = (i - lastIndex);
+					int lastIndex = -1;
+					for (int i = 0; i < refsignal.length; i++) {
+						if (firstSlope) {
+							if (refsignal[i] > threshold) {
+								continue;
+							}
+							firstSlope = !firstSlope;
+						}
+						if (refsignal[i] > threshold) {
+							if (!trigger) {
+								trigger = true;
+								idcs.add(i);
+								if (lastIndex >= 0) {
+									if (i - lastIndex < leastSpace) {
+										leastSpace = (i - lastIndex);
+									}
+								}
+							}
+						} else {
+							if (trigger) {
+								lastIndex = idcs.get(idcs.size() - 1);
+								trigger = false;
 							}
 						}
 					}
-				} else {
-					if (trigger) {
-						lastIndex = indicies.get(indicies.size() - 1);
-						trigger = false;
-					}
+					indicies = Collections.unmodifiableList(idcs);
 				}
 			}
 		}
-		Integer[] inds = (Integer[]) indicies
-				.toArray(new Integer[indicies.size()]);
-		int[] outinds = new int[inds.length];
-		int i = 0;
-		for (int value : inds) {
-			outinds[i++] = value;
-		}
-		return outinds;
+		// Integer[] inds = indicies.toArray(new Integer[indicies.size()]);
+		// int[] outinds = new int[inds.length];
+		// int i = 0;
+		// for (int value : inds) {
+		// outinds[i++] = value;
+		// }
+		// return outinds;
+		return indicies;
 	}
 
 	public long getTime() {
