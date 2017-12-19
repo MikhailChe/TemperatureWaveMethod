@@ -1,5 +1,6 @@
 package model.experiment.zeroCrossing;
 
+import static debug.Debug.println;
 import static java.util.Collections.synchronizedNavigableMap;
 import static javax.xml.bind.annotation.XmlAccessType.NONE;
 
@@ -53,7 +54,7 @@ public class ZeroCrossing {
 	public ZeroCrossing(File filename) throws IllegalArgumentException {
 		this.forFile = filename;
 		shifts = synchronizedNavigableMap(new TreeMap<Double, Double>());
-		answerMap = new HashMap<Double, Double>();
+		answerMap = new HashMap<>();
 
 	}
 
@@ -81,7 +82,7 @@ public class ZeroCrossing {
 			}
 			s.close();
 		} catch (FileNotFoundException e) {
-			// e.printStackTrace();
+			println(e.getLocalizedMessage());
 			System.err.println(this.getClass().getName() + " : file not found " + forFile);
 		}
 	}
@@ -111,53 +112,56 @@ public class ZeroCrossing {
 			}
 			answerMap.put(frequency, ((double) (value)));
 			return value;
-		} else {
-			Double nearestHigherKey = shifts.higherKey(frequency);
-			Double nearsetLowerKey = shifts.lowerKey(frequency);
-			Double nearestHigherValue = null;
-			Double nearestLowerValue = null;
-			if (nearsetLowerKey == null && nearestHigherKey == null) {
+		}
+		Double nearestHigherKey = shifts.higherKey(frequency);
+		Double nearsetLowerKey = shifts.lowerKey(frequency);
+		Double nearestHigherValue = null;
+		Double nearestLowerValue = null;
+		if (nearsetLowerKey == null && nearestHigherKey == null) {
+			throw new NullPointerException();
+		} else if (nearsetLowerKey == null) {
+			nearestHigherValue = shifts.get(nearestHigherKey);
+			if (nearestHigherValue == null) {
 				throw new NullPointerException();
-			} else if (nearsetLowerKey == null) {
-				nearestHigherValue = shifts.get(nearestHigherKey);
-				if (nearestHigherValue == null) {
-					throw new NullPointerException();
-				}
-				answerMap.put(frequency, nearestHigherValue);
-				return nearestHigherValue;
-			} else if (nearestHigherKey == null) {
-				nearestLowerValue = shifts.get(nearsetLowerKey);
-				if (nearestLowerValue == null) {
-					throw new NullPointerException();
-				}
-				answerMap.put(frequency, nearestLowerValue);
-				return nearestLowerValue;
-			} else {
-				nearestHigherValue = shifts.get(nearestHigherKey);
-				nearestLowerValue = shifts.get(nearsetLowerKey);
-				if (nearestHigherValue == null || nearestLowerValue == null) {
-					throw new NullPointerException();
-				}
-				double diff = nearestHigherKey - nearsetLowerKey;
-				if (diff == 0) {
-					throw new NullPointerException();
-				}
-				double lowerDiff = frequency - nearsetLowerKey;
-				double higherDiff = nearestHigherKey - frequency;
-				double lowerK = 1 - (lowerDiff / diff);
-				double higherK = 1 - (higherDiff / diff);
-				double value = nearestLowerValue * lowerK + nearestHigherValue * higherK;
-				answerMap.put(frequency, value);
-				return value;
 			}
+			answerMap.put(frequency, nearestHigherValue);
+			return nearestHigherValue;
+		} else if (nearestHigherKey == null) {
+			nearestLowerValue = shifts.get(nearsetLowerKey);
+			if (nearestLowerValue == null) {
+				throw new NullPointerException();
+			}
+			answerMap.put(frequency, nearestLowerValue);
+			return nearestLowerValue;
+		} else {
+			nearestHigherValue = shifts.get(nearestHigherKey);
+			nearestLowerValue = shifts.get(nearsetLowerKey);
+			if (nearestHigherValue == null || nearestLowerValue == null) {
+				throw new NullPointerException();
+			}
+			double diff = nearestHigherKey - nearsetLowerKey;
+			if (diff == 0) {
+				throw new NullPointerException();
+			}
+			double lowerDiff = frequency - nearsetLowerKey;
+			double higherDiff = nearestHigherKey - frequency;
+			double lowerK = 1 - (lowerDiff / diff);
+			double higherK = 1 - (higherDiff / diff);
+			double value = nearestLowerValue * lowerK + nearestHigherValue * higherK;
+			answerMap.put(frequency, value);
+			return value;
 		}
 	}
 
 	public double maxShift() {
+		if (shifts.isEmpty())
+			initialize();
 		return shifts.values().stream().mapToDouble(a -> a).max().orElse(Double.NaN);
 	}
 
 	public double minShift() {
+		if (shifts.isEmpty())
+			initialize();
 		return shifts.values().stream().mapToDouble(a -> a).min().orElse(Double.NaN);
 	}
 
