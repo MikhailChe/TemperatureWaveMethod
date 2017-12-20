@@ -25,22 +25,26 @@ public class Workspace {
 	final static String defaultWorkspace = "workspace.xml";
 	private static Workspace instance = null;
 
-	public synchronized static Workspace getInstance() {
+	public static Workspace getInstance() {
 		if (instance == null) {
-			Debug.println(
-					"Opening instance");
-			instance = open();
+			synchronized (Workspace.class) {
+				if (instance == null) {
+					Debug.println(
+							"Opening instance");
+					instance = open();
+				}
+			}
 		}
 		return instance;
 	}
 
-	public synchronized static Workspace open() {
+	public static Workspace open() {
 		Debug.println(
 				"Opening default workspace [static Workspace.open()]");
 		Workspace opened = null;
 		try {
 			opened = open(defaultWorkspace);
-		} catch (Exception ignore) {
+		} catch (@SuppressWarnings("unused") Exception ignore) {
 			System.out.println(
 					"Could not open " + defaultWorkspace);
 		}
@@ -55,7 +59,7 @@ public class Workspace {
 
 	}
 
-	public synchronized static Workspace open(
+	public static Workspace open(
 			String filename) {
 		Debug.println(
 				"Opening workspace [static Workspace.open("
@@ -65,14 +69,10 @@ public class Workspace {
 		File f = new File(filename);
 		if (!f.exists())
 			return null;
-		return JAXB.unmarshal(
-				new File(filename),
-				Workspace.class);
+		return JAXB.unmarshal(f, Workspace.class);
 	}
 
-	public synchronized static void save(
-			String filename,
-			Workspace w) {
+	public static void save(String filename, Workspace w) {
 		w.save(filename);
 	}
 
