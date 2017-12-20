@@ -1,5 +1,7 @@
 package view.experiment.signalID.dialog;
 
+import static debug.Debug.println;
+
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -55,6 +57,7 @@ public class BaseSignalIDPanel extends SignalIDPanel {
 		zcPanel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				println(e);
 				JDialog zcDialog = new JDialog((JDialog) SwingUtilities.getWindowAncestor(BaseSignalIDPanel.this),
 						id.zc.forFile.toString(), true);
 				zcDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

@@ -73,6 +73,7 @@ public class JExceptionHandler extends JFrame implements UncaughtExceptionHandle
 
 	@Override
 	public void uncaughtException(Thread t, Throwable e) {
+		Debug.println(t.getId() + ":" + t.getName());
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(os);
 		e.printStackTrace(ps);
