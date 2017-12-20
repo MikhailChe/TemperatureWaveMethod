@@ -2,12 +2,16 @@ package controller.experiment.Analyzer;
 
 import static controller.experiment.Analyzer.PhaseUtils.truncateNegative;
 import static controller.experiment.Analyzer.PhaseUtils.truncatePositive;
+import static debug.Debug.println;
+import static debug.JExceptionHandler.showException;
+import static java.lang.Thread.currentThread;
 
 import java.awt.Desktop;
 import java.awt.Window;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
@@ -25,6 +29,7 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
 import controller.mysql.ExperimentUploader;
+import debug.Debug;
 import debug.JExceptionHandler;
 import model.experiment.Analyzer.SignalParameters;
 import model.experiment.measurement.Diffusivity;
@@ -113,8 +118,8 @@ public class TWMComputer implements Callable<Measurement> {
 					}
 					pm.setProgress(++currentProgress);
 				} catch (InterruptedException | ExecutionException | IOException e) {
-					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
-					e.printStackTrace();
+					showException(currentThread(), e);
+					println("Возможная ошибка во время расчётов. " + e.getLocalizedMessage());
 				}
 			}
 			pm.close();
@@ -122,8 +127,8 @@ public class TWMComputer implements Callable<Measurement> {
 				bw.flush();
 				bw.close();
 			} catch (IOException e) {
-				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
-				e.printStackTrace();
+				showException(currentThread(), e);
+				println("Ошибка при записи в выходной файл. " + e.getLocalizedMessage());
 			}
 
 			if (JOptionPane.showConfirmDialog(parent, "Загрузить данные в базу?") == JOptionPane.OK_OPTION) {
@@ -149,14 +154,14 @@ public class TWMComputer implements Callable<Measurement> {
 				try {
 					Desktop.getDesktop().open(resultFile);
 				} catch (IOException e) {
-					JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
-					e.printStackTrace();
+					showException(currentThread(), e);
+					Debug.println("Не удалось открыть файл с результатами. " + e.getLocalizedMessage());
 				}
 			}
 			return measurements;
 		} catch (IOException e1) {
-			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
-			e1.printStackTrace();
+			showException(currentThread(), e1);
+			println("Ошибка ввода-вывода. " + e1.getLocalizedMessage());
 		}
 		return null;
 	}
@@ -233,9 +238,8 @@ public class TWMComputer implements Callable<Measurement> {
 					exception = false;
 					try {
 						Files.delete(resultFile.toPath());
-					} catch (java.nio.file.FileSystemException e) {
-						JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
-						// e.printStackTrace();
+					} catch (FileSystemException e) {
+						showException(currentThread(), e);
 
 						exception = true;
 
@@ -292,8 +296,8 @@ public class TWMComputer implements Callable<Measurement> {
 		try {
 			reader = new ExperimentFileReader(file.toPath());
 		} catch (Exception e) {
-			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
-			e.printStackTrace();
+			showException(currentThread(), e);
+			Debug.println("Не удалось прочитать файл с измерениями. " + e.getLocalizedMessage());
 			return result;
 		}
 		// Set low priority, so that other threads could easily read the file

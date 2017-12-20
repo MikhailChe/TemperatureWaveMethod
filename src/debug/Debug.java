@@ -1,5 +1,7 @@
 package debug;
 
+import static java.lang.System.out;
+
 public class Debug {
 
 	private static boolean debug = true;
@@ -8,24 +10,25 @@ public class Debug {
 		return debug;
 	}
 
-	public static void print(Object s) {
-		if (s != null)
-			if (debug)
-				System.out.print(s.toString());
-	}
-
-	public static void println(Object o) {
-		if (o != null)
-			println(o.toString());
-	}
-
-	public static void println(String s) {
+	public static <T> void print(T o) {
 		if (debug)
-			System.out.println(s);
+			if (o != null)
+				out.print(o.toString());
+			else
+				out.print("null");
+	}
+
+	public static <T> void println(T o) {
+		if (debug) {
+			if (o != null)
+				out.println(o.toString());
+			else
+				out.println("null");
+		}
 	}
 
 	public static void println() {
 		if (debug)
-			System.out.println();
+			out.println();
 	}
 }

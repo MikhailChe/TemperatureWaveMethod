@@ -1,5 +1,8 @@
 package model.thermocouple.graduate;
 
+import static debug.JExceptionHandler.showException;
+import static java.lang.Thread.currentThread;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -11,7 +14,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
-import debug.JExceptionHandler;
+import debug.Debug;
 
 public class GraduateFactory {
 	public synchronized static Graduate forBinary(File file) {
@@ -87,7 +90,7 @@ public class GraduateFactory {
 	 * @param file
 	 *            файл, в который нужно записать граудировку
 	 */
-
+	// TODO: Нужен JAXB
 	public static void saveBinary(File file, Graduate g) {
 		if (file == null)
 			throw new NullPointerException("file is null");
@@ -97,8 +100,8 @@ public class GraduateFactory {
 			oos.flush();
 			oos.close();
 		} catch (Exception e) {
-			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
-			e.printStackTrace();
+			showException(currentThread(), e);
+			Debug.println("Ошибка сохранения бинарного файла градуировки. " + e.getLocalizedMessage());
 		}
 	}
 

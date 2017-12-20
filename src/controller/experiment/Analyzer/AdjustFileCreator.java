@@ -1,6 +1,10 @@
 
 package controller.experiment.Analyzer;
 
+import static debug.Debug.println;
+import static debug.JExceptionHandler.showException;
+import static java.lang.Thread.currentThread;
+
 import java.awt.Toolkit;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -20,7 +24,6 @@ import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-import debug.JExceptionHandler;
 import model.experiment.Analyzer.SignalParameters;
 import model.experiment.zeroCrossing.ZeroCrossing;
 import model.experiment.zeroCrossing.ZeroCrossingFactory;
@@ -112,8 +115,8 @@ public class AdjustFileCreator implements Runnable {
 
 			Toolkit.getDefaultToolkit().beep();
 		} catch (IOException e) {
-			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
-			e.printStackTrace();
+			showException(currentThread(), e);
+			println("Ошибка ввода-вывода. " + e.getLocalizedMessage());
 		}
 
 		SwingUtilities.invokeLater(() -> {

@@ -3,6 +3,7 @@
  */
 package view.experimentLauncher;
 
+import static java.lang.Thread.currentThread;
 import static model.experiment.sample.SampleFactory.saveSampleXML;
 
 import java.awt.event.ActionEvent;
@@ -232,8 +233,8 @@ public class ExpLauncherMenu extends JMenuBar {
 				}
 
 			} catch (IllegalArgumentException e1) {
-				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
-				e1.printStackTrace();
+				JExceptionHandler.showException(currentThread(), e1);
+				Debug.println(e1.getLocalizedMessage());
 			}
 		});
 		settingsMenu.add(sampleSettings);

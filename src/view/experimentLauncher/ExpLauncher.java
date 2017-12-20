@@ -1,5 +1,8 @@
 ﻿package view.experimentLauncher;
 
+import static debug.JExceptionHandler.showException;
+import static java.lang.Thread.currentThread;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 
@@ -12,16 +15,15 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import debug.Debug;
-import debug.JExceptionHandler;
 import model.experiment.sample.Sample;
 import model.experiment.workspace.Workspace;
 
 public class ExpLauncher extends JFrame {
-	private static final long	serialVersionUID	= 5151838479190943050L;
+	private static final long serialVersionUID = 5151838479190943050L;
 
-	final private Workspace		workspace;
-	JLabel						statusBar;
-	JPanel						contentPanel;
+	final private Workspace workspace;
+	JLabel statusBar;
+	JPanel contentPanel;
 
 	public void createAndShowGUI() {
 		Debug.println("Creating gui");
@@ -60,9 +62,7 @@ public class ExpLauncher extends JFrame {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
-			JExceptionHandler.getExceptionHanlder()
-					.uncaughtException(Thread.currentThread(), e);
-			e.printStackTrace();
+			showException(currentThread(), e);
 		}
 		SwingUtilities.invokeLater(this::createAndShowGUI);
 	}

@@ -2,6 +2,11 @@
 
 import static controller.experiment.Analyzer.FFT.getAbs;
 import static controller.experiment.Analyzer.PhaseUtils.truncatePositive;
+import static debug.JExceptionHandler.showException;
+import static java.lang.Thread.currentThread;
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
+import static javax.swing.JOptionPane.showMessageDialog;
+import static view.experiment.Analyzer.Angstrem.Messages.getString;
 
 import java.awt.GridLayout;
 import java.io.IOException;
@@ -19,7 +24,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -28,7 +32,7 @@ import javax.swing.WindowConstants;
 
 import controller.experiment.Analyzer.ExperimentFileReader;
 import controller.experiment.Analyzer.FFT;
-import debug.JExceptionHandler;
+import debug.Debug;
 
 public class AngstremCombinedPlane extends JPanel {
 
@@ -78,28 +82,28 @@ public class AngstremCombinedPlane extends JPanel {
 			try {
 				periodSeconds.commitEdit();
 			} catch (ParseException e1) {
-				JOptionPane.showMessageDialog(AngstremCombinedPlane.this,
-						Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
-						Messages.getString("AngstremCombinedPlane.makeSure_isNumber"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
+				showMessageDialog(AngstremCombinedPlane.this,
+						getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
+						getString("AngstremCombinedPlane.makeSure_isNumber"), ERROR_MESSAGE); //$NON-NLS-1$
+				showException(currentThread(), e1);
 				e1.printStackTrace();
 			}
 			try {
 				intervalSeconds.commitEdit();
 			} catch (ParseException e1) {
-				JOptionPane.showMessageDialog(AngstremCombinedPlane.this,
-						Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
-						Messages.getString("AngstremCombinedPlane.makeSure_isNumber"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
+				showMessageDialog(AngstremCombinedPlane.this,
+						getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
+						getString("AngstremCombinedPlane.makeSure_isNumber"), ERROR_MESSAGE); //$NON-NLS-1$
+				showException(currentThread(), e1);
 				e1.printStackTrace();
 			}
 			try {
 				distanceMilimeters.commitEdit();
 			} catch (ParseException e1) {
-				JOptionPane.showMessageDialog(AngstremCombinedPlane.this,
-						Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
-						Messages.getString("AngstremCombinedPlane.makeSure_isNumber"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
-				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
+				showMessageDialog(AngstremCombinedPlane.this,
+						getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
+						getString("AngstremCombinedPlane.makeSure_isNumber"), ERROR_MESSAGE); //$NON-NLS-1$
+				showException(currentThread(), e1);
 				e1.printStackTrace();
 			}
 			calculateResult(((Long) periodSeconds.getValue()).longValue(),
@@ -115,8 +119,8 @@ public class AngstremCombinedPlane extends JPanel {
 		try {
 			ereader = new ExperimentFileReader(file);
 		} catch (IOException e) {
-			JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
-			e.printStackTrace();
+			showException(currentThread(), e);
+			Debug.println(e.getLocalizedMessage());
 		}
 		if (ereader == null)
 			return;

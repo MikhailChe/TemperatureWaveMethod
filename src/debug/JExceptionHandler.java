@@ -11,6 +11,8 @@ import java.util.Arrays;
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
@@ -51,11 +53,16 @@ public class JExceptionHandler extends JFrame implements UncaughtExceptionHandle
 		});
 
 		setPreferredSize(new Dimension(320, 240));
+		setMinimumSize(new Dimension(320, 240));
 		pack();
 		listModel = new DefaultListModel<>();
 		list = new JList<>(listModel);
+		final JScrollPane pane = new JScrollPane(list);
 
-		SwingUtilities.invokeLater(() -> getContentPane().add(list, BorderLayout.CENTER));
+		pane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		pane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+
+		SwingUtilities.invokeLater(() -> getContentPane().add(pane, BorderLayout.CENTER));
 	}
 
 	public static void showException(Thread t, Throwable e) {

@@ -1,5 +1,8 @@
 package view;
 
+import static debug.JExceptionHandler.showException;
+import static java.lang.Thread.currentThread;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.io.File;
@@ -11,7 +14,6 @@ import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 
 import debug.Debug;
-import debug.JExceptionHandler;
 
 public class MemorableDirectoryChooser extends JFileChooser {
 
@@ -60,10 +62,7 @@ public class MemorableDirectoryChooser extends JFileChooser {
 						// setSelectedFile(dir);
 					}
 				} catch (Exception e) {
-					JExceptionHandler
-							.getExceptionHanlder()
-							.uncaughtException(Thread.currentThread(), e);
-					e.printStackTrace();
+					showException(currentThread(), e);
 				}
 			}
 		}
@@ -72,32 +71,22 @@ public class MemorableDirectoryChooser extends JFileChooser {
 	public void saveCurrentSelection() {
 		if (prefs != null) {
 			File f = getSelectedFile();
-			System.out.println("saving directory. current file: " + f);
-			if (!f.exists()) {
-				f = null;
-			}
+			if (f == null)
+				return;
+			if (!f.exists())
+				return;
 
-			if (f != null) {
-				if (!f.isDirectory()) {
-					f = f.getParentFile();
-					System.out.println("It's not a directory, so file is " + f);
-				}
-				try {
-					prefs.put(LAST_FOLDER, f.toString());
-				} catch (Exception e) {
-					JExceptionHandler
-							.getExceptionHanlder()
-							.uncaughtException(Thread.currentThread(), e);
-					e.printStackTrace();
-				}
-				try {
-					prefs.flush();
-				} catch (Exception e) {
-					JExceptionHandler
-							.getExceptionHanlder()
-							.uncaughtException(Thread.currentThread(), e);
-					e.printStackTrace();
-				}
+			System.out.println("saving directory. current file: " + f);
+
+			if (!f.isDirectory()) {
+				f = f.getParentFile();
+				System.out.println("It's not a directory, so file is " + f);
+			}
+			try {
+				prefs.put(LAST_FOLDER, f.getCanonicalPath());
+				prefs.flush();
+			} catch (Exception e) {
+				showException(currentThread(), e);
 			}
 		}
 	}
