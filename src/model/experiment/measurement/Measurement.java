@@ -30,26 +30,26 @@ public class Measurement {
 	 * Время измерения
 	 */
 	@XmlElement
-	public long					time;
+	public long time;
 	/**
 	 * Частота эксперимента
 	 */
 	@XmlAttribute
-	public double				frequency;
+	public double frequency;
 	/**
 	 * Массив температур
 	 * 
 	 * @see Temperature
 	 */
 	@XmlElement
-	public List<Temperature>	temperature;
+	public List<Temperature> temperature;
 	/**
 	 * Массив значений температуропроводности
 	 * 
 	 * @see Diffusivity
 	 */
 	@XmlElement
-	public List<Diffusivity>	diffusivity;
+	public List<Diffusivity> diffusivity;
 
 	public Measurement() {
 		time = System.currentTimeMillis();
@@ -61,10 +61,12 @@ public class Measurement {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Частота;");
 		for (Temperature t : temperature) {
-			sb.append(t.getHeader() + ";");
+			if (t != null)
+				sb.append(Temperature.getHeader() + ";");
 		}
 		for (Diffusivity t : diffusivity) {
-			sb.append(t.getHeader() + ";");
+			if (t != null)
+				sb.append(Diffusivity.getHeader() + ";");
 		}
 		return sb.toString();
 	}
@@ -74,10 +76,12 @@ public class Measurement {
 		StringBuilder sb = new StringBuilder();
 		sb.append(String.format("%4.1f;", frequency));
 		for (Temperature t : temperature) {
-			sb.append(t.toString() + ";");
+			if (t != null)
+				sb.append(t.toString() + ";");
 		}
 		for (Diffusivity t : diffusivity) {
-			sb.append(t.toString() + ";");
+			if (t != null)
+				sb.append(t.toString() + ";");
 		}
 		return sb.toString();
 	}
@@ -87,8 +91,8 @@ public class Measurement {
 	 * 
 	 * @param filename
 	 *            Строка с полным или относительным путём к файлу с измерением
-	 * @return объект измерений из файла или <b>null</b> если файла не
-	 *         существует или он не содержит измерение
+	 * @return объект измерений из файла или <b>null</b> если файла не существует
+	 *         или он не содержит измерение
 	 */
 	public static Measurement forBinary(String filename) {
 
@@ -120,9 +124,12 @@ public class Measurement {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null) return false;
-		if (o == this) return true;
-		if (!(o instanceof Measurement)) return false;
+		if (o == null)
+			return false;
+		if (o == this)
+			return true;
+		if (!(o instanceof Measurement))
+			return false;
 		Predicate<Function<Measurement, Object>> eq = Predicates
 				.equalizer(this, (Measurement) o);
 		return eq.test(a -> a.frequency)

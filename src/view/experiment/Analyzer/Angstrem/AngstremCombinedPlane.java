@@ -73,10 +73,13 @@ public class AngstremCombinedPlane extends JPanel {
 		JButton calculateButton = new JButton(Messages.getString("AngstremCombinedPlane.calculate")); //$NON-NLS-1$
 
 		calculateButton.addActionListener((e) -> {
+			if (fileChooser.getSelectedFile() == null)
+				return;
 			try {
 				periodSeconds.commitEdit();
 			} catch (ParseException e1) {
-				JOptionPane.showMessageDialog(AngstremCombinedPlane.this, Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
+				JOptionPane.showMessageDialog(AngstremCombinedPlane.this,
+						Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
 						Messages.getString("AngstremCombinedPlane.makeSure_isNumber"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 				e1.printStackTrace();
@@ -84,7 +87,8 @@ public class AngstremCombinedPlane extends JPanel {
 			try {
 				intervalSeconds.commitEdit();
 			} catch (ParseException e1) {
-				JOptionPane.showMessageDialog(AngstremCombinedPlane.this, Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
+				JOptionPane.showMessageDialog(AngstremCombinedPlane.this,
+						Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
 						Messages.getString("AngstremCombinedPlane.makeSure_isNumber"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 				e1.printStackTrace();
@@ -92,7 +96,8 @@ public class AngstremCombinedPlane extends JPanel {
 			try {
 				distanceMilimeters.commitEdit();
 			} catch (ParseException e1) {
-				JOptionPane.showMessageDialog(AngstremCombinedPlane.this, Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
+				JOptionPane.showMessageDialog(AngstremCombinedPlane.this,
+						Messages.getString("AngstremCombinedPlane.format_error"), //$NON-NLS-1$
 						Messages.getString("AngstremCombinedPlane.makeSure_isNumber"), JOptionPane.ERROR_MESSAGE); //$NON-NLS-1$
 				JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e1);
 				e1.printStackTrace();
@@ -104,7 +109,8 @@ public class AngstremCombinedPlane extends JPanel {
 		add(calculateButton);
 	}
 
-	public void calculateResult(long measurementPeriod, long mesaurementInterval, long measurementDistance, Path file) {
+	public static void calculateResult(long measurementPeriod, long mesaurementInterval, long measurementDistance,
+			Path file) {
 		ExperimentFileReader ereader = null;
 		try {
 			ereader = new ExperimentFileReader(file);
@@ -139,8 +145,13 @@ public class AngstremCombinedPlane extends JPanel {
 		double omega = 2.0 * Math.PI * frequency;
 		double l = measurementDistance / 1000.0;
 
-		String[] columnNames = { Messages.getString("AngstremCombinedPlane.Channels"), Messages.getString("AngstremCombinedPlane.Period"), Messages.getString("AngstremCombinedPlane.Diffusivity"), Messages.getString("AngstremCombinedPlane.Distance"), Messages.getString("AngstremCombinedPlane.PhaseDiff"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
-				Messages.getString("AngstremCombinedPlane.Phase1"), Messages.getString("AngstremCombinedPlane.Phase2") }; //$NON-NLS-1$ //$NON-NLS-2$
+		String[] columnNames = { Messages.getString("AngstremCombinedPlane.Channels"), //$NON-NLS-1$
+				Messages.getString("AngstremCombinedPlane.Period"), //$NON-NLS-1$
+				Messages.getString("AngstremCombinedPlane.Diffusivity"), //$NON-NLS-1$
+				Messages.getString("AngstremCombinedPlane.Distance"), //$NON-NLS-1$
+				Messages.getString("AngstremCombinedPlane.PhaseDiff"), //$NON-NLS-1$
+				Messages.getString("AngstremCombinedPlane.Phase1"), //$NON-NLS-1$
+				Messages.getString("AngstremCombinedPlane.Phase2") }; //$NON-NLS-1$
 		List<Object[]> data = new ArrayList<>();
 		for (int channel1 = 0; channel1 < fftVals.length; channel1++) {
 			for (int channel2 = channel1 + 1; channel2 < fftVals.length; channel2++) {

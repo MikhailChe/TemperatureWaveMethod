@@ -7,6 +7,7 @@ import org.junit.Test;
 
 public class SampleTest {
 
+	@SuppressWarnings("static-method")
 	@Test
 	public void testSampleEquals() {
 		Sample s1 = new Sample();

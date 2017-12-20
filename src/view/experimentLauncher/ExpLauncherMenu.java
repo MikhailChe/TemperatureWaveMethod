@@ -7,7 +7,6 @@ import static model.experiment.sample.SampleFactory.saveSampleXML;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
@@ -185,12 +184,11 @@ public class ExpLauncherMenu extends JMenuBar {
 
 		JMenuItem toolsWatchFolder = new JMenuItem("Следить за папкой");
 		toolsWatchFolder.addActionListener(e -> {
-			try {
-				FolderWatch fw = FolderWatch.factory(parent);
+
+			FolderWatch fw = FolderWatch.factory(parent);
+			if (fw != null)
 				fw.setVisible(true);
-			} catch (FileNotFoundException exc) {
-				// Пользователь отказался смотреть. Надо бы придумать здесь что-нибудь другое
-			}
+
 		});
 		toolsMenu.add(toolsWatchFolder);
 

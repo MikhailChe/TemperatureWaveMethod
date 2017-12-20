@@ -56,7 +56,7 @@ public class Temperature {
 		return String.format("%.8f", value);
 	}
 
-	public String getHeader() {
+	public static String getHeader() {
 		return "Температура";
 	}
 

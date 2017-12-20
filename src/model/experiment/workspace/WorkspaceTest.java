@@ -14,26 +14,27 @@ import model.experiment.signalID.DCsignalID;
 
 public class WorkspaceTest {
 
+	@SuppressWarnings("static-method")
 	@Test
 	public void testSave() {
 		Workspace w = Workspace.getInstance();
 		w.setSampleFile(
-		        new File(
-		                "C:\\Users\\Mikhail\\Documents\\testnew.smpl"));
+				new File(
+						"C:\\Users\\Mikhail\\Documents\\testnew.smpl"));
 		w.getSignalIDs().clear();
 		w.getSignalIDs().addAll(
-		        asList(new BaseSignalID(), new DCsignalID(),
-		                new AdjustmentSignalID(), null));
+				asList(new BaseSignalID(), new DCsignalID(),
+						new AdjustmentSignalID(), null));
 		w.save();
 
 		Workspace deser = Workspace.open();
 		assertNotNull(deser);
 
 		assertEquals(w.getSampleFile(),
-		        deser.getSampleFile());
+				deser.getSampleFile());
 
 		assertEquals(w.getSignalIDs(),
-		        deser.getSignalIDs());
+				deser.getSignalIDs());
 
 	}
 }

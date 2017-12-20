@@ -6,6 +6,7 @@ import java.awt.Frame;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.Arrays;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
@@ -21,9 +22,13 @@ public class JExceptionHandler extends JFrame implements UncaughtExceptionHandle
 	private static final long serialVersionUID = -8904598188535756544L;
 	private static JExceptionHandler instance = null;
 
-	synchronized public static JExceptionHandler getExceptionHanlder() {
+	public static JExceptionHandler getExceptionHanlder() {
 		if (instance == null) {
-			instance = new JExceptionHandler();
+			synchronized (JExceptionHandler.class) {
+				if (instance == null) {
+					instance = new JExceptionHandler();
+				}
+			}
 		}
 		return instance;
 	}
@@ -34,8 +39,13 @@ public class JExceptionHandler extends JFrame implements UncaughtExceptionHandle
 	private JExceptionHandler() {
 		super("Ошибки программы");
 		setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+
 		addWindowStateListener(e -> {
-			if (Frame.getFrames().length <= 1) {
+			if (Arrays
+					.stream(Frame.getFrames())
+					.filter(f -> f != null)
+					.filter(f -> f.isDisplayable())
+					.toArray().length <= 1) {
 				JExceptionHandler.this.dispose();
 			}
 		});
@@ -46,6 +56,12 @@ public class JExceptionHandler extends JFrame implements UncaughtExceptionHandle
 		list = new JList<>(listModel);
 
 		SwingUtilities.invokeLater(() -> getContentPane().add(list, BorderLayout.CENTER));
+	}
+
+	public static void showException(Thread t, Throwable e) {
+		if (instance == null)
+			getExceptionHanlder();
+		instance.uncaughtException(t, e);
 	}
 
 	@Override

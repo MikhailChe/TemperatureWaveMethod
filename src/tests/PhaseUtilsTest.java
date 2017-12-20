@@ -8,6 +8,7 @@ import org.junit.Test;
 
 public class PhaseUtilsTest {
 
+	@SuppressWarnings("static-method")
 	@Test
 	public void testTruncatePositive() {
 		double test1 = Math.toRadians(-90);
@@ -25,6 +26,7 @@ public class PhaseUtilsTest {
 
 	}
 
+	@SuppressWarnings("static-method")
 	@Test
 	public void testTruncateNegative() {
 		double test1 = Math.toRadians(+90);

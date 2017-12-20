@@ -28,36 +28,36 @@ public class Diffusivity {
 	 * @see SignalIdentifier
 	 */
 	@XmlElement
-	public BaseSignalID		signalID;
+	public BaseSignalID signalID;
 	/**
 	 * Фаза сигнала
 	 */
 	@XmlElement
-	public double			phase;
+	public double phase;
 
 	@XmlAttribute
-	public double			frequency;
+	public double frequency;
 	/**
 	 * Амплитуда сигнала
 	 */
 	@XmlElement
-	public double			amplitude;
+	public double amplitude;
 	/**
 	 * коэффициент каппа
 	 */
 	@XmlElement
-	public double			kappa;
+	public double kappa;
 	/**
 	 * Значение коэффициента температуропроводности
 	 */
 	@XmlElement
-	public double			diffusivity;
+	public double diffusivity;
 
 	@XmlElement
-	public double			capacitance;
+	public double capacitance;
 
 	@XmlElement
-	public SignalParameters	initSignalParams;
+	public SignalParameters initSignalParams;
 
 	public Diffusivity() {
 		signalID = null;
@@ -86,15 +86,18 @@ public class Diffusivity {
 				Math.toDegrees(phase), kappa, diffusivity, capacitance);
 	}
 
-	public String getHeader() {
+	public static String getHeader() {
 		return "Амплитуда;Начальная фаза;Нулеваая фаза;Скорректированная фаза;Каппа;Температуропроводность;Теплоёмкость";
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		if (o == null) return false;
-		if (o == this) return true;
-		if (!(o instanceof Diffusivity)) return false;
+		if (o == null)
+			return false;
+		if (o == this)
+			return true;
+		if (!(o instanceof Diffusivity))
+			return false;
 		Predicate<Function<Diffusivity, Object>> eq = Predicates
 				.equalizer(this, (Diffusivity) o);
 		return eq.test(a -> a.amplitude)

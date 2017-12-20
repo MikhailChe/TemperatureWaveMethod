@@ -6,7 +6,6 @@ import java.awt.GridLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,14 +47,13 @@ public class FolderWatch extends JDialog implements Runnable {
 
 	final List<JTDiffLabelSet> tCondPanels = new ArrayList<>();
 
-	public static FolderWatch factory(JFrame parent)
-			throws FileNotFoundException {
+	public static FolderWatch factory(JFrame parent) {
 		Workspace workspace = Workspace.getInstance();
 		if (workspace.getSample() == null) {
 			JOptionPane.showMessageDialog(parent,
 					"Не был выбран файл образца.\nПожалуйста закройте это окно и выберите образец или создайте новый",
 					"Ошибка образца", JOptionPane.ERROR_MESSAGE);
-			throw new FileNotFoundException("Не был выбран файл образца.");
+			return null;
 		}
 		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(
 				FolderWatch.class);
@@ -66,11 +64,11 @@ public class FolderWatch extends JDialog implements Runnable {
 		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
 			Debug.println("Approved");
 			folder = fileChooser.getSelectedFile();
-			if (folder == null) {
-				throw new FileNotFoundException();
+			if (folder == null || !folder.exists()) {
+				return null;
 			}
 		} else {
-			throw new FileNotFoundException();
+			return null;
 		}
 		Debug.println("Returning new FolderWatch");
 		return new FolderWatch(parent, folder);
@@ -198,6 +196,7 @@ public class FolderWatch extends JDialog implements Runnable {
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
+				Debug.println(e.getLocalizedMessage());
 				return;
 			}
 		}

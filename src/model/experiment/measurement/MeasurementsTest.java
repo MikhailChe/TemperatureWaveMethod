@@ -19,6 +19,7 @@ import model.experiment.zeroCrossing.ZeroCrossing;
 import model.thermocouple.graduate.Graduate;
 
 public class MeasurementsTest {
+	@SuppressWarnings("static-method")
 	@Test
 	public void diffusivityjaxbification() throws IOException {
 		Diffusivity march = new Diffusivity();
@@ -44,6 +45,7 @@ public class MeasurementsTest {
 		Assert.assertEquals(march, unmarch);
 	}
 
+	@SuppressWarnings("static-method")
 	@Test
 	public void temperatureJaxbification() throws IOException {
 		Temperature march = new Temperature();
@@ -69,6 +71,7 @@ public class MeasurementsTest {
 		assertEquals(march, unmarch);
 	}
 
+	@SuppressWarnings("static-method")
 	@Test
 	public void measurementJabxification() throws IOException {
 		Measurement march = new Measurement();

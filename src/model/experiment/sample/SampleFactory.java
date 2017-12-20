@@ -17,15 +17,16 @@ public class SampleFactory {
 		try {
 			return JAXB.unmarshal(new File(filename), Sample.class);
 		} catch (DataBindingException e) {
-			Debug.println(e.getLocalizedMessage());
+			Debug.println("Ошибка открытия файла образца. Биндинг не удался: " + e.getLocalizedMessage());
 			return null;
 		}
 	}
 
 	public static File saveSampleXML(final String filename, final Sample sample) {
 		if (filename != null) {
-			JAXB.marshal(sample, new File(filename));
-			return new File(filename);
+			File file = new File(filename);
+			JAXB.marshal(sample, file);
+			return file;
 		}
 		throw new NullPointerException("filename is null");
 	}
