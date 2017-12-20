@@ -1,5 +1,11 @@
 package view.experiment.folderWatch;
 
+import static debug.Debug.println;
+import static java.awt.BorderLayout.NORTH;
+import static javax.swing.BorderFactory.createTitledBorder;
+import static javax.swing.JFileChooser.APPROVE_OPTION;
+import static javax.swing.JOptionPane.ERROR_MESSAGE;
+
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.GridLayout;
@@ -7,11 +13,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -19,7 +24,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import controller.experiment.Analyzer.TWMComputer;
-import debug.Debug;
 import model.experiment.measurement.Diffusivity;
 import model.experiment.measurement.Measurement;
 import model.experiment.workspace.Workspace;
@@ -31,19 +35,17 @@ public class FolderWatch extends JDialog implements Runnable {
 
 	// private Workspace workspace;
 
-	public File[] filesInFolder;
+	final public List<File> filesInFolder = new ArrayList<>();
 	public File folder;
 
 	final MeasurementViewer measurementViewer = new MeasurementViewer();
 	final Container numbersContainer = new Container();
 
 	final JPanel signalLevelPanel = new JPanel();
-	final JLabel signalLevelLabel = new JLabel(
-			"Здесь будет термоЭДС");
+	final JLabel signalLevelLabel = new JLabel("Здесь будет термоЭДС");
 
 	final JPanel temperaturePanel = new JPanel();
-	final JLabel temperatureLabel = new JLabel(
-			"Здесь будет температура");
+	final JLabel temperatureLabel = new JLabel("Здесь будет температура");
 
 	final List<JTDiffLabelSet> tCondPanels = new ArrayList<>();
 
@@ -52,17 +54,15 @@ public class FolderWatch extends JDialog implements Runnable {
 		if (workspace.getSample() == null) {
 			JOptionPane.showMessageDialog(parent,
 					"Не был выбран файл образца.\nПожалуйста закройте это окно и выберите образец или создайте новый",
-					"Ошибка образца", JOptionPane.ERROR_MESSAGE);
+					"Ошибка образца", ERROR_MESSAGE);
 			return null;
 		}
-		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(
-				FolderWatch.class);
+		MemorableDirectoryChooser fileChooser = new MemorableDirectoryChooser(FolderWatch.class);
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.setDialogTitle("Выберите папку с данными");
 
 		File folder;
-		if (fileChooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) {
-			Debug.println("Approved");
+		if (fileChooser.showOpenDialog(parent) == APPROVE_OPTION) {
 			folder = fileChooser.getSelectedFile();
 			if (folder == null || !folder.exists()) {
 				return null;
@@ -70,38 +70,36 @@ public class FolderWatch extends JDialog implements Runnable {
 		} else {
 			return null;
 		}
-		Debug.println("Returning new FolderWatch");
+		println("Returning new FolderWatch");
 		return new FolderWatch(parent, folder);
 	}
 
+	private Thread updater;
+
 	private FolderWatch(JFrame parent, File folder) {
 		super(parent, false);
-		Debug.println("Called constructor");
+		setName("Онлайн." + folder.getName());
+		println("Called constructor");
 		this.folder = folder;
-		Debug.println("Setting folder");
+		println("Setting folder");
 
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosed(WindowEvent e) {
+				println(e);
 				isClosing = true;
-			}
-
-			@Override
-			public void windowClosing(WindowEvent e) {
-				isClosing = true;
-
 			}
 		});
-		Debug.println("Added listener");
+		println("Добавлен слушатель закрытия окна ");
 		SwingUtilities.invokeLater(() -> {
 
+			temperatureLabel.setFont(temperatureLabel.getFont().deriveFont(temperatureLabel.getFont().getSize() * 2f));
+			signalLevelLabel.setFont(signalLevelLabel.getFont().deriveFont(signalLevelLabel.getFont().getSize() * 2f));
+
 			this.setTitle("Я смотрю за " + folder.getAbsolutePath());
-			signalLevelPanel
-					.setBorder(BorderFactory
-							.createTitledBorder("Уровень сигнала"));
+			signalLevelPanel.setBorder(createTitledBorder("Уровень сигнала"));
 			signalLevelPanel.add(signalLevelLabel);
-			temperaturePanel
-					.setBorder(BorderFactory.createTitledBorder("Температура"));
+			temperaturePanel.setBorder(createTitledBorder("Температура"));
 			temperaturePanel.add(temperatureLabel);
 
 			numbersContainer.setLayout(new GridLayout(0, 2, 16, 16));
@@ -110,60 +108,49 @@ public class FolderWatch extends JDialog implements Runnable {
 			numbersContainer.add(temperaturePanel);
 
 			this.getContentPane().setLayout(new BorderLayout(16, 16));
-			this.getContentPane().add(numbersContainer, BorderLayout.NORTH);
+			this.getContentPane().add(numbersContainer, NORTH);
 			this.getContentPane().add(measurementViewer);
-			SwingUtilities.invokeLater(() -> this.pack());
+			SwingUtilities.invokeLater(this::pack);
 
-			new Thread(this).start();
+			updater = new Thread(this);
+			updater.setDaemon(true);
+			updater.start();
 		});
 	}
 
 	public void checkNewFile() {
-		File[] files = folder.listFiles(pathname -> {
+		List<File> files = Arrays.asList(folder.listFiles(pathname -> {
 			return pathname.getName().matches("^[0-9]+.txt$");
-		});
+		}));
 		if (files != null) {
-			if (filesInFolder == null) {
-				if (files.length >= 1) {
-					filesInFolder = files;
-					for (File f : filesInFolder) {
-						updateValuesForFile(f);
-						if (isClosing) {
-							return;
-						}
-					}
-				}
-				return;
-			}
+			files.removeAll(filesInFolder);
 
-			if (filesInFolder.length != files.length) {
-				if (files.length >= 1) {
-					filesInFolder = files;
-					updateValuesForFile(
-							filesInFolder[filesInFolder.length - 1]);
+			if (!files.isEmpty()) {
+				for (File f : files) {
+					updateValuesForFile(f);
+					if (isClosing)
+						return;
 				}
-				return;
+				filesInFolder.addAll(files);
 			}
 		}
 	}
 
 	public void updateValuesForFile(File f) {
 
-		Debug.println("updating values for file " + f);
+		println("Считываю значения из файла " + f);
 		TWMComputer exc = new TWMComputer(f);
 		Measurement m = exc.call();
 		if (m.temperature == null || m.temperature.isEmpty()) {
 			signalLevelLabel.setText("Температура неизвестна");
 			temperatureLabel.setText("Температура неизвестна");
 		} else {
-			signalLevelLabel.setText(String.format("%+.3f мВ",
-					m.temperature.get(0).signalLevel * 1000));
-			temperatureLabel.setText(
-					String.format("%+.0f K", m.temperature.get(0).value));
+			signalLevelLabel.setText(String.format("%+.3f мВ", m.temperature.get(0).signalLevel * 1000));
+			temperatureLabel.setText(String.format("%+.0f K", m.temperature.get(0).value));
 		}
 		List<Diffusivity> tConds = m.diffusivity;
 		if (tConds.size() != tCondPanels.size()) {
-			Debug.println("Sizes differ");
+			println("Sizes differ");
 			for (JTDiffLabelSet set : tCondPanels) {
 				numbersContainer.remove(set);
 			}
@@ -196,7 +183,7 @@ public class FolderWatch extends JDialog implements Runnable {
 			try {
 				Thread.sleep(5000);
 			} catch (InterruptedException e) {
-				Debug.println(e.getLocalizedMessage());
+				println(e.getLocalizedMessage());
 				return;
 			}
 		}

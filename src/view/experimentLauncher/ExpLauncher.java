@@ -5,6 +5,8 @@ import static java.lang.Thread.currentThread;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -15,6 +17,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import debug.Debug;
+import javafx.application.Platform;
 import model.experiment.sample.Sample;
 import model.experiment.workspace.Workspace;
 
@@ -65,6 +68,15 @@ public class ExpLauncher extends JFrame {
 			showException(currentThread(), e);
 		}
 		SwingUtilities.invokeLater(this::createAndShowGUI);
+		setName("Главный экран");
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {
+				Debug.println(e);
+				Platform.exit();
+			}
+
+		});
 	}
 
 }
