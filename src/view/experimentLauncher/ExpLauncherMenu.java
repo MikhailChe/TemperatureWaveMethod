@@ -4,6 +4,7 @@
 package view.experimentLauncher;
 
 import static java.lang.Thread.currentThread;
+import static javax.swing.JFileChooser.FILES_ONLY;
 import static model.experiment.sample.SampleFactory.saveSampleXML;
 
 import java.awt.event.ActionEvent;
@@ -25,6 +26,7 @@ import model.experiment.sample.Sample;
 import model.experiment.sample.SampleFactory;
 import model.experiment.signalID.SignalIdentifier;
 import model.experiment.workspace.Workspace;
+import model.experiment.zeroCrossing.ZeroCrossing;
 import view.MemorableDirectoryChooser;
 import view.experiment.Analyzer.Angstrem.AngstremAnalyzer;
 import view.experiment.folderWatch.FolderWatch;
@@ -132,6 +134,28 @@ public class ExpLauncherMenu extends JMenuBar {
 		});
 		fileOpen.add(fileOpenProject);
 
+		JMenuItem fileOpenAdjust = new JMenuItem("Юстировка...");
+		fileOpenAdjust.addActionListener(e -> {
+			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(AdjustFileCreator.class);
+			chooser.setMultiSelectionEnabled(false);
+			chooser.resetChoosableFileFilters();
+			chooser.setFileSelectionMode(FILES_ONLY);
+			chooser.addChoosableFileFilter(ZeroCrossing.extensionFilter);
+			chooser.setFileFilter(ZeroCrossing.extensionFilter);
+
+			int status = chooser.showOpenDialog(parent);
+
+			if (JFileChooser.APPROVE_OPTION == status) {
+				File f = chooser.getSelectedFile();
+				if (f == null)
+					return;
+				if (!f.exists())
+					return;
+				AdjustFileCreator.createZCdigalog(f.toPath(), parent);
+			}
+		});
+		fileOpen.add(fileOpenAdjust);
+
 		JMenuItem fileSave = new JMenuItem("Сохранить...");
 		fileSave.addActionListener(a -> {
 			workspace.save();
@@ -142,7 +166,7 @@ public class ExpLauncherMenu extends JMenuBar {
 				MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(SampleFactory.class);
 				chooser.setMultiSelectionEnabled(false);
 				chooser.resetChoosableFileFilters();
-				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				chooser.setFileSelectionMode(FILES_ONLY);
 				chooser.addChoosableFileFilter(Sample.getExtensionfilter());
 				chooser.setFileFilter(Sample.getExtensionfilter());
 
@@ -166,7 +190,6 @@ public class ExpLauncherMenu extends JMenuBar {
 		this.add(toolsMenu);
 		JMenuItem prepareZeroCrossing = new JMenuItem("Подготовить юстировку");
 		prepareZeroCrossing.addActionListener(e -> {
-
 			new Thread(new AdjustFileCreator(parent)).start();
 		});
 		toolsMenu.add(prepareZeroCrossing);

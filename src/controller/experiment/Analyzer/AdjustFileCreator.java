@@ -5,6 +5,7 @@ import static debug.Debug.println;
 import static debug.JExceptionHandler.showException;
 import static java.lang.Thread.currentThread;
 
+import java.awt.Frame;
 import java.awt.Toolkit;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -120,15 +121,24 @@ public class AdjustFileCreator implements Runnable {
 		}
 
 		SwingUtilities.invokeLater(() -> {
-			ZeroCrossing zc = ZeroCrossingFactory.forFile(resultFile.toFile());
-			ZeroCrossingViewerPanel zcvp = new ZeroCrossingViewerPanel(zc);
-
-			JDialog dialog = new JDialog(parent, "Файл юстировки");
-			dialog.getContentPane().add(zcvp);
-			dialog.pack();
-			dialog.setModal(true);
-			dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
+			createZCdigalog(resultFile, parent);
 		});
+	}
+
+	public static void createZCdigalog(Path f, Frame parent) {
+		ZeroCrossing zc = ZeroCrossingFactory.forFile(f.toFile());
+		ZeroCrossingViewerPanel zcvp = new ZeroCrossingViewerPanel(zc);
+
+		JDialog dialog = new JDialog(parent, "Файл юстировки");
+		dialog.getContentPane().add(zcvp);
+		dialog.pack();
+		dialog.setModal(true);
+		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		try {
+			dialog.setVisible(true);
+
+		} catch (Exception e) {
+			showException(currentThread(), e);
+		}
 	}
 }

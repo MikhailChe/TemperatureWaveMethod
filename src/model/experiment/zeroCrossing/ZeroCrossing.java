@@ -31,7 +31,7 @@ import controller.lambda.Predicates;
 @XmlAccessorType(NONE)
 public class ZeroCrossing {
 	final public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
-			"Файл юстировки текстовы (*.zc)", "zc");
+			"Файл юстировки текстовый (*.zc)", "zc");
 
 	@XmlAttribute
 	final public File forFile;
@@ -163,6 +163,18 @@ public class ZeroCrossing {
 		if (shifts.isEmpty())
 			initialize();
 		return shifts.values().stream().mapToDouble(a -> a).min().orElse(Double.NaN);
+	}
+
+	public double minFrequency() {
+		if (shifts.isEmpty())
+			initialize();
+		return shifts.firstKey();
+	}
+
+	public double maxFrequency() {
+		if (shifts.isEmpty())
+			initialize();
+		return shifts.lastKey();
 	}
 
 	@Override
