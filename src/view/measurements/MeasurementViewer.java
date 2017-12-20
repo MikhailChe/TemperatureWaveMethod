@@ -1,6 +1,9 @@
 package view.measurements;
 
+import static debug.Debug.println;
+import static java.awt.BorderLayout.CENTER;
 import static java.util.stream.Collectors.toList;
+import static javax.swing.border.BevelBorder.LOWERED;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -11,7 +14,6 @@ import java.util.Map;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.SoftBevelBorder;
 
 import javafx.application.Platform;
@@ -91,18 +93,18 @@ public class MeasurementViewer extends JPanel {
 		SwingUtilities.invokeLater(() -> {
 			Dimension d = new Dimension(640, 480);
 			setPreferredSize(d);
-			setBorder(new SoftBevelBorder(BevelBorder.LOWERED));
+			setBorder(new SoftBevelBorder(LOWERED));
 
 			chart.setTitle("Измерения");
 
 			Platform.runLater(() -> {
-				System.out.println("Добавляю диаграмму");
+				println("Добавляю диаграмму");
 				Scene scene = new Scene(chart);
 				chartPanel.setScene(scene);
 			});
 
 			this.setLayout(new BorderLayout());
-			this.add(chartPanel, BorderLayout.CENTER);
+			this.add(chartPanel, CENTER);
 		});
 	}
 
