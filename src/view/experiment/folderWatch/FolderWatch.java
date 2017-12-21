@@ -24,6 +24,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import controller.experiment.Analyzer.TWMComputer;
+import debug.Debug;
 import model.experiment.measurement.Diffusivity;
 import model.experiment.measurement.Measurement;
 import model.experiment.workspace.Workspace;
@@ -111,28 +112,26 @@ public class FolderWatch extends JDialog implements Runnable {
 			this.getContentPane().add(numbersContainer, NORTH);
 			this.getContentPane().add(measurementViewer);
 			SwingUtilities.invokeLater(this::pack);
-
-			updater = new Thread(this);
-			updater.setDaemon(true);
-			updater.start();
+			SwingUtilities.invokeLater(() -> {
+				updater = new Thread(this);
+				updater.setDaemon(true);
+				updater.start();
+			});
 		});
 	}
 
 	public void checkNewFile() {
-		List<File> files = Arrays.asList(folder.listFiles(pathname -> {
-			return pathname.getName().matches("^[0-9]+.txt$");
-		}));
-		if (files != null) {
-			files.removeAll(filesInFolder);
+		List<File> files = new ArrayList<>(
+				Arrays.asList(folder.listFiles(pathname -> pathname.getName().matches("^[0-9]+.txt$"))));
+		files.removeAll(filesInFolder);
 
-			if (!files.isEmpty()) {
-				for (File f : files) {
-					updateValuesForFile(f);
-					if (isClosing)
-						return;
-				}
-				filesInFolder.addAll(files);
+		if (!files.isEmpty()) {
+			for (File f : files) {
+				updateValuesForFile(f);
+				if (isClosing)
+					return;
 			}
+			filesInFolder.addAll(files);
 		}
 	}
 
@@ -173,10 +172,11 @@ public class FolderWatch extends JDialog implements Runnable {
 
 	@Override
 	public void run() {
-		while (this.isDisplayable()) {
+		while (!isClosing) {
 			if (Thread.interrupted()) {
 				return;
 			}
+			Debug.println("Try");
 			if (isClosing)
 				return;
 			checkNewFile();
@@ -187,5 +187,6 @@ public class FolderWatch extends JDialog implements Runnable {
 				return;
 			}
 		}
+		Debug.println("Not displayable");
 	}
 }
