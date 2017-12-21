@@ -24,7 +24,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
 import controller.experiment.Analyzer.TWMComputer;
-import debug.Debug;
 import model.experiment.measurement.Diffusivity;
 import model.experiment.measurement.Measurement;
 import model.experiment.workspace.Workspace;
@@ -54,7 +53,8 @@ public class FolderWatch extends JDialog implements Runnable {
 		Workspace workspace = Workspace.getInstance();
 		if (workspace.getSample() == null) {
 			JOptionPane.showMessageDialog(parent,
-					"Не был выбран файл образца.\nПожалуйста закройте это окно и выберите образец или создайте новый",
+					"Не был выбран файл образца.\n"
+							+ "Пожалуйста закройте это окно и выберите образец или создайте новый",
 					"Ошибка образца", ERROR_MESSAGE);
 			return null;
 		}
@@ -82,7 +82,6 @@ public class FolderWatch extends JDialog implements Runnable {
 		setName("Онлайн." + folder.getName());
 		println("Called constructor");
 		this.folder = folder;
-		println("Setting folder");
 
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -91,7 +90,7 @@ public class FolderWatch extends JDialog implements Runnable {
 				isClosing = true;
 			}
 		});
-		println("Добавлен слушатель закрытия окна ");
+
 		SwingUtilities.invokeLater(() -> {
 
 			temperatureLabel.setFont(temperatureLabel.getFont().deriveFont(temperatureLabel.getFont().getSize() * 2f));
@@ -112,11 +111,10 @@ public class FolderWatch extends JDialog implements Runnable {
 			this.getContentPane().add(numbersContainer, NORTH);
 			this.getContentPane().add(measurementViewer);
 			SwingUtilities.invokeLater(this::pack);
-			SwingUtilities.invokeLater(() -> {
-				updater = new Thread(this);
-				updater.setDaemon(true);
-				updater.start();
-			});
+
+			updater = new Thread(this);
+			updater.setDaemon(true);
+			updater.start();
 		});
 	}
 
@@ -138,8 +136,7 @@ public class FolderWatch extends JDialog implements Runnable {
 	public void updateValuesForFile(File f) {
 
 		println("Считываю значения из файла " + f);
-		TWMComputer exc = new TWMComputer(f);
-		Measurement m = exc.call();
+		Measurement m = new TWMComputer(f).call();
 		if (m.temperature == null || m.temperature.isEmpty()) {
 			signalLevelLabel.setText("Температура неизвестна");
 			temperatureLabel.setText("Температура неизвестна");
@@ -176,7 +173,6 @@ public class FolderWatch extends JDialog implements Runnable {
 			if (Thread.interrupted()) {
 				return;
 			}
-			Debug.println("Try");
 			if (isClosing)
 				return;
 			checkNewFile();
@@ -187,6 +183,5 @@ public class FolderWatch extends JDialog implements Runnable {
 				return;
 			}
 		}
-		Debug.println("Not displayable");
 	}
 }
