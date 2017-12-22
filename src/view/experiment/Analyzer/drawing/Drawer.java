@@ -22,7 +22,8 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
 import controller.experiment.Analyzer.ExperimentFileReader;
-import controller.experiment.Analyzer.FFT;
+import controller.experiment.Analyzer.TWMComputer;
+import model.experiment.Analyzer.SignalParameters;
 import view.MemorableDirectoryChooser;
 
 public class Drawer {
@@ -54,23 +55,23 @@ public class Drawer {
 		return ereader;
 	}
 
-	public static void openNewTabs(ExperimentFileReader reader, JDrawingTabsPlane plane) {
+	public static void openNewTabs(final ExperimentFileReader reader, final JDrawingTabsPlane plane) {
 		if (reader == null) {
 			return;
 		}
 		for (double[] data : reader.getCroppedData()) {
 
-			double[] fft = FFT.getFourierForIndex(data, reader.getCroppedDataPeriodsCount() * 2);
+			final int FREQ_INDEX = reader.getCroppedDataPeriodsCount();
 
-			double angle = FFT.getArgument(fft, 0);
-			double amplitude = FFT.getAbs(fft, 0) * 2.0 / data.length;
+			SignalParameters params = TWMComputer.getSignalParameters(data, FREQ_INDEX);
 
-			double[] fftZeroFreq = FFT.getFourierForIndex(data, 0);
-			double zeroAmplitudeShift = FFT.getAbs(fftZeroFreq, 0) / data.length;
+			double angle = params.phase;
+			double amplitude = params.amplitude;
+			double zeroAmplitudeShift = params.nullOffset;
 
 			double[] accordingWave = new double[data.length];
 			for (int i = 0; i < data.length; i++) {
-				accordingWave[i] = Math.cos(
+				accordingWave[i] = Math.sin(
 						2.0 * Math.PI * reader.getCroppedDataPeriodsCount() * ((double) i / (double) data.length)
 								+ angle)
 						* amplitude + zeroAmplitudeShift;
