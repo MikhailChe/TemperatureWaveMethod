@@ -178,7 +178,7 @@ public class TWMComputer implements Callable<Measurement> {
 
 	/**
 	 * Выдаём параметры сигнала. Для этого вычисляем Фурье для частоты эксперимента
-	 * и для нулевой частоты.
+	 * и среднее значение сигнала.
 	 * 
 	 * Во-первых достаём оттуда фазу. Фазу сдвигаем на 90 градусов, чтобы она была
 	 * по синусу, а не по косинусу. Роли в итоговых вычислениях это не играет, так
@@ -203,18 +203,12 @@ public class TWMComputer implements Callable<Measurement> {
 	 */
 	public static SignalParameters getSignalParameters(double[] signal, int frequency) {
 		double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
-		double nullOffsetFourier[] = FFT.getFourierForIndex(signal, 0);
 
 		double phase = FFT.getArgument(fourierForFreq, 0) + Math.PI / 2.0;
-		// while (phase < -Math.PI) {
-		// phase += 2.0 * Math.PI;
-		// }
-		// while (phase > Math.PI) {
-		// phase -= 2.0 * Math.PI;
-		// }
 		truncateNegative(phase);
-		double amplitude = FFT.getAbs(fourierForFreq, 0) / signal.length;
-		double nullOffset = FFT.getAbs(nullOffsetFourier, 0) / signal.length;
+
+		double amplitude = 2.0 * FFT.getAbs(fourierForFreq, 0) / signal.length;
+		double nullOffset = Arrays.stream(signal).parallel().average().orElse(0);
 
 		SignalParameters params = new SignalParameters(phase, amplitude, nullOffset);
 
