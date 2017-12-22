@@ -14,7 +14,9 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -35,7 +37,7 @@ public class FolderWatch extends JDialog implements Runnable {
 
 	// private Workspace workspace;
 
-	final public List<File> filesInFolder = new ArrayList<>();
+	final public Set<File> filesInFolder = new HashSet<>();
 	public File folder;
 
 	final MeasurementViewer measurementViewer = new MeasurementViewer();
@@ -80,7 +82,8 @@ public class FolderWatch extends JDialog implements Runnable {
 	private FolderWatch(JFrame parent, File folder) {
 		super(parent, false);
 		setName("Онлайн." + folder.getName());
-		println("Called constructor");
+		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		println("Вызван конструктор FolderWatch. " + folder);
 		this.folder = folder;
 
 		addWindowListener(new WindowAdapter() {
@@ -120,15 +123,15 @@ public class FolderWatch extends JDialog implements Runnable {
 
 	public void checkNewFile() {
 		List<File> files = new ArrayList<>(
-				Arrays.asList(folder.listFiles(pathname -> pathname.getName().matches("^[0-9]+.txt$"))));
+				Arrays.asList(
+						folder.listFiles(pathname -> pathname.getName().matches("^[0-9]+.txt$"))));
 		files.removeAll(filesInFolder);
 
 		if (!files.isEmpty()) {
-			for (File f : files) {
-				updateValuesForFile(f);
-				if (isClosing)
-					return;
-			}
+			files.stream().parallel().forEach(f -> {
+				if (!isClosing)
+					updateValuesForFile(f);
+			});
 			filesInFolder.addAll(files);
 		}
 	}
@@ -136,33 +139,36 @@ public class FolderWatch extends JDialog implements Runnable {
 	public void updateValuesForFile(File f) {
 
 		println("Считываю значения из файла " + f);
-		Measurement m = new TWMComputer(f).call();
-		if (m.temperature == null || m.temperature.isEmpty()) {
-			signalLevelLabel.setText("Температура неизвестна");
-			temperatureLabel.setText("Температура неизвестна");
-		} else {
-			signalLevelLabel.setText(String.format("%+.3f мВ", m.temperature.get(0).signalLevel * 1000));
-			temperatureLabel.setText(String.format("%+.0f K", m.temperature.get(0).value));
-		}
-		List<Diffusivity> tConds = m.diffusivity;
-		if (tConds.size() != tCondPanels.size()) {
-			println("Sizes differ");
-			for (JTDiffLabelSet set : tCondPanels) {
-				numbersContainer.remove(set);
-			}
-			tCondPanels.clear();
-			for (int i = 0; i < tConds.size(); i++) {
-				JTDiffLabelSet set = new JTDiffLabelSet(i);
-				tCondPanels.add(set);
-				numbersContainer.add(set);
-			}
-		}
-		for (int i = 0; i < tConds.size(); i++) {
-			Diffusivity tCond = tConds.get(i);
-			tCondPanels.get(i).updateValues(tCond);
-		}
-		measurementViewer.addMeasurement(m);
 
+		Measurement m = new TWMComputer(f).call();
+
+		SwingUtilities.invokeLater(() -> {
+			if (m.temperature == null || m.temperature.isEmpty()) {
+				signalLevelLabel.setText("Температура неизвестна");
+				temperatureLabel.setText("Температура неизвестна");
+			} else {
+				signalLevelLabel.setText(String.format("%+.3f мВ", m.temperature.get(0).signalLevel * 1000));
+				temperatureLabel.setText(String.format("%+.0f K", m.temperature.get(0).value));
+			}
+			List<Diffusivity> tConds = m.diffusivity;
+			if (tConds.size() != tCondPanels.size()) {
+				println("Sizes differ");
+				for (JTDiffLabelSet set : tCondPanels) {
+					numbersContainer.remove(set);
+				}
+				tCondPanels.clear();
+				for (int i = 0; i < tConds.size(); i++) {
+					JTDiffLabelSet set = new JTDiffLabelSet(i);
+					tCondPanels.add(set);
+					numbersContainer.add(set);
+				}
+			}
+			for (int i = 0; i < tConds.size(); i++) {
+				Diffusivity tCond = tConds.get(i);
+				tCondPanels.get(i).updateValues(tCond);
+			}
+			measurementViewer.addMeasurement(m);
+		});
 	}
 
 	boolean isClosing = false;
@@ -173,11 +179,9 @@ public class FolderWatch extends JDialog implements Runnable {
 			if (Thread.interrupted()) {
 				return;
 			}
-			if (isClosing)
-				return;
 			checkNewFile();
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(3000);
 			} catch (InterruptedException e) {
 				println(e.getLocalizedMessage());
 				return;
