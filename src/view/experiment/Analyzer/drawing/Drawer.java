@@ -1,9 +1,14 @@
 package view.experiment.Analyzer.drawing;
 
+import static java.awt.event.KeyEvent.VK_F;
+import static java.awt.event.KeyEvent.VK_I;
+import static java.awt.event.KeyEvent.VK_O;
+import static java.awt.event.KeyEvent.VK_S;
+import static javax.swing.JFrame.EXIT_ON_CLOSE;
+
 import java.awt.Component;
 import java.awt.Frame;
 import java.awt.GridLayout;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -66,7 +71,7 @@ public class Drawer {
 			double[] accordingWave = new double[data.length];
 			for (int i = 0; i < data.length; i++) {
 				accordingWave[i] = Math.cos(
-						2.0 * Math.PI * reader.getCroppedDataPeriodsCount() * 2.0 * ((double) i / (double) data.length)
+						2.0 * Math.PI * reader.getCroppedDataPeriodsCount() * ((double) i / (double) data.length)
 								+ angle)
 						* amplitude + zeroAmplitudeShift;
 			}
@@ -81,8 +86,8 @@ public class Drawer {
 	}
 
 	public static void main(String[] args) {
-		JFrame frame = new JFrame("Drawer");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		JFrame frame = new JFrame("Рисователь");
+		frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
 		JDrawingTabsPlane main = new JDrawingTabsPlane();
 
 		if (args.length > 0) {
@@ -104,11 +109,11 @@ public class Drawer {
 
 		// File menu, F - Mnemonics
 		JMenu fileMenu = new JMenu("File");
-		fileMenu.setMnemonic(KeyEvent.VK_F);
+		fileMenu.setMnemonic(VK_F);
 		bar.add(fileMenu);
 
 		// File -> open, O - mnemonics
-		JMenuItem fileOpenMenuItem = new JMenuItem("Open...", KeyEvent.VK_O);
+		JMenuItem fileOpenMenuItem = new JMenuItem("Open...", VK_O);
 		fileMenu.add(fileOpenMenuItem);
 
 		fileOpenMenuItem.addActionListener(e -> {
@@ -120,14 +125,14 @@ public class Drawer {
 		});
 
 		// Settings Menu, S - Mnemonics
-		JMenu settingsMenu = new JMenu("Settings");
-		settingsMenu.setMnemonic(KeyEvent.VK_S);
+		JMenu settingsMenu = new JMenu("Настройки");
+		settingsMenu.setMnemonic(VK_S);
 		bar.add(settingsMenu);
 
 		// Settings -> showIndicies, I - Mnemonic
 		JCheckBoxMenuItem showIndiciesMenuItem = new JCheckBoxMenuItem("Show Indicies",
 				JGraphImagePlane.shouldShowIndicies);
-		showIndiciesMenuItem.setMnemonic(KeyEvent.VK_I);
+		showIndiciesMenuItem.setMnemonic(VK_I);
 		settingsMenu.add(showIndiciesMenuItem);
 
 		frame.setJMenuBar(bar);
@@ -136,19 +141,11 @@ public class Drawer {
 		frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 
 		showIndiciesMenuItem.addChangeListener(e -> {
-
 			Object o = e.getSource();
 			if (o instanceof JCheckBoxMenuItem) {
 				JCheckBoxMenuItem i = (JCheckBoxMenuItem) o;
-				if (i.isSelected()) {
-					JGraphImagePlane.shouldShowIndicies = true;
-				} else {
-					JGraphImagePlane.shouldShowIndicies = false;
-				}
-				SwingUtilities.invokeLater(() -> {
-					main.repaint();
-				});
-
+				JGraphImagePlane.shouldShowIndicies = i.isSelected();
+				SwingUtilities.invokeLater(main::repaint);
 			}
 		});
 
