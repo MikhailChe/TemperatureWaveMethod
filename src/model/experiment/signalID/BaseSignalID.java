@@ -22,7 +22,11 @@ import model.experiment.zeroCrossing.ZeroCrossingFactory;
 public class BaseSignalID extends SignalIdentifier {
 	@XmlElement
 	public ZeroCrossing zc;
-
+	
+	@XmlElement
+	public boolean inverse = false;
+	
+	
 	public BaseSignalID() {
 		super();
 	}
