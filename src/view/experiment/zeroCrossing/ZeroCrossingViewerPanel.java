@@ -33,11 +33,11 @@ public class ZeroCrossingViewerPanel extends JFXPanel {
 		setPreferredSize(new Dimension(256, 256));
 		setMinimumSize(getPreferredSize());
 
-		xAxis = new NumberAxis(0, 50, 10);
+		xAxis = new NumberAxis(0, 30, 5);
 
 		yAxis = new NumberAxis(-360, 360, 45);
 
-		xAxis.setAutoRanging(true);
+		xAxis.setAutoRanging(false);
 		yAxis.setAutoRanging(false);
 
 		xAxis.setPadding(new Insets(0));

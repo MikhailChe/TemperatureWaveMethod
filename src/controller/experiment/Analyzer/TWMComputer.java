@@ -208,7 +208,7 @@ public class TWMComputer implements Callable<Measurement> {
 	truncateNegative(phase);
 
 	double amplitude = 2.0 * FFT.getAbs(fourierForFreq, 0) / signal.length;
-	double nullOffset = Arrays.stream(signal).parallel().average().orElse(0);
+	double nullOffset = Arrays.stream(signal).parallel().average().orElse(Double.NaN);
 
 	SignalParameters params = new SignalParameters(phase, amplitude, nullOffset);
 
