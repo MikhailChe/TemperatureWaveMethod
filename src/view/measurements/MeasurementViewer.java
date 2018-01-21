@@ -1,12 +1,13 @@
 package view.measurements;
 
-import static debug.Debug.println;
 import static java.awt.BorderLayout.CENTER;
 import static java.util.stream.Collectors.toList;
 import static javax.swing.border.BevelBorder.LOWERED;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
@@ -16,22 +17,24 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.SoftBevelBorder;
 
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
-import javafx.scene.Scene;
-import javafx.scene.chart.NumberAxis;
-import javafx.scene.chart.ScatterChart;
-import javafx.scene.chart.XYChart;
-import javafx.scene.chart.XYChart.Data;
-import javafx.scene.chart.XYChart.Series;
-import javafx.util.StringConverter;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYShapeRenderer;
+import org.jfree.data.xy.DefaultTableXYDataset;
+import org.jfree.data.xy.XYDataItem;
+import org.jfree.data.xy.XYSeries;
+
 import model.experiment.measurement.Measurement;
 
 public class MeasurementViewer extends JPanel {
 	private static final long serialVersionUID = 3555290921726804677L;
 
-	final ScatterChart<Number, Number> chart;
-	final JFXPanel chartPanel;
+	final private DefaultTableXYDataset dataset;
+
+	final ChartPanel chartPanel;
 
 	final class MeasurementProperty {
 		final double freq;
@@ -60,67 +63,70 @@ public class MeasurementViewer extends JPanel {
 		}
 	}
 
-	final private Map<MeasurementProperty, XYChart.Series<Number, Number>> chanForProp;
+	final private Map<MeasurementProperty, XYSeries> datasetForProperty;
 
 	public MeasurementViewer() {
 		super();
 
-		chanForProp = Collections.synchronizedMap(new Hashtable<>());
+		datasetForProperty = Collections.synchronizedMap(new Hashtable<>());
 
-		chartPanel = new JFXPanel();
-		NumberAxis xAxis = new NumberAxis(200, 300, 20);
-		NumberAxis yAxis = new NumberAxis(0, 2E-5, 1E-6);
-		xAxis.setLabel("Температура");
-		yAxis.setLabel("Коэффициент температуропроводности");
-		yAxis.setTickUnit(1E-6);
-		yAxis.setTickLabelFormatter(new StringConverter<Number>() {
-			@Override
-			public String toString(Number object) {
+		NumberAxis xAxis = new NumberAxis("Температура");// (200, 300, 20);
+		NumberAxis yAxis = new NumberAxis("Коэффициент температуропроводности");// (0, 2E-5, 1E-6);
 
-				return String.format("%3.2E", object.floatValue());
-			}
+		yAxis.setLowerBound(0);
+		yAxis.setUpperBound(2E-5);
+		yAxis.setAutoRangeIncludesZero(true);
+		yAxis.setTickUnit(new NumberTickUnit(1E-6, new DecimalFormat("0.000E000")));
 
-			@Override
-			public Number fromString(String string) {
-				return Double.valueOf(string);
-			}
-		});
+		// yAxis.setTickUnit(1E-6);
+		// yAxis.setTickLabelFormatter(new StringConverter<Number>() {
+		// @Override
+		// public String toString(Number object) {
+		//
+		// return String.format("%3.2E", object.floatValue());
+		// }
+		//
+		// @Override
+		// public Number fromString(String string) {
+		// return Double.valueOf(string);
+		// }
+		// });
+		xAxis.setAutoRange(true);
+		// xAxis.setAutoRanging(true);
+		xAxis.setAutoRangeIncludesZero(false);
+		// xAxis.setForceZeroInRange(false);
 
-		xAxis.setAutoRanging(true);
-		xAxis.setForceZeroInRange(false);
-		chart = new ScatterChart<>(xAxis, yAxis);
+		dataset = new DefaultTableXYDataset(true);
 
-		SwingUtilities.invokeLater(() -> {
-			Dimension d = new Dimension(640, 480);
-			setPreferredSize(d);
-			setBorder(new SoftBevelBorder(LOWERED));
+		JFreeChart chart = new JFreeChart("Измерения", new XYPlot(dataset, xAxis, yAxis, new XYShapeRenderer()));
+		chartPanel = new ChartPanel(chart);
 
-			chart.setTitle("Измерения");
+		Dimension d = new Dimension(640, 480);
+		setPreferredSize(d);
+		setBorder(new SoftBevelBorder(LOWERED));
 
-			Platform.runLater(() -> {
-				println("Добавляю диаграмму");
-				Scene scene = new Scene(chart);
-				chartPanel.setScene(scene);
-			});
+		this.setLayout(new BorderLayout());
+		this.add(chartPanel, CENTER);
 
-			this.setLayout(new BorderLayout());
-			this.add(chartPanel, CENTER);
-		});
 	}
+
+	List<Measurement> measurements = new ArrayList<>();
 
 	@SuppressWarnings("unused")
 	public void addMeasurement(Measurement m) {
+		measurements.add(m);
 		try {
 			double temperature = m.temperature.get(0).value;
-			List<Data<Number, Number>> dataPoints = m.diffusivity
+
+			List<XYDataItem> dataPoints = m.diffusivity
 					.stream()
-					.map(t -> new Data<Number, Number>(temperature, t.diffusivity))
+					.map(t -> new XYDataItem(temperature, t.diffusivity))
 					.collect(toList());
-			Platform.runLater(() -> {
+			SwingUtilities.invokeLater(() -> {
 				for (int i = 0; i < dataPoints.size(); i++) {
 					MeasurementProperty mp = new MeasurementProperty(m, i);
-					Series<Number, Number> ser = dataForProperty(mp);
-					ser.getData().add(dataPoints.get(i));
+					XYSeries ser = dataForProperty(mp);
+					ser.addOrUpdate(dataPoints.get(i));
 				}
 			});
 		} catch (Exception ignore) {
@@ -128,17 +134,15 @@ public class MeasurementViewer extends JPanel {
 		}
 	}
 
-	private Series<Number, Number> dataForProperty(MeasurementProperty mp) {
-		return chanForProp.computeIfAbsent(mp, key -> {
+	private XYSeries dataForProperty(MeasurementProperty mp) {
+		return datasetForProperty.computeIfAbsent(mp, key -> {
 			return newDataSeries(key);
 		});
 	}
 
-	private Series<Number, Number> newDataSeries(MeasurementProperty mp) {
-		List<Series<Number, Number>> data = chart.getData();
-		XYChart.Series<Number, Number> ser = new XYChart.Series<>();
-		ser.setName(mp.freq + "Hz#" + mp.channel);
-		data.add(ser);
+	private XYSeries newDataSeries(MeasurementProperty mp) {
+		XYSeries ser = new XYSeries(mp.freq + "Hz#" + mp.channel, true, false);
+		dataset.addSeries(ser);
 		return ser;
 	}
 }
