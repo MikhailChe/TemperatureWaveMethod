@@ -1,102 +1,59 @@
 package view.measurements;
 
 import static java.awt.BorderLayout.CENTER;
-import static java.util.stream.Collectors.toList;
 import static javax.swing.border.BevelBorder.LOWERED;
+import static model.experiment.Analyzer.MeasurementsListDataset.DifferentiatorsY.CHANNEL;
+import static model.experiment.Analyzer.MeasurementsListDataset.DifferentiatorsY.FREQUENCY;
+import static model.experiment.Analyzer.MeasurementsListDataset.DifferentiatorsY.NONE;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.text.DecimalFormat;
+import java.awt.FlowLayout;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
+import java.util.Enumeration;
 
+import javax.swing.AbstractButton;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+import javax.swing.JRadioButton;
 import javax.swing.border.SoftBevelBorder;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYShapeRenderer;
-import org.jfree.data.xy.DefaultTableXYDataset;
-import org.jfree.data.xy.XYDataItem;
-import org.jfree.data.xy.XYSeries;
 
+import model.experiment.Analyzer.MeasurementsListDataset;
+import model.experiment.Analyzer.MeasurementsListDataset.FetchersX;
+import model.experiment.Analyzer.MeasurementsListDataset.FetchersY;
 import model.experiment.measurement.Measurement;
 
 public class MeasurementViewer extends JPanel {
 	private static final long serialVersionUID = 3555290921726804677L;
 
-	final private DefaultTableXYDataset dataset;
-
 	final ChartPanel chartPanel;
 
-	final class MeasurementProperty {
-		final double freq;
-		final int channel;
-
-		public MeasurementProperty(Measurement m, int channel) {
-			this.freq = m.frequency;
-			this.channel = channel;
-		}
-
-		@Override
-		final public boolean equals(Object o) {
-			if (o == null)
-				return false;
-			if (o == this)
-				return true;
-			if (!(o instanceof MeasurementProperty))
-				return false;
-			MeasurementProperty m = (MeasurementProperty) o;
-			return (m.channel == this.channel) && (m.freq == this.freq);
-		}
-
-		@Override
-		final public int hashCode() {
-			return Double.hashCode(freq) + Integer.hashCode(channel);
-		}
-	}
-
-	final private Map<MeasurementProperty, XYSeries> datasetForProperty;
+	final MeasurementsListDataset dataset = new MeasurementsListDataset(new ArrayList<>());
 
 	public MeasurementViewer() {
 		super();
 
-		datasetForProperty = Collections.synchronizedMap(new Hashtable<>());
-
-		NumberAxis xAxis = new NumberAxis("Температура");// (200, 300, 20);
-		NumberAxis yAxis = new NumberAxis("Коэффициент температуропроводности");// (0, 2E-5, 1E-6);
+		NumberAxis xAxis = new NumberAxis(null);// (200, 300, 20);
+		NumberAxis yAxis = new NumberAxis(null);// (0, 2E-5, 1E-6);
 
 		yAxis.setLowerBound(0);
 		yAxis.setUpperBound(2E-5);
 		yAxis.setAutoRangeIncludesZero(true);
-		yAxis.setTickUnit(new NumberTickUnit(1E-6, new DecimalFormat("0.000E000")));
+		yAxis.setAutoRange(true);
 
-		// yAxis.setTickUnit(1E-6);
-		// yAxis.setTickLabelFormatter(new StringConverter<Number>() {
-		// @Override
-		// public String toString(Number object) {
-		//
-		// return String.format("%3.2E", object.floatValue());
-		// }
-		//
-		// @Override
-		// public Number fromString(String string) {
-		// return Double.valueOf(string);
-		// }
-		// });
+		// yAxis.setTickUnit(new NumberTickUnit(1E-6, new DecimalFormat("0.000E0")));
+
 		xAxis.setAutoRange(true);
-		// xAxis.setAutoRanging(true);
 		xAxis.setAutoRangeIncludesZero(false);
-		// xAxis.setForceZeroInRange(false);
-
-		dataset = new DefaultTableXYDataset(true);
 
 		JFreeChart chart = new JFreeChart("Измерения", new XYPlot(dataset, xAxis, yAxis, new XYShapeRenderer()));
 		chartPanel = new ChartPanel(chart);
@@ -108,41 +65,119 @@ public class MeasurementViewer extends JPanel {
 		this.setLayout(new BorderLayout());
 		this.add(chartPanel, CENTER);
 
-	}
+		chartPanel.setMaximumDrawHeight(1080);
+		chartPanel.setMinimumDrawHeight(100);
+		chartPanel.setMaximumDrawWidth(1920);
+		chartPanel.setMinimumDrawWidth(100);
 
-	List<Measurement> measurements = new ArrayList<>();
+		{
+			JPanel xAxisChooserPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 8));
+			JRadioButton btnTemperature = new JRadioButton("Температура", true);
+			JRadioButton btnFrequency = new JRadioButton("Частота", false);
+			JRadioButton btnTime = new JRadioButton("Время", false);
+			ButtonGroup group = new ButtonGroup();
+			group.add(btnTemperature);
+			group.add(btnFrequency);
+			group.add(btnTime);
 
-	@SuppressWarnings("unused")
-	public void addMeasurement(Measurement m) {
-		measurements.add(m);
-		try {
-			double temperature = m.temperature.get(0).value;
-
-			List<XYDataItem> dataPoints = m.diffusivity
-					.stream()
-					.map(t -> new XYDataItem(temperature, t.diffusivity))
-					.collect(toList());
-			SwingUtilities.invokeLater(() -> {
-				for (int i = 0; i < dataPoints.size(); i++) {
-					MeasurementProperty mp = new MeasurementProperty(m, i);
-					XYSeries ser = dataForProperty(mp);
-					ser.addOrUpdate(dataPoints.get(i));
+			ActionListener act = (e) -> {
+				String actionCommand = e.getActionCommand();
+				switch (actionCommand) {
+				case ("Температура"): {
+					dataset.changeFetcherX(FetchersX.TEMPERATURE);
+					break;
 				}
-			});
-		} catch (Exception ignore) {
-			// Всё нормально, просто при добавлении произошли какие-то проблемы
+				case ("Частота"): {
+					dataset.changeFetcherX(FetchersX.FREQUENCY);
+					break;
+				}
+				case ("Время"): {
+					dataset.changeFetcherX(FetchersX.TIME);
+					break;
+				}
+				default:
+					break;
+				}
+			};
+			Enumeration<AbstractButton> enumer = group.getElements();
+			while (enumer.hasMoreElements()) {
+				AbstractButton btn = enumer.nextElement();
+				btn.addActionListener(act);
+				xAxisChooserPanel.add(btn);
+			}
+			this.add(xAxisChooserPanel, BorderLayout.SOUTH);
+		}
+		{
+			JPanel yAxisChooserPanel = new JPanel();
+			yAxisChooserPanel.setLayout(new BoxLayout(yAxisChooserPanel, BoxLayout.Y_AXIS));
+			JRadioButton btnDiffusivity = new JRadioButton("a", true);
+			JRadioButton btnPhase = new JRadioButton("φ", false);
+			JRadioButton btnAmplitude = new JRadioButton("Ампл", false);
+			JRadioButton btnCapacitance = new JRadioButton("Сp", false);
+			JRadioButton btnTemperature = new JRadioButton("°K", false);
+			JRadioButton btnFrequency = new JRadioButton("ν", false);
+			ButtonGroup group = new ButtonGroup();
+			group.add(btnDiffusivity);
+			group.add(btnPhase);
+			group.add(btnAmplitude);
+			group.add(btnCapacitance);
+			group.add(btnTemperature);
+			group.add(btnFrequency);
+
+			ActionListener act = (e) -> {
+				String actionCommand = e.getActionCommand();
+				switch (actionCommand) {
+				case "a": {
+					dataset.changeFetcherY(FetchersY.DIFFUSIVITY);
+					dataset.setDifferentiationMode(CHANNEL | FREQUENCY);
+					break;
+				}
+				case "φ": {
+					dataset.changeFetcherY(FetchersY.PHASE);
+					dataset.setDifferentiationMode(CHANNEL | FREQUENCY);
+					break;
+				}
+				case "Ампл": {
+					dataset.changeFetcherY(FetchersY.AMPLITUDE);
+					dataset.setDifferentiationMode(CHANNEL);
+					break;
+				}
+				case "Сp": {
+					dataset.changeFetcherY(FetchersY.CAPCITANCE);
+					dataset.setDifferentiationMode(CHANNEL | FREQUENCY);
+					break;
+				}
+				case "°K": {
+					dataset.changeFetcherY(FetchersY.TEMPERATURE);
+					dataset.setDifferentiationMode(NONE);
+					break;
+				}
+				case "ν": {
+					dataset.changeFetcherY(FetchersY.FREQUENCY);
+					dataset.setDifferentiationMode(CHANNEL);
+					break;
+				}
+				default:
+					break;
+
+				}
+			};
+			Enumeration<AbstractButton> enumer = group.getElements();
+
+			yAxisChooserPanel.add(Box.createGlue());
+			while (enumer.hasMoreElements()) {
+				AbstractButton btn = enumer.nextElement();
+				btn.addActionListener(act);
+				yAxisChooserPanel.add(btn);
+			}
+			yAxisChooserPanel.add(Box.createGlue());
+
+			this.add(yAxisChooserPanel, BorderLayout.WEST);
 		}
 	}
 
-	private XYSeries dataForProperty(MeasurementProperty mp) {
-		return datasetForProperty.computeIfAbsent(mp, key -> {
-			return newDataSeries(key);
-		});
+	public void addMeasurement(Measurement m) {
+		dataset.addMeasurement(m);
 	}
 
-	private XYSeries newDataSeries(MeasurementProperty mp) {
-		XYSeries ser = new XYSeries(mp.freq + "Hz#" + mp.channel, true, false);
-		dataset.addSeries(ser);
-		return ser;
-	}
 }
