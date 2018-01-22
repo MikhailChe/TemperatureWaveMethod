@@ -243,6 +243,7 @@ public class MeasurementsListDataset implements XYDataset {
 	}
 
 	@Override
+	@SuppressWarnings("rawtypes")
 	public int indexOf(Comparable seriesKey) {
 		return seriesByNames.get(seriesKey);
 	}
