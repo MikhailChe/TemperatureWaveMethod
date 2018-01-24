@@ -21,286 +21,300 @@ import model.experiment.measurement.Measurement;
 
 public class MeasurementsListDataset implements XYDataset {
 
-	final List<Measurement> measurements;
+    // ---- PUBLIC API ---- //
+    public MeasurementsListDataset(List<Measurement> mmm) {
+	measurements = mmm;
+	renewCache();
+    }
 
-	public MeasurementsListDataset(List<Measurement> mmm) {
-		measurements = mmm;
-		renewCache();
+    public void addMeasurement(Measurement m) {
+	measurements.add(m);
+	updateCache(m, true);
+    }
+
+    
+    public void changeFetcherX(FetchersX f) {
+        switch (f) {
+        case FREQUENCY:
+            changeFetcherX(XFetchers.FREQUENCY);
+            break;
+        case TEMPERATURE:
+            changeFetcherX(XFetchers.TEMPERATURE);
+            break;
+        case TIME:
+            changeFetcherX(XFetchers.TIME);
+            break;
+        default:
+            break;
+        }
+    }
+
+    public void changeFetcherY(FetchersY f) {
+        switch (f) {
+        case AMPLITUDE:
+            changeFetcherY(YFetchers.AMPLITUDE);
+            break;
+        case CAPCITANCE:
+            changeFetcherY(YFetchers.CAPACITANCE);
+            break;
+        case DIFFUSIVITY:
+            changeFetcherY(YFetchers.DIFFUSIVITY);
+            break;
+        case FREQUENCY:
+            changeFetcherY(YFetchers.FREQUENCY);
+            break;
+        case PHASE:
+            changeFetcherY(YFetchers.PHASE);
+            break;
+        case TEMPERATURE:
+            changeFetcherY(YFetchers.TEMPERATURE);
+            break;
+        default:
+            break;
+    
+        }
+    }
+
+    public void setDifferentiationMode(int differentiationMode) {
+        int old = this.differentiationMode;
+        this.differentiationMode = differentiationMode;
+        if (old != differentiationMode) {
+            renewCache();
+        }
+    }
+
+    
+    public static enum FetchersX {
+        TEMPERATURE, FREQUENCY, TIME
+    }
+
+    public static enum FetchersY {
+        DIFFUSIVITY, PHASE, AMPLITUDE, CAPCITANCE, TEMPERATURE, FREQUENCY
+    }
+
+    // -- PRIVATE PART -- //
+    
+    final private List<Measurement> measurements;
+
+    static class XFetchers {
+	public final static Function<Measurement, Number> TEMPERATURE = m -> m.temperature.isEmpty() ? 0
+		: m.temperature.get(0).value;
+	public final static Function<Measurement, Number> FREQUENCY = m -> m.frequency;
+	public final static Function<Measurement, Number> TIME = m -> m.time;
+    }
+
+    static class YFetchers {
+	public final static Function<Measurement, List<Number>> DIFFUSIVITY = (m) -> m.diffusivity.stream()
+		.map(d -> d.diffusivity).collect(Collectors.toList());
+	public final static Function<Measurement, List<Number>> PHASE = (m) -> m.diffusivity.stream().map(d -> d.phase)
+		.collect(Collectors.toList());
+	public final static Function<Measurement, List<Number>> AMPLITUDE = (m) -> m.diffusivity.stream()
+		.map(d -> d.amplitude).collect(Collectors.toList());
+	public final static Function<Measurement, List<Number>> CAPACITANCE = (m) -> m.diffusivity.stream()
+		.map(d -> d.capacitance).collect(Collectors.toList());
+	public final static Function<Measurement, List<Number>> TEMPERATURE = m -> Collections
+		.singletonList(XFetchers.TEMPERATURE.apply(m));
+	public final static Function<Measurement, List<Number>> FREQUENCY = m -> Collections
+		.singletonList(XFetchers.FREQUENCY.apply(m));
+    }
+
+    public static class DifferentiatorsY {
+	public final static int NONE = 0;
+	public final static int CHANNEL = 1;
+	public final static int FREQUENCY = 2;
+    }
+
+    Function<Measurement, Number> xValFetcher = XFetchers.TEMPERATURE;
+
+    Function<Measurement, List<Number>> yValsFetcher = YFetchers.DIFFUSIVITY;
+
+    private int differentiationMode = DifferentiatorsY.CHANNEL | DifferentiatorsY.FREQUENCY;
+
+    Function<Measurement, List<String>> yNamesFetcher = (m) -> {
+        List<String> yNames = new ArrayList<>();
+        
+        
+        for (Diffusivity diff:m.diffusivity) {
+            if (diff != null) {
+        	String differentiator = "";
+        	if (differentiationMode == DifferentiatorsY.NONE) {
+        	    yNames.add("");
+        	} else {
+        	    if ((differentiationMode & DifferentiatorsY.FREQUENCY) != 0) {
+        		differentiator += (diff.frequency + "Гц");
+    
+        	    }
+        	    if ((differentiationMode & DifferentiatorsY.CHANNEL) != 0) {
+        		differentiator += "#"+diff.channelNumber;
+        	    }
+        	    yNames.add(differentiator);
+        	}
+            }
+        }
+        return yNames;
+    };
+
+    private void changeFetcherX(Function<Measurement, Number> fetcher) {
+	Function<Measurement, Number> old = xValFetcher;
+	xValFetcher = fetcher;
+	if (!old.equals(fetcher)) {
+	    renewCache();
 	}
+    }
 
-	static class AxisFetcher {
-		public String name;
-		Function<Measurement, Number> fetcher;
+    private void changeFetcherY(Function<Measurement, List<Number>> fetcher) {
+	Function<Measurement, List<Number>> old = yValsFetcher;
+	yValsFetcher = fetcher;
+	if (!old.equals(fetcher)) {
+	    renewCache();
 	}
+    }
 
-	public void addMeasurement(Measurement m) {
+    private void renewCache() {
+        clearCache(false);
+        updateCache(measurements);
+        notifyListeners();
+    }
 
-		measurements.add(m);
-		updateCache(m);
-	}
+    private void updateCache(List<Measurement> mms) {
+        for(Measurement m: mms) {
+            updateCache(m, false);
+        }
+        notifyListeners();
+    }
 
-	public static enum FetchersX {
-		TEMPERATURE, FREQUENCY, TIME
-	}
+    private void updateCache(Measurement m, boolean notify) {
+	synchronized (cacheLock) {
+	    Number xVal = xValFetcher.apply(m);
 
-	public static class XFetchers {
-		public final static Function<Measurement, Number> TEMPERATURE = m -> m.temperature.isEmpty() ? 0
-				: m.temperature.get(0).value;
-		public final static Function<Measurement, Number> FREQUENCY = m -> m.frequency;
-		public final static Function<Measurement, Number> TIME = m -> m.time;
-	}
+	    List<Number> yVals = yValsFetcher.apply(m);
+	    List<String> yNames = yNamesFetcher.apply(m);
 
-	public static enum FetchersY {
-		DIFFUSIVITY, PHASE, AMPLITUDE, CAPCITANCE, TEMPERATURE, FREQUENCY
-	}
+	    for (int i = 0; i < yVals.size(); i++) {
+		Number val = yVals.get(i);
+		String name = yNames.get(i);
 
-	static class YFetchers {
-		public final static Function<Measurement, List<Number>> DIFFUSIVITY = (
-				m) -> m.diffusivity.stream().map(d -> d.diffusivity).collect(Collectors.toList());
-		public final static Function<Measurement, List<Number>> PHASE = (
-				m) -> m.diffusivity.stream().map(d -> d.phase).collect(Collectors.toList());
-		public final static Function<Measurement, List<Number>> AMPLITUDE = (
-				m) -> m.diffusivity.stream().map(d -> d.amplitude).collect(Collectors.toList());
-		public final static Function<Measurement, List<Number>> CAPACITANCE = (
-				m) -> m.diffusivity.stream().map(d -> d.capacitance).collect(Collectors.toList());
-		public final static Function<Measurement, List<Number>> TEMPERATURE = m -> Collections
-				.singletonList(XFetchers.TEMPERATURE.apply(m));
-		public final static Function<Measurement, List<Number>> FREQUENCY = m -> Collections
-				.singletonList(XFetchers.FREQUENCY.apply(m));
-	}
-
-	public static class DifferentiatorsY {
-		public final static int NONE = 0;
-		public final static int CHANNEL = 1;
-		public final static int FREQUENCY = 2;
-	}
-
-	Function<Measurement, Number> xValFetcher = XFetchers.TEMPERATURE;
-
-	Function<Measurement, List<Number>> yValsFetcher = YFetchers.DIFFUSIVITY;
-
-	private int differentiationMode = DifferentiatorsY.CHANNEL | DifferentiatorsY.FREQUENCY;
-
-	Function<Measurement, List<String>> yNamesFetcher = (m) -> {
-		List<String> yNames = new ArrayList<>();
-		for (int i = 0; i < m.diffusivity.size(); i++) {
-			Diffusivity diff = m.diffusivity.get(i);
-			if (diff != null) {
-				String differentiator = "";
-				if (differentiationMode == DifferentiatorsY.NONE) {
-					yNames.add("");
-				} else {
-					if ((differentiationMode & DifferentiatorsY.FREQUENCY) != 0) {
-						differentiator += (diff.frequency + "Гц");
-
-					}
-					if ((differentiationMode & DifferentiatorsY.CHANNEL) != 0) {
-						differentiator += i;
-					}
-					yNames.add(differentiator);
-				}
-			}
+		if (!seriesByNames.containsKey(name)) {
+		    addSeries(name);
 		}
-		return yNames;
-	};
-
-	public void changeFetcherX(FetchersX f) {
-		switch (f) {
-		case FREQUENCY:
-			changeFetcherX(XFetchers.FREQUENCY);
-			break;
-		case TEMPERATURE:
-			changeFetcherX(XFetchers.TEMPERATURE);
-			break;
-		case TIME:
-			changeFetcherX(XFetchers.TIME);
-			break;
-		default:
-			break;
-		}
+		seriesVals.get(seriesByNames.get(name)).add(new Pair<>(xVal, val));
+	    }
 	}
+	if(notify)
+	    notifyListeners();
+    }
 
-	private void changeFetcherX(Function<Measurement, Number> fetcher) {
-		Function<Measurement, Number> old = xValFetcher;
-		xValFetcher = fetcher;
-		if (!old.equals(fetcher)) {
-			renewCache();
-		}
+    private void clearCache(boolean notify) {
+	synchronized (cacheLock) {
+	    seriesByNames.clear();
+	    seriesByInds.clear();
+	    seriesVals.clear();
+	    counter = 0;
 	}
+	if(notify)
+	    notifyListeners();
+    }
 
-	public void changeFetcherY(FetchersY f) {
-		switch (f) {
-		case AMPLITUDE:
-			changeFetcherY(YFetchers.AMPLITUDE);
-			break;
-		case CAPCITANCE:
-			changeFetcherY(YFetchers.CAPACITANCE);
-			break;
-		case DIFFUSIVITY:
-			changeFetcherY(YFetchers.DIFFUSIVITY);
-			break;
-		case FREQUENCY:
-			changeFetcherY(YFetchers.FREQUENCY);
-			break;
-		case PHASE:
-			changeFetcherY(YFetchers.PHASE);
-			break;
-		case TEMPERATURE:
-			changeFetcherY(YFetchers.TEMPERATURE);
-			break;
-		default:
-			break;
+    private void notifyListeners() {
+	listeners.forEach(l -> SwingUtilities.invokeLater(() -> l
+		.datasetChanged(new DatasetChangeEvent(MeasurementsListDataset.this, MeasurementsListDataset.this))));
+    }
 
-		}
+    private static class Pair<T> {
+	T x;
+	T y;
+
+	public Pair(T x, T y) {
+	    this.x = x;
+	    this.y = y;
 	}
+    }
 
-	private void changeFetcherY(Function<Measurement, List<Number>> fetcher) {
-		Function<Measurement, List<Number>> old = yValsFetcher;
-		yValsFetcher = fetcher;
-		if (!old.equals(fetcher)) {
-			renewCache();
-		}
-	}
+    final Object cacheLock = new Object();
+    private int counter = 0;
+    final Map<String, Integer> seriesByNames = new HashMap<>(10);
+    final Map<Integer, String> seriesByInds = new HashMap<>(10);
+    final Map<Integer, List<Pair<Number>>> seriesVals = new HashMap<>(10);
 
-	public void setDifferentiationMode(int differentiationMode) {
-		int old = this.differentiationMode;
-		this.differentiationMode = differentiationMode;
-		if (old != differentiationMode) {
-			renewCache();
-		}
-	}
+    private void addSeries(String name) {
+	final int cntr = counter++;
+	seriesByNames.computeIfAbsent(name, key -> cntr);
+	seriesByInds.computeIfAbsent(cntr, key -> name);
+	seriesVals.computeIfAbsent(cntr, key -> new ArrayList<>());
+    }
 
-	private void updateCache(Measurement m) {
-		synchronized (cacheLock) {
-			Number xVal = xValFetcher.apply(m);
+    
+    // -- XYDATASET INTERFACE IMPLEMENTATION -- //
+    @Override
+    public int getSeriesCount() {
 
-			List<Number> yVals = yValsFetcher.apply(m);
-			List<String> yNames = yNamesFetcher.apply(m);
+	return seriesByNames.size();
+    }
 
-			for (int i = 0; i < yVals.size(); i++) {
-				Number val = yVals.get(i);
-				String name = yNames.get(i);
+    @Override
+    public Comparable<?> getSeriesKey(int series) {
+	return seriesByInds.get(series);
+    }
 
-				if (!seriesByNames.containsKey(name)) {
-					addSeries(name);
-				}
-				seriesVals.get(seriesByNames.get(name)).add(new Pair<>(xVal, val));
-			}
-		}
-		listeners.forEach(l -> SwingUtilities.invokeLater(() -> l
-				.datasetChanged(new DatasetChangeEvent(MeasurementsListDataset.this, MeasurementsListDataset.this))));
+    @Override
+    @SuppressWarnings("rawtypes")
+    public int indexOf(Comparable seriesKey) {
+	return seriesByNames.get(seriesKey);
+    }
 
-	}
+    List<DatasetChangeListener> listeners = new ArrayList<>();
 
-	private void renewCache() {
-		clearCache();
-		measurements.forEach(m -> updateCache(m));
-	}
+    @Override
+    public void addChangeListener(DatasetChangeListener listener) {
+	listeners.add(listener);
+    }
 
-	private void clearCache() {
-		synchronized (cacheLock) {
-			seriesByNames.clear();
-			seriesByInds.clear();
-			seriesVals.clear();
-			counter = 0;
-		}
-		listeners.forEach(l -> SwingUtilities.invokeLater(() -> l
-				.datasetChanged(new DatasetChangeEvent(MeasurementsListDataset.this, MeasurementsListDataset.this))));
-	}
+    @Override
+    public void removeChangeListener(DatasetChangeListener listener) {
+	listeners.remove(listener);
+    }
 
-	private static class Pair<T> {
-		T x;
-		T y;
+    DatasetGroup grp;
 
-		public Pair(T x, T y) {
-			this.x = x;
-			this.y = y;
-		}
-	}
+    @Override
+    public DatasetGroup getGroup() {
+	return grp;
+    }
 
-	final Object cacheLock = new Object();
-	private int counter = 0;
-	final Map<String, Integer> seriesByNames = new HashMap<>(10);
-	final Map<Integer, String> seriesByInds = new HashMap<>(10);
-	final Map<Integer, List<Pair<Number>>> seriesVals = new HashMap<>(10);
+    @Override
+    public void setGroup(DatasetGroup group) {
+	grp = group;
 
-	private void addSeries(String name) {
-		final int cntr = counter++;
-		seriesByNames.computeIfAbsent(name, key -> cntr);
-		seriesByInds.computeIfAbsent(cntr, key -> name);
-		seriesVals.computeIfAbsent(cntr, key -> new ArrayList<>());
-	}
+    }
 
-	@Override
-	public int getSeriesCount() {
+    @Override
+    public DomainOrder getDomainOrder() {
+	return DomainOrder.NONE;
+    }
 
-		return seriesByNames.size();
-	}
+    @Override
+    public int getItemCount(int series) {
+	return seriesVals.get(series).size();
+    }
 
-	@Override
-	public Comparable<?> getSeriesKey(int series) {
-		return seriesByInds.get(series);
-	}
+    @Override
+    public Number getX(int series, int item) {
+	return seriesVals.get(series).get(item).x;
+    }
 
-	@Override
-	@SuppressWarnings("rawtypes")
-	public int indexOf(Comparable seriesKey) {
-		return seriesByNames.get(seriesKey);
-	}
+    @Override
+    public double getXValue(int series, int item) {
+	return seriesVals.get(series).get(item).x.doubleValue();
+    }
 
-	List<DatasetChangeListener> listeners = new ArrayList<>();
+    @Override
+    public Number getY(int series, int item) {
+	return seriesVals.get(series).get(item).y;
+    }
 
-	@Override
-	public void addChangeListener(DatasetChangeListener listener) {
-		listeners.add(listener);
-	}
-
-	@Override
-	public void removeChangeListener(DatasetChangeListener listener) {
-		listeners.remove(listener);
-	}
-
-	DatasetGroup grp;
-
-	@Override
-	public DatasetGroup getGroup() {
-		return grp;
-	}
-
-	@Override
-	public void setGroup(DatasetGroup group) {
-		grp = group;
-
-	}
-
-	@Override
-	public DomainOrder getDomainOrder() {
-		return DomainOrder.NONE;
-	}
-
-	@Override
-	public int getItemCount(int series) {
-		return seriesVals.get(series).size();
-	}
-
-	@Override
-	public Number getX(int series, int item) {
-		return seriesVals.get(series).get(item).x;
-	}
-
-	@Override
-	public double getXValue(int series, int item) {
-		return seriesVals.get(series).get(item).x.doubleValue();
-	}
-
-	@Override
-	public Number getY(int series, int item) {
-		return seriesVals.get(series).get(item).y;
-	}
-
-	@Override
-	public double getYValue(int series, int item) {
-		return seriesVals.get(series).get(item).y.doubleValue();
-	}
+    @Override
+    public double getYValue(int series, int item) {
+	return seriesVals.get(series).get(item).y.doubleValue();
+    }
 
 }

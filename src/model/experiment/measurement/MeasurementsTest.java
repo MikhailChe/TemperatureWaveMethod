@@ -21,7 +21,7 @@ import model.thermocouple.graduate.Graduate;
 public class MeasurementsTest {
 	@SuppressWarnings("static-method")
 	@Test
-	public void diffusivityjaxbification() throws IOException {
+	public void testdiffusivityjaxbification() throws IOException {
 		Diffusivity march = new Diffusivity();
 		march.amplitude = 100;
 		march.diffusivity = 12E-7;
@@ -73,7 +73,7 @@ public class MeasurementsTest {
 
 	@SuppressWarnings("static-method")
 	@Test
-	public void measurementJabxification() throws IOException {
+	public void testmeasurementJabxification() throws IOException {
 		Measurement march = new Measurement();
 
 		march.frequency = 7;

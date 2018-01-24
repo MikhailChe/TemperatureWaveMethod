@@ -29,11 +29,17 @@ public class Diffusivity {
 	 */
 	@XmlElement
 	public BaseSignalID signalID;
+
+	@XmlElement
+	public int channelNumber;
+
+	
 	/**
 	 * Фаза сигнала
 	 */
 	@XmlElement
 	public double phase;
+	
 
 	@XmlAttribute
 	public double frequency;

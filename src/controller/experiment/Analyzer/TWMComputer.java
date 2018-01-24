@@ -326,6 +326,7 @@ public class TWMComputer implements Callable<Measurement> {
 
 		    Diffusivity tCond = getPhysicalProperties(param, currentShift, EXPERIMENT_FREQUENCY);
 		    tCond.signalID = id;
+		    tCond.channelNumber = currentChannel;
 		    result.diffusivity.add(tCond);
 
 		} else if (SHIFTS[currentChannel] instanceof DCsignalID) {
@@ -339,9 +340,11 @@ public class TWMComputer implements Callable<Measurement> {
 		    result.temperature.add(t);
 		} else if (SHIFTS[currentChannel] instanceof AdjustmentSignalID) {
 		    Diffusivity tCond = new Diffusivity();
+		    
 		    tCond.amplitude = param.amplitude;
 		    tCond.phase = -param.phase;
 		    tCond.frequency = EXPERIMENT_FREQUENCY;
+		    tCond.channelNumber = currentChannel;
 		    result.diffusivity.add(tCond);
 		}
 	    }
