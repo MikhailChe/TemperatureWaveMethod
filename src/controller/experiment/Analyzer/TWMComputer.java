@@ -298,7 +298,7 @@ public class TWMComputer implements Callable<Measurement> {
 	try {
 	    reader = new ExperimentFileReader(file.toPath());
 	} catch (Exception e) {
-	    showException(currentThread(), e);
+//	    showException(currentThread(), e);
 	    Debug.println("Не удалось прочитать файл с измерениями. " + e.getLocalizedMessage());
 	    return result;
 	}

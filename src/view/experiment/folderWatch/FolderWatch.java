@@ -4,6 +4,7 @@ import static debug.Debug.println;
 import static java.awt.BorderLayout.NORTH;
 import static java.util.Arrays.asList;
 import static javax.swing.BorderFactory.createTitledBorder;
+import static javax.swing.BoxLayout.Y_AXIS;
 import static javax.swing.JFileChooser.APPROVE_OPTION;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 
@@ -18,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
@@ -43,7 +46,8 @@ public class FolderWatch extends JInternalFrame implements Runnable {
     public File folder;
 
     final MeasurementViewer measurementViewer = new MeasurementViewer();
-    final Container numbersContainer = new Container();
+    final JComponent numbersContainer = new JPanel();
+    final JComponent labelSetContainer = new JPanel();
 
     final JPanel signalLevelPanel = new JPanel();
     final JLabel signalLevelLabel = new JLabel("Здесь будет термоЭДС");
@@ -110,8 +114,16 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 	numbersContainer.add(signalLevelPanel);
 	numbersContainer.add(temperaturePanel);
 
+	labelSetContainer.setLayout(new GridLayout(0, 2, 16, 16));
+
+	Container labelsCommon = new Container();
+	labelsCommon.setLayout(new BoxLayout(labelsCommon, Y_AXIS));
+
+	labelsCommon.add(numbersContainer);
+	labelsCommon.add(labelSetContainer);
+
 	this.getContentPane().setLayout(new BorderLayout(16, 16));
-	this.getContentPane().add(numbersContainer, NORTH);
+	this.getContentPane().add(labelsCommon, NORTH);
 	this.getContentPane().add(measurementViewer);
 	SwingUtilities.invokeLater(this::pack);
 
@@ -159,9 +171,9 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 	    for (int i = 0; i < tDiffuss.size(); i++) {
 		Diffusivity tDiffus = tDiffuss.get(i);
 
-		JTDiffLabelSet set = tDiffusPanels.computeIfAbsent(i, key -> {
+		JTDiffLabelSet set = tDiffusPanels.computeIfAbsent(tDiffus.channelNumber, key -> {
 		    JTDiffLabelSet ls = new JTDiffLabelSet(key);
-		    numbersContainer.add(ls);
+		    labelSetContainer.add(ls);
 		    return ls;
 		});
 		set.updateValues(tDiffus);

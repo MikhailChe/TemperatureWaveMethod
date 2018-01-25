@@ -149,6 +149,8 @@ public class MeasurementsListDataset implements XYDataset {
 		}
 	    }
 	}
+	if(yNames.isEmpty())
+	    yNames.add("");
 	return yNames;
     };
 
