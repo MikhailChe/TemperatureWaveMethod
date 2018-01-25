@@ -5,7 +5,6 @@ import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
 import model.experiment.measurement.Diffusivity;
@@ -14,23 +13,27 @@ public class JTDiffLabelSet extends JPanel {
 
     private static final long serialVersionUID = -3740896947551054147L;
 
-    JPanel argumentPanel = new JPanel();
-    JLabel argumentLabel = new JLabel("Здесь будет угол");
+    final private JPanel argumentPanel = new JPanel();
+    final private JLabel argumentLabel = new JLabel("Здесь будет угол");
 
-    JPanel kappaPanel = new JPanel();
-    JLabel kappaLabel = new JLabel("Здесь будет каппа");
+    final private JPanel kappaPanel = new JPanel();
+    final private JLabel kappaLabel = new JLabel("Здесь будет каппа");
 
-    JPanel amplitudePanel = new JPanel();
-    JLabel amplitudeLabel = new JLabel("Здесь будет амплитуда сигнала");
+    final private JPanel amplitudePanel = new JPanel();
+    final private JLabel amplitudeLabel = new JLabel("Здесь будет амплитуда сигнала");
 
-    JPanel diffusivityPanel = new JPanel();
-    JLabel diffusivityLabel = new JLabel("Здесь будет температуропроводность");
+    final private JPanel diffusivityPanel = new JPanel();
+    final private JLabel diffusivityLabel = new JLabel("Здесь будет температуропроводность");
 
     TitledBorder border = new TitledBorder("Канал неизвестный");
 
+    private int channelNumber;    
     public JTDiffLabelSet(int channelNumber) {
 	super(new GridLayout(2, 2));
-
+	this.channelNumber = channelNumber;
+	border.setTitle("Канал №" + channelNumber);
+	
+	
 	argumentPanel.setBorder(BorderFactory.createTitledBorder("Фаза"));
 	argumentPanel.add(argumentLabel);
 
@@ -43,8 +46,7 @@ public class JTDiffLabelSet extends JPanel {
 	diffusivityPanel.setBorder(BorderFactory.createTitledBorder("Температуропроводность"));
 	diffusivityPanel.add(diffusivityLabel);
 
-	border.setTitle("Канал №" + channelNumber);
-
+	
 	setBorder(border);
 	add(argumentPanel);
 	add(kappaPanel);
@@ -65,5 +67,27 @@ public class JTDiffLabelSet extends JPanel {
 	    diffusivityLabel.setText(String.format("%.3e", tDiffus.diffusivity));
 	    border.setTitle("Канал №" + tDiffus.channelNumber);
 	}
+    }
+
+    @Override
+    public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime * result + channelNumber;
+	return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+	if (this == obj)
+	    return true;
+	if (obj == null)
+	    return false;
+	if (getClass() != obj.getClass())
+	    return false;
+	JTDiffLabelSet other = (JTDiffLabelSet) obj;
+	if (channelNumber != other.channelNumber)
+	    return false;
+	return true;
     }
 }

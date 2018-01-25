@@ -29,71 +29,70 @@ public class MeasurementsListDataset implements XYDataset {
 
     public void addMeasurement(Measurement m) {
 	measurements.add(m);
+
 	updateCache(m, true);
     }
 
-    
     public void changeFetcherX(FetchersX f) {
-        switch (f) {
-        case FREQUENCY:
-            changeFetcherX(XFetchers.FREQUENCY);
-            break;
-        case TEMPERATURE:
-            changeFetcherX(XFetchers.TEMPERATURE);
-            break;
-        case TIME:
-            changeFetcherX(XFetchers.TIME);
-            break;
-        default:
-            break;
-        }
+	switch (f) {
+	case FREQUENCY:
+	    changeFetcherX(XFetchers.FREQUENCY);
+	    break;
+	case TEMPERATURE:
+	    changeFetcherX(XFetchers.TEMPERATURE);
+	    break;
+	case TIME:
+	    changeFetcherX(XFetchers.TIME);
+	    break;
+	default:
+	    break;
+	}
     }
 
     public void changeFetcherY(FetchersY f) {
-        switch (f) {
-        case AMPLITUDE:
-            changeFetcherY(YFetchers.AMPLITUDE);
-            break;
-        case CAPCITANCE:
-            changeFetcherY(YFetchers.CAPACITANCE);
-            break;
-        case DIFFUSIVITY:
-            changeFetcherY(YFetchers.DIFFUSIVITY);
-            break;
-        case FREQUENCY:
-            changeFetcherY(YFetchers.FREQUENCY);
-            break;
-        case PHASE:
-            changeFetcherY(YFetchers.PHASE);
-            break;
-        case TEMPERATURE:
-            changeFetcherY(YFetchers.TEMPERATURE);
-            break;
-        default:
-            break;
-    
-        }
+	switch (f) {
+	case AMPLITUDE:
+	    changeFetcherY(YFetchers.AMPLITUDE);
+	    break;
+	case CAPCITANCE:
+	    changeFetcherY(YFetchers.CAPACITANCE);
+	    break;
+	case DIFFUSIVITY:
+	    changeFetcherY(YFetchers.DIFFUSIVITY);
+	    break;
+	case FREQUENCY:
+	    changeFetcherY(YFetchers.FREQUENCY);
+	    break;
+	case PHASE:
+	    changeFetcherY(YFetchers.PHASE);
+	    break;
+	case TEMPERATURE:
+	    changeFetcherY(YFetchers.TEMPERATURE);
+	    break;
+	default:
+	    break;
+
+	}
     }
 
     public void setDifferentiationMode(int differentiationMode) {
-        int old = this.differentiationMode;
-        this.differentiationMode = differentiationMode;
-        if (old != differentiationMode) {
-            renewCache();
-        }
+	int old = this.differentiationMode;
+	this.differentiationMode = differentiationMode;
+	if (old != differentiationMode) {
+	    renewCache();
+	}
     }
 
-    
     public static enum FetchersX {
-        TEMPERATURE, FREQUENCY, TIME
+	TEMPERATURE, FREQUENCY, TIME
     }
 
     public static enum FetchersY {
-        DIFFUSIVITY, PHASE, AMPLITUDE, CAPCITANCE, TEMPERATURE, FREQUENCY
+	DIFFUSIVITY, PHASE, AMPLITUDE, CAPCITANCE, TEMPERATURE, FREQUENCY
     }
 
     // -- PRIVATE PART -- //
-    
+
     final private List<Measurement> measurements;
 
     static class XFetchers {
@@ -131,27 +130,26 @@ public class MeasurementsListDataset implements XYDataset {
     private int differentiationMode = DifferentiatorsY.CHANNEL | DifferentiatorsY.FREQUENCY;
 
     Function<Measurement, List<String>> yNamesFetcher = (m) -> {
-        List<String> yNames = new ArrayList<>();
-        
-        
-        for (Diffusivity diff:m.diffusivity) {
-            if (diff != null) {
-        	String differentiator = "";
-        	if (differentiationMode == DifferentiatorsY.NONE) {
-        	    yNames.add("");
-        	} else {
-        	    if ((differentiationMode & DifferentiatorsY.FREQUENCY) != 0) {
-        		differentiator += (diff.frequency + "Гц");
-    
-        	    }
-        	    if ((differentiationMode & DifferentiatorsY.CHANNEL) != 0) {
-        		differentiator += "#"+diff.channelNumber;
-        	    }
-        	    yNames.add(differentiator);
-        	}
-            }
-        }
-        return yNames;
+	List<String> yNames = new ArrayList<>();
+
+	for (Diffusivity diff : m.diffusivity) {
+	    if (diff != null) {
+		String differentiator = "";
+		if (differentiationMode == DifferentiatorsY.NONE) {
+		    yNames.add("");
+		} else {
+		    if ((differentiationMode & DifferentiatorsY.FREQUENCY) != 0) {
+			differentiator += (diff.frequency + "Гц");
+
+		    }
+		    if ((differentiationMode & DifferentiatorsY.CHANNEL) != 0) {
+			differentiator += "#" + diff.channelNumber;
+		    }
+		    yNames.add(differentiator);
+		}
+	    }
+	}
+	return yNames;
     };
 
     private void changeFetcherX(Function<Measurement, Number> fetcher) {
@@ -171,16 +169,16 @@ public class MeasurementsListDataset implements XYDataset {
     }
 
     private void renewCache() {
-        clearCache(false);
-        updateCache(measurements);
-        notifyListeners();
+	clearCache(false);
+	updateCache(measurements);
+	notifyListeners();
     }
 
     private void updateCache(List<Measurement> mms) {
-        for(Measurement m: mms) {
-            updateCache(m, false);
-        }
-        notifyListeners();
+	for (Measurement m : mms) {
+	    updateCache(m, false);
+	}
+	notifyListeners();
     }
 
     private void updateCache(Measurement m, boolean notify) {
@@ -200,7 +198,7 @@ public class MeasurementsListDataset implements XYDataset {
 		seriesVals.get(seriesByNames.get(name)).add(new Pair<>(xVal, val));
 	    }
 	}
-	if(notify)
+	if (notify)
 	    notifyListeners();
     }
 
@@ -211,7 +209,7 @@ public class MeasurementsListDataset implements XYDataset {
 	    seriesVals.clear();
 	    counter = 0;
 	}
-	if(notify)
+	if (notify)
 	    notifyListeners();
     }
 
@@ -243,7 +241,6 @@ public class MeasurementsListDataset implements XYDataset {
 	seriesVals.computeIfAbsent(cntr, key -> new ArrayList<>());
     }
 
-    
     // -- XYDATASET INTERFACE IMPLEMENTATION -- //
     @Override
     public int getSeriesCount() {
@@ -316,5 +313,4 @@ public class MeasurementsListDataset implements XYDataset {
     public double getYValue(int series, int item) {
 	return seriesVals.get(series).get(item).y.doubleValue();
     }
-
 }

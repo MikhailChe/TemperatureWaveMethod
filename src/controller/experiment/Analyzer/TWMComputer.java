@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
@@ -269,6 +270,13 @@ public class TWMComputer implements Callable<Measurement> {
     public Measurement result;
     SignalIdentifier[] SHIFTS;
 
+    private Predicate<Diffusivity> diffFilter;
+
+    public TWMComputer(File filename, Predicate<Diffusivity> diffFilter) {
+	this(filename);
+	this.diffFilter = diffFilter;
+    }
+
     public TWMComputer(File filename) {
 	this.file = filename;
 	this.workspace = Workspace.getInstance();
@@ -312,6 +320,7 @@ public class TWMComputer implements Callable<Measurement> {
 		    continue;
 		}
 		SignalParameters param = params[currentChannel];
+
 		if (SHIFTS[currentChannel] instanceof BaseSignalID) {
 		    BaseSignalID id = (BaseSignalID) SHIFTS[currentChannel];
 		    ZeroCrossing zc = id.zc;
@@ -327,6 +336,12 @@ public class TWMComputer implements Callable<Measurement> {
 		    Diffusivity tCond = getPhysicalProperties(param, currentShift, EXPERIMENT_FREQUENCY);
 		    tCond.signalID = id;
 		    tCond.channelNumber = currentChannel;
+
+		    if (diffFilter != null) {
+			if (!diffFilter.test(tCond))
+			    continue;
+		    }
+
 		    result.diffusivity.add(tCond);
 
 		} else if (SHIFTS[currentChannel] instanceof DCsignalID) {
@@ -340,7 +355,7 @@ public class TWMComputer implements Callable<Measurement> {
 		    result.temperature.add(t);
 		} else if (SHIFTS[currentChannel] instanceof AdjustmentSignalID) {
 		    Diffusivity tCond = new Diffusivity();
-		    
+
 		    tCond.amplitude = param.amplitude;
 		    tCond.phase = -param.phase;
 		    tCond.frequency = EXPERIMENT_FREQUENCY;
