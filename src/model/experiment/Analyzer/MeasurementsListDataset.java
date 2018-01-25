@@ -22,6 +22,12 @@ import model.experiment.measurement.Measurement;
 public class MeasurementsListDataset implements XYDataset {
 
     // ---- PUBLIC API ---- //
+
+    public MeasurementsListDataset(List<Measurement> mmm, Function<Measurement, Measurement> filter) {
+	this(mmm);
+	this.filterRule = filter;
+    }
+
     public MeasurementsListDataset(List<Measurement> mmm) {
 	measurements = mmm;
 	renewCache();
@@ -31,6 +37,11 @@ public class MeasurementsListDataset implements XYDataset {
 	measurements.add(m);
 
 	updateCache(m, true);
+    }
+
+    public void setFilter(Function<Measurement, Measurement> newFilter) {
+	filterRule = newFilter;
+	renewCache();
     }
 
     public void changeFetcherX(FetchersX f) {
@@ -94,6 +105,7 @@ public class MeasurementsListDataset implements XYDataset {
     // -- PRIVATE PART -- //
 
     final private List<Measurement> measurements;
+    private Function<Measurement, Measurement> filterRule;
 
     static class XFetchers {
 	public final static Function<Measurement, Number> TEMPERATURE = m -> m.temperature.isEmpty() ? 0
@@ -149,7 +161,7 @@ public class MeasurementsListDataset implements XYDataset {
 		}
 	    }
 	}
-	if(yNames.isEmpty())
+	if (yNames.isEmpty())
 	    yNames.add("");
 	return yNames;
     };
@@ -177,14 +189,16 @@ public class MeasurementsListDataset implements XYDataset {
     }
 
     private void updateCache(List<Measurement> mms) {
-	for (Measurement m : mms) {
-	    updateCache(m, false);
+	if (filterRule == null) {
+	    filterRule = (m) -> m;
 	}
+	mms.stream().map(filterRule).forEach(m -> updateCache(m, false));
 	notifyListeners();
     }
 
     private void updateCache(Measurement m, boolean notify) {
 	synchronized (cacheLock) {
+
 	    Number xVal = xValFetcher.apply(m);
 
 	    List<Number> yVals = yValsFetcher.apply(m);

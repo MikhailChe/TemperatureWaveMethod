@@ -11,6 +11,7 @@ import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.GridLayout;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,8 +40,6 @@ import view.measurements.MeasurementViewer;
 
 public class FolderWatch extends JInternalFrame implements Runnable {
     private static final long serialVersionUID = 1831549678406783975L;
-
-    // private Workspace workspace;
 
     final public Set<File> filesInFolder = new HashSet<>();
     public File folder;
@@ -126,10 +125,19 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 	this.getContentPane().add(labelsCommon, NORTH);
 	this.getContentPane().add(measurementViewer);
 	SwingUtilities.invokeLater(this::pack);
-
+	SwingUtilities.invokeLater(()->{
+	    try {
+		this.setMaximum(true);
+	    } catch (PropertyVetoException e1) {
+//		e1.printStackTrace();
+	    }
+	});
+	
 	updater = new Thread(this);
 	updater.setDaemon(true);
 	updater.start();
+	
+	
     }
 
     public void checkNewFile() {
