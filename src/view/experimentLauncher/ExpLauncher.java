@@ -34,6 +34,13 @@ public class ExpLauncher extends JFrame {
 
     public void createAndShowGUI() {
 	Debug.println("Creating gui");
+
+	try {
+	    setIconImage(ImageIO.read(ExpLauncher.class.getResourceAsStream("/resources/icon.png")));
+	} catch (Exception e) {
+	    e.printStackTrace();
+	}
+
 	statusBar = new JLabel();
 	try {
 	    desktop = new JDesktopPane() {
@@ -62,9 +69,8 @@ public class ExpLauncher extends JFrame {
 			crpH = imgHeight;
 			crpX = (imgWidth - crpW) / 2;
 		    }
-		    
-		    
-		    g.drawImage(img, 0,0,getWidth(),getHeight(),crpX,crpY,crpX+crpW,crpY+crpH, null);
+
+		    g.drawImage(img, 0, 0, getWidth(), getHeight(), crpX, crpY, crpX + crpW, crpY + crpH, null);
 		}
 	    };
 	} catch (IOException e) {

@@ -21,13 +21,17 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.BoxLayout;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 
@@ -86,6 +90,9 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 
     private FolderWatch(JFrame parent, File folder) {
 	super("Онлайн." + folder.getName(), true, true, true, true);
+
+	addMenu();
+
 	setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 	println("Вызван конструктор FolderWatch. " + folder);
 	this.folder = folder;
@@ -125,19 +132,42 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 	this.getContentPane().add(labelsCommon, NORTH);
 	this.getContentPane().add(measurementViewer);
 	SwingUtilities.invokeLater(this::pack);
-	SwingUtilities.invokeLater(()->{
+	SwingUtilities.invokeLater(() -> {
 	    try {
 		this.setMaximum(true);
 	    } catch (PropertyVetoException e1) {
-//		e1.printStackTrace();
+		// e1.printStackTrace();
 	    }
 	});
-	
+
 	updater = new Thread(this);
 	updater.setDaemon(true);
 	updater.start();
-	
-	
+
+    }
+
+    private void addMenu() {
+	JMenuBar menubar = new JMenuBar();
+	final Icon saveIcon = UIManager.getIcon("FileView.floppyDriveIcon");
+//	final Icon openIcon = UIManager.getIcon("FileView.fileIcon");
+
+	JMenuItem save = new JMenuItem("Сохранить", saveIcon);
+	save.setIcon(saveIcon);
+	save.addActionListener((event) -> {
+	    TWMComputer.saveToFile(measurementViewer.dataset.getMeasurements(), folder);
+
+	});
+
+	menubar.add(save);
+
+//	JMenuItem open = new JMenuItem("Открыть", openIcon);
+//	open.addActionListener((event) -> {
+//	    TWMComputer.saveToFile(measurementViewer.dataset.getMeasurements(), folder);
+//
+//	});
+//	menubar.add(open);
+
+	this.setJMenuBar(menubar);
     }
 
     public void checkNewFile() {
@@ -163,7 +193,7 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 
 	println("Считываю значения из файла " + f);
 
-	Measurement m = new TWMComputer(f, diff -> (diff.diffusivity < 3E-5 && diff.amplitude > 100)).call();
+	Measurement m = new TWMComputer(f).call();
 
 	SwingUtilities.invokeLater(() -> {
 	    if (m.temperature == null || m.temperature.isEmpty()) {

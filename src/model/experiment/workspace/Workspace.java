@@ -22,141 +22,121 @@ import model.experiment.signalID.SignalIdentifier;
 @XmlAccessorType(XmlAccessType.NONE)
 public class Workspace {
 
-	final static String defaultWorkspace = "workspace.xml";
-	private static Workspace instance = null;
+    final static String defaultWorkspace = "workspace.xml";
+    private static Workspace instance = null;
 
-	public static Workspace getInstance() {
+    public static Workspace getInstance() {
+	if (instance == null) {
+	    synchronized (Workspace.class) {
 		if (instance == null) {
-			synchronized (Workspace.class) {
-				if (instance == null) {
-					Debug.println(
-							"Opening instance");
-					instance = open();
-				}
-			}
+		    Debug.println("Opening instance");
+		    instance = open();
 		}
-		return instance;
+	    }
+	}
+	return instance;
+    }
+
+    public static Workspace open() {
+	Debug.println("Opening default workspace [static Workspace.open()]");
+	Workspace opened = null;
+	try {
+	    opened = open(defaultWorkspace);
+	} catch (Exception ignore) {
+	    Debug.println("Could not open " + defaultWorkspace + "\r\n" + ignore.getMessage());
 	}
 
-	public static Workspace open() {
-		Debug.println(
-				"Opening default workspace [static Workspace.open()]");
-		Workspace opened = null;
+	if (opened == null) {
+	    Debug.println("There was no workspace file, creating new one");
+	    opened = new Workspace();
+	    opened.save();
+	}
+	return opened;
+
+    }
+
+    public static Workspace open(String filename) {
+	Debug.println("Opening workspace [static Workspace.open(" + filename + ")]");
+
+	File f = new File(filename);
+	if (!f.exists())
+	    return null;
+	return JAXB.unmarshal(f, Workspace.class);
+    }
+
+    public static void save(String filename, Workspace w) {
+	w.save(filename);
+    }
+
+    private transient Sample sample;
+    @XmlElement
+    private File samplefile;
+
+    @XmlElementWrapper(nillable = true)
+    private List<SignalIdentifier> signalIDs;
+
+    private Workspace() {
+	Debug.println("Workpsace contructor called");
+    }
+
+    public Sample getSample() {
+	if (sample == null) {
+	    if (samplefile != null) {
+		Debug.println("Opening sample xml file " + samplefile);
 		try {
-			opened = open(defaultWorkspace);
-		} catch (@SuppressWarnings("unused") Exception ignore) {
-			System.out.println(
-					"Could not open " + defaultWorkspace);
+		    sample = SampleFactory.forXML(samplefile.toString());
+		} catch (DataBindingException e) {
+		    Debug.println("Ошибка сбора данных из файла образца: " + e.getLocalizedMessage());
 		}
-
-		if (opened == null) {
-			Debug.println(
-					"There was no workspace file, creating new one");
-			opened = new Workspace();
-			opened.save();
-		}
-		return opened;
-
-	}
-
-	public static Workspace open(
-			String filename) {
-		Debug.println(
-				"Opening workspace [static Workspace.open("
-						+ filename
-						+ ")]");
-
-		File f = new File(filename);
-		if (!f.exists())
-			return null;
-		return JAXB.unmarshal(f, Workspace.class);
-	}
-
-	public static void save(String filename, Workspace w) {
-		w.save(filename);
-	}
-
-	private transient Sample sample;
-	@XmlElement
-	private File samplefile;
-
-	@XmlElementWrapper(nillable = true)
-	private List<SignalIdentifier> signalIDs;
-
-	private Workspace() {
-		Debug.println(
-				"Workpsace contructor called");
-	}
-
-	public Sample getSample() {
 		if (sample == null) {
-			if (samplefile != null) {
-				Debug.println(
-						"Opening sample xml file "
-								+ samplefile);
-				try {
-					sample = SampleFactory.forXML(
-							samplefile
-									.toString());
-				} catch (DataBindingException e) {
-					Debug.println("Ошибка сбора данных из файла образца: " + e.getLocalizedMessage());
-				}
-				if (sample == null) {
-					samplefile = null;
-				}
-			}
+		    samplefile = null;
 		}
-		return sample;
+	    }
+	}
+	return sample;
+    }
+
+    public File getSampleFile() {
+	return samplefile;
+    }
+
+    public List<SignalIdentifier> getSignalIDs() {
+	if (signalIDs == null) {
+	    signalIDs = new ArrayList<>();
 	}
 
-	public File getSampleFile() {
-		return samplefile;
-	}
+	return signalIDs;
+    }
 
-	public List<SignalIdentifier> getSignalIDs() {
-		if (signalIDs == null) {
-			signalIDs = new ArrayList<>();
-		}
+    public synchronized void save() {
+	save(defaultWorkspace);
+    }
 
-		return signalIDs;
-	}
+    public synchronized void save(String filename) {
+	Debug.println("Сохраняю рабочее пространство " + filename);
+	JAXB.marshal(this, new File(filename));
+    }
 
-	public synchronized void save() {
-		save(defaultWorkspace);
-	}
+    public Sample setSample(Sample newsample) {
+	sample = newsample;
+	return sample;
+    }
 
-	public synchronized void save(
-			String filename) {
-		Debug.println(
-				"Сохраняю рабочее пространство "
-						+ filename);
-		JAXB.marshal(this,
-				new File(filename));
-	}
+    public File setSampleFile(File newsamplefile) {
+	samplefile = newsamplefile;
+	save();
+	return samplefile;
+    }
 
-	public Sample setSample(
-			Sample newsample) {
-		sample = newsample;
-		return sample;
-	}
+    @Override
+    public boolean equals(Object o) {
+	return Predicates.areEqual(Workspace.class, this, o,
+		Arrays.asList(Workspace::getSampleFile, Workspace::getSignalIDs));
+    }
 
-	public File setSampleFile(
-			File newsamplefile) {
-		samplefile = newsamplefile;
-		save();
-		return samplefile;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		return Predicates.areEqual(Workspace.class, this, o,
-				Arrays.asList(Workspace::getSampleFile,
-						Workspace::getSignalIDs));
-	}
-
-	@Override
-	public int hashCode() {
-		return HashCoder.hashCode(samplefile, signalIDs);
-	}
+    @Override
+    public int hashCode() {
+	return HashCoder.hashCode(samplefile, signalIDs);
+    }
 
 }

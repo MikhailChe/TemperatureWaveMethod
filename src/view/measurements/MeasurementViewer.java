@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 
 import javax.swing.AbstractButton;
@@ -37,12 +38,12 @@ public class MeasurementViewer extends JPanel {
 
     final ChartPanel chartPanel;
 
-    final MeasurementsListDataset dataset = new MeasurementsListDataset(new ArrayList<>(), m -> {
+    final public MeasurementsListDataset dataset = new MeasurementsListDataset(new ArrayList<>(), m -> {
 	Measurement nm = new Measurement();
 	nm.frequency = m.frequency;
 	nm.temperature = m.temperature;
 	nm.time = m.time;
-	nm.diffusivity = new ArrayList<>(m.diffusivity);
+	nm.diffusivity = new ArrayList<>(Collections.unmodifiableCollection(m.diffusivity));
 	nm.diffusivity.removeIf(d -> d.amplitude < 100 || d.diffusivity > 3E-5);
 	return nm;
     });

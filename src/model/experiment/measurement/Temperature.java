@@ -57,7 +57,7 @@ public class Temperature {
 	}
 
 	public static String getHeader() {
-		return "Температура";
+		return "Т (К)";
 	}
 
 	private void writeObject(java.io.ObjectOutputStream out) {

@@ -102,6 +102,10 @@ public class MeasurementsListDataset implements XYDataset {
 	DIFFUSIVITY, PHASE, AMPLITUDE, CAPCITANCE, TEMPERATURE, FREQUENCY
     }
 
+    public List<Measurement> getMeasurements() {
+	return Collections.unmodifiableList(measurements);
+    }
+
     // -- PRIVATE PART -- //
 
     final private List<Measurement> measurements;
@@ -192,13 +196,13 @@ public class MeasurementsListDataset implements XYDataset {
 	if (filterRule == null) {
 	    filterRule = (m) -> m;
 	}
-	mms.stream().map(filterRule).forEach(m -> updateCache(m, false));
+	mms.forEach(m -> updateCache(m, false));
 	notifyListeners();
     }
 
     private void updateCache(Measurement m, boolean notify) {
+	m = filterRule.apply(m);
 	synchronized (cacheLock) {
-
 	    Number xVal = xValFetcher.apply(m);
 
 	    List<Number> yVals = yValsFetcher.apply(m);

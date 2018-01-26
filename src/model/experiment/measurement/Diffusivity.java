@@ -21,109 +21,91 @@ import model.experiment.signalID.SignalIdentifier;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class Diffusivity {
-	/**
-	 * Объект класса, идентифицирующего канал, на котором проводились измерения
-	 * 
-	 * @see BaseSignalID
-	 * @see SignalIdentifier
-	 */
-	@XmlElement
-	public BaseSignalID signalID;
+    /**
+     * Объект класса, идентифицирующего канал, на котором проводились измерения
+     * 
+     * @see BaseSignalID
+     * @see SignalIdentifier
+     */
+    @XmlElement
+    public BaseSignalID signalID;
 
-	@XmlElement
-	public int channelNumber;
+    @XmlElement
+    public int channelNumber;
 
-	
-	/**
-	 * Фаза сигнала
-	 */
-	@XmlElement
-	public double phase;
-	
+    /**
+     * Фаза сигнала
+     */
+    @XmlElement
+    public double phase;
 
-	@XmlAttribute
-	public double frequency;
-	/**
-	 * Амплитуда сигнала
-	 */
-	@XmlElement
-	public double amplitude;
-	/**
-	 * коэффициент каппа
-	 */
-	@XmlElement
-	public double kappa;
-	/**
-	 * Значение коэффициента температуропроводности
-	 */
-	@XmlElement
-	public double diffusivity;
+    @XmlAttribute
+    public double frequency;
+    /**
+     * Амплитуда сигнала
+     */
+    @XmlElement
+    public double amplitude;
+    /**
+     * коэффициент каппа
+     */
+    @XmlElement
+    public double kappa;
+    /**
+     * Значение коэффициента температуропроводности
+     */
+    @XmlElement
+    public double diffusivity;
 
-	@XmlElement
-	public double capacitance;
+    @XmlElement
+    public double capacitance;
 
-	@XmlElement
-	public SignalParameters initSignalParams;
+    @XmlElement
+    public SignalParameters initSignalParams;
 
-	public Diffusivity() {
-		signalID = null;
-	}
+    public Diffusivity() {
+	signalID = null;
+    }
 
-	public double gettCond() {
-		return diffusivity;
-	}
+    public double gettCond() {
+	return diffusivity;
+    }
 
-	public Diffusivity settCond(double tCond) {
-		this.diffusivity = tCond;
-		return this;
-	}
+    public Diffusivity settCond(double tCond) {
+	this.diffusivity = tCond;
+	return this;
+    }
 
-	@Override
-	public String toString() {
+    @Override
+    public String toString() {
 
-		return String.format(
-				"%.0f;%.3f;%.3f;%.3f;%.3f;%.4e;%.3f", amplitude,
-				initSignalParams == null ? 0
-						: Math.toDegrees(
-								initSignalParams.phase),
-				signalID == null ? 0
-						: signalID.zc
-								.getCurrentShift(frequency),
-				Math.toDegrees(phase), kappa, diffusivity, capacitance);
-	}
+	return String.format("%.0f;%.3f;%.3f;%.3f;%.3f;%.4e;%.3f", amplitude,
+		initSignalParams == null ? 0 : Math.toDegrees(initSignalParams.phase),
+		signalID == null ? 0 : signalID.zc.getCurrentShift(frequency), Math.toDegrees(phase), kappa,
+		diffusivity, capacitance);
+    }
 
-	public static String getHeader() {
-		return "Амплитуда;Начальная фаза;Нулеваая фаза;Скорректированная фаза;Каппа;Температуропроводность;Теплоёмкость";
-	}
+    public String getHeader() {
+	return String.format("Амплитуда;φнач;φюст;φ;κ;α(%d);Сp(отн)", channelNumber);
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (o == null)
-			return false;
-		if (o == this)
-			return true;
-		if (!(o instanceof Diffusivity))
-			return false;
-		Predicate<Function<Diffusivity, Object>> eq = Predicates
-				.equalizer(this, (Diffusivity) o);
-		return eq.test(a -> a.amplitude)
-				&& eq.test(a -> a.diffusivity)
-				&& eq.test(a -> a.frequency)
-				&& eq.test(a -> a.initSignalParams)
-				&& eq.test(a -> a.kappa)
-				&& eq.test(a -> a.phase)
-				&& eq.test(a -> a.signalID)
-				&& eq.test(a -> a.capacitance);
-	}
+    @Override
+    public boolean equals(Object o) {
+	if (o == null)
+	    return false;
+	if (o == this)
+	    return true;
+	if (!(o instanceof Diffusivity))
+	    return false;
+	Predicate<Function<Diffusivity, Object>> eq = Predicates.equalizer(this, (Diffusivity) o);
+	return eq.test(a -> a.amplitude) && eq.test(a -> a.diffusivity) && eq.test(a -> a.frequency)
+		&& eq.test(a -> a.initSignalParams) && eq.test(a -> a.kappa) && eq.test(a -> a.phase)
+		&& eq.test(a -> a.signalID) && eq.test(a -> a.capacitance);
+    }
 
-	@Override
-	public int hashCode() {
-		return Double.hashCode(amplitude)
-				+ Double.hashCode(diffusivity)
-				+ Double.hashCode(frequency)
-				+ initSignalParams.hashCode()
-				+ Double.hashCode(kappa)
-				+ Double.hashCode(phase)
-				+ signalID.hashCode();
-	}
+    @Override
+    public int hashCode() {
+	return Double.hashCode(amplitude) + Double.hashCode(diffusivity) + Double.hashCode(frequency)
+		+ initSignalParams.hashCode() + Double.hashCode(kappa) + Double.hashCode(phase) + signalID.hashCode();
+    }
 }

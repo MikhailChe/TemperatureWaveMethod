@@ -5,6 +5,9 @@ import static controller.experiment.Analyzer.PhaseUtils.truncatePositive;
 import static debug.Debug.println;
 import static debug.JExceptionHandler.showException;
 import static java.lang.Thread.currentThread;
+import static java.nio.file.Files.newBufferedWriter;
+import static java.nio.file.StandardOpenOption.CREATE_NEW;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 import java.awt.Desktop;
 import java.awt.Window;
@@ -18,6 +21,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -132,30 +136,12 @@ public class TWMComputer implements Callable<Measurement> {
 		println("Ошибка при записи в выходной файл. " + e.getLocalizedMessage());
 	    }
 
-	    if (JOptionPane.showConfirmDialog(parent, "Загрузить данные в базу?") == JOptionPane.OK_OPTION) {
-		try {
-		    ExperimentUploader eu = new ExperimentUploader();
-
-		    eu.uploadExperimentResults(futuresSet.stream().map(future -> {
-			try {
-			    return future.get();
-			} catch (Exception e) {
-			    e.printStackTrace();
-			}
-			return null;
-		    }).collect(Collectors.toList()), Workspace.getInstance().getSample());
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException
-			| IOException e) {
-		    e.printStackTrace();
-		}
-	    }
-
 	    // Отркываем файл для просмотра на десктопе
 	    if (Desktop.isDesktopSupported()) {
 		try {
 		    Desktop.getDesktop().open(resultFile);
 		} catch (IOException e) {
-		    showException(currentThread(), e);
+		    showException(e);
 		    Debug.println("Не удалось открыть файл с результатами. " + e.getLocalizedMessage());
 		}
 	    }
@@ -165,6 +151,72 @@ public class TWMComputer implements Callable<Measurement> {
 	    println("Ошибка ввода-вывода. " + e1.getLocalizedMessage());
 	}
 	return null;
+    }
+
+    public static File saveToFile(List<Measurement> measurements, File folder) {
+	return saveToFile(measurements, folder, false);
+    }
+
+    public static File saveToFile(final List<Measurement> measurements, final File folder,
+	    final boolean appendToSample) {
+	// Создаём выходной файл
+	Objects.requireNonNull(folder, "Папка не должна быть null");
+	Objects.requireNonNull(measurements, "Список измерения не может быть null");
+	File resultFile = tryToCreateResultFile(folder);
+	if (resultFile == null)
+	    return null;
+	try (BufferedWriter bw = newBufferedWriter(resultFile.toPath(), CREATE_NEW, WRITE)) {
+	    boolean header = true;
+	    for (Measurement answer : measurements) {
+		if (answer == null)
+		    continue;
+		Workspace workspace = Workspace.getInstance();
+		if (appendToSample) {
+		    Sample sample;
+		    if ((sample = workspace.getSample()) != null) {
+			if (sample.measurements != null) {
+			    sample.measurements.add(answer);
+			}
+		    }
+		}
+		if (header) {
+		    header = false;
+		    // Add magic UTF-8 BOM
+		    bw.write(new String(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF }));
+		    bw.write(String.format("%s%n", answer.getHeader()));
+		}
+		bw.write(String.format("%s%n", answer));
+
+	    }
+	    bw.flush();
+	    bw.close();
+
+	} catch (IOException e) {
+	    e.printStackTrace();
+	}
+	return resultFile;
+    }
+
+    public void writeToDB(List<Future<Measurement>> futuresSet) {
+
+	// if (JOptionPane.showConfirmDialog(parent, "Загрузить данные в базу?") ==
+	// JOptionPane.OK_OPTION) {
+	try {
+	    ExperimentUploader eu = new ExperimentUploader();
+
+	    eu.uploadExperimentResults(futuresSet.stream().map(future -> {
+		try {
+		    return future.get();
+		} catch (Exception e) {
+		    e.printStackTrace();
+		}
+		return null;
+	    }).collect(Collectors.toList()), Workspace.getInstance().getSample());
+	} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException
+		| IOException e) {
+	    e.printStackTrace();
+	}
+	// }
     }
 
     // Выдаём параметры всех сигналов
@@ -234,16 +286,17 @@ public class TWMComputer implements Callable<Measurement> {
 		    try {
 			Files.delete(resultFile.toPath());
 		    } catch (FileSystemException e) {
-			showException(currentThread(), e);
-
+			// showException(currentThread(), e);
 			exception = true;
-
-			JOptionPane.showMessageDialog(null, resultFile.toString(),
+			int clicked = JOptionPane.showConfirmDialog(null, resultFile.toString(),
 				"Пожалуйста, закройте файл с результатами.\n"
 					+ "Иначе я не смогу записать туда новые результаты.\n"
 					+ "При необходимости Вы можете сохранить копию файла вручную\n"
 					+ "Я подожду и не буду трогать этот файл, пока Вы не закроете это окно\n",
-				JOptionPane.ERROR_MESSAGE);
+				JOptionPane.OK_CANCEL_OPTION);
+			if (JOptionPane.OK_OPTION != clicked) {
+			    return null;
+			}
 			System.err.printf("Пожалуйста, закройте файл: %s", resultFile.toString());
 			try {
 			    Thread.sleep(1000);
@@ -255,8 +308,7 @@ public class TWMComputer implements Callable<Measurement> {
 		} while (exception);
 	    }
 	} catch (IOException e) {
-	    JExceptionHandler.getExceptionHanlder().uncaughtException(Thread.currentThread(), e);
-	    e.printStackTrace();
+	    JExceptionHandler.showException(e);
 	    return null;
 	}
 	return resultFile;
@@ -298,7 +350,7 @@ public class TWMComputer implements Callable<Measurement> {
 	try {
 	    reader = new ExperimentFileReader(file.toPath());
 	} catch (Exception e) {
-//	    showException(currentThread(), e);
+	    // showException(currentThread(), e);
 	    Debug.println("Не удалось прочитать файл с измерениями. " + e.getLocalizedMessage());
 	    return result;
 	}
