@@ -3,6 +3,7 @@ package view.experiment.sample;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
@@ -15,7 +16,6 @@ import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.text.NumberFormatter;
 
 import model.sample.Sample;
 
@@ -23,14 +23,14 @@ public class SampleSettingsDialog extends JDialog {
 	/**
 	 * 
 	 */
-	private static final long	serialVersionUID	= -6024215129687729185L;
-	Sample						sample				= null;
-	JTextField					name				= new JTextField();
-	JTextField					comment				= new JTextField();
-	JFormattedTextField			length				= null;
-	JFormattedTextField			density				= null;
+	private static final long serialVersionUID = -6024215129687729185L;
+	Sample sample = null;
+	JTextField name = new JTextField();
+	JTextField comment = new JTextField();
+	JFormattedTextField length = null;
+	JFormattedTextField density = null;
 
-	JButton						okButton			= new JButton("OK");
+	JButton okButton = new JButton("OK");
 
 	public SampleSettingsDialog(JFrame parent, Sample sample) {
 		super(parent, true);
@@ -39,19 +39,13 @@ public class SampleSettingsDialog extends JDialog {
 		}
 		this.sample = sample;
 
-		NumberFormat format = NumberFormat
-				.getNumberInstance(Locale.getDefault());
-		format.setMinimumFractionDigits(3);
+		NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
+		format.setGroupingUsed(true);
 		format.setMaximumFractionDigits(6);
-		format.setMinimumIntegerDigits(0);
-		format.setMaximumIntegerDigits(0);
+		format.setRoundingMode(RoundingMode.HALF_EVEN);
+		format.setParseIntegerOnly(false);
 
-		NumberFormatter formatter = new NumberFormatter(format);
-
-		formatter.setAllowsInvalid(false);
-		formatter.setCommitsOnValidEdit(true);
-
-		length = new JFormattedTextField(formatter);
+		length = new JFormattedTextField(format);
 
 		density = new JFormattedTextField(NumberFormat.getNumberInstance());
 		density.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
@@ -64,8 +58,7 @@ public class SampleSettingsDialog extends JDialog {
 		pane.setPreferredSize(new Dimension(400, 200));
 
 		JPanel namePanel = new JPanel(new BorderLayout(8, 8));
-		namePanel.setBorder(
-				BorderFactory.createTitledBorder("Название образца"));
+		namePanel.setBorder(BorderFactory.createTitledBorder("Название образца"));
 		namePanel.add(name);
 
 		JPanel commentPanel = new JPanel(new BorderLayout(8, 8));
@@ -73,13 +66,11 @@ public class SampleSettingsDialog extends JDialog {
 		commentPanel.add(comment);
 
 		JPanel lengthPanel = new JPanel(new BorderLayout(8, 8));
-		lengthPanel.setBorder(
-				BorderFactory.createTitledBorder("Толщина образца (метры)"));
+		lengthPanel.setBorder(BorderFactory.createTitledBorder("Толщина образца (метры)"));
 		lengthPanel.add(length);
 
 		JPanel densityPanel = new JPanel(new BorderLayout(8, 8));
-		densityPanel.setBorder(
-				BorderFactory.createTitledBorder("Плотность образца"));
+		densityPanel.setBorder(BorderFactory.createTitledBorder("Плотность образца"));
 		densityPanel.add(density);
 
 		pane.add(namePanel);
@@ -124,10 +115,10 @@ public class SampleSettingsDialog extends JDialog {
 		});
 	}
 
-	private int				status			= CANCEL_BUTTON;
+	private int status = CANCEL_BUTTON;
 
-	public static final int	OK_BUTTON		= 0;
-	public static final int	CANCEL_BUTTON	= 1;
+	public static final int OK_BUTTON = 0;
+	public static final int CANCEL_BUTTON = 1;
 
 	public static int showSampleSettings(JFrame parent, Sample sample) {
 		SampleSettingsDialog d = new SampleSettingsDialog(parent, sample);
