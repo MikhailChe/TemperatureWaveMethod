@@ -17,7 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.NumberFormatter;
 
-import model.experiment.sample.Sample;
+import model.sample.Sample;
 
 public class SampleSettingsDialog extends JDialog {
 	/**

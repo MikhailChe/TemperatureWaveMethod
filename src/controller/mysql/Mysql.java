@@ -10,7 +10,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import debug.Debug;
-import model.experiment.sample.Sample;
+import model.sample.Sample;
 
 public class Mysql {
 	final Connection conn_id;

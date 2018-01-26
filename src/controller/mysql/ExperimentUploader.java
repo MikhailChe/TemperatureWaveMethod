@@ -8,8 +8,8 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 import debug.Debug;
-import model.experiment.measurement.Measurement;
-import model.experiment.sample.Sample;
+import model.measurement.Measurement;
+import model.sample.Sample;
 
 public class ExperimentUploader {
 

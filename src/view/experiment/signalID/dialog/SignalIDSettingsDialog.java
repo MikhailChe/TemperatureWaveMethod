@@ -11,10 +11,10 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-import model.experiment.signalID.BaseSignalID;
-import model.experiment.signalID.DCsignalID;
-import model.experiment.signalID.SignalIdentifier;
-import model.experiment.workspace.Workspace;
+import model.signalID.BaseSignalID;
+import model.signalID.DCsignalID;
+import model.signalID.SignalIdentifier;
+import model.workspace.Workspace;
 
 /**
  * Диалог настроек каналов

@@ -1,7 +1,7 @@
 ﻿package view.experiment.Analyzer.Angstrem;
 
-import static controller.experiment.Analyzer.FFT.getAbs;
-import static controller.experiment.Analyzer.PhaseUtils.truncatePositive;
+import static controller.experiment.analyzer.FFT.getAbs;
+import static controller.experiment.analyzer.PhaseUtils.truncatePositive;
 import static debug.JExceptionHandler.showException;
 import static java.lang.Thread.currentThread;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
@@ -30,8 +30,8 @@ import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
-import controller.experiment.Analyzer.ExperimentFileReader;
-import controller.experiment.Analyzer.FFT;
+import controller.experiment.analyzer.FFT;
+import controller.experiment.reader.ExperimentFileReader;
 import debug.Debug;
 
 public class AngstremCombinedPlane extends JPanel {

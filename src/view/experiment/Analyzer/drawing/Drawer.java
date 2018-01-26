@@ -21,9 +21,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
-import controller.experiment.Analyzer.ExperimentFileReader;
-import controller.experiment.Analyzer.TWMComputer;
-import model.experiment.Analyzer.SignalParameters;
+import controller.experiment.analyzer.TWMComputer;
+import controller.experiment.reader.ExperimentFileReader;
+import model.analyzer.SignalParameters;
 import view.MemorableDirectoryChooser;
 
 public class Drawer {

@@ -9,7 +9,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
-import model.experiment.signalID.DCsignalID;
+import model.signalID.DCsignalID;
 import model.thermocouple.graduate.Graduate;
 import model.thermocouple.graduate.GraduateFactory;
 import view.MemorableDirectoryChooser;

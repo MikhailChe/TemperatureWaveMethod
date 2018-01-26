@@ -2,9 +2,9 @@ package view.measurements;
 
 import static java.awt.BorderLayout.CENTER;
 import static javax.swing.border.BevelBorder.LOWERED;
-import static model.experiment.Analyzer.MeasurementsListDataset.DifferentiatorsY.CHANNEL;
-import static model.experiment.Analyzer.MeasurementsListDataset.DifferentiatorsY.FREQUENCY;
-import static model.experiment.Analyzer.MeasurementsListDataset.DifferentiatorsY.NONE;
+import static model.analyzer.MeasurementsListDataset.DifferentiatorsY.CHANNEL;
+import static model.analyzer.MeasurementsListDataset.DifferentiatorsY.FREQUENCY;
+import static model.analyzer.MeasurementsListDataset.DifferentiatorsY.NONE;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -28,10 +28,10 @@ import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYShapeRenderer;
 
-import model.experiment.Analyzer.MeasurementsListDataset;
-import model.experiment.Analyzer.MeasurementsListDataset.FetchersX;
-import model.experiment.Analyzer.MeasurementsListDataset.FetchersY;
-import model.experiment.measurement.Measurement;
+import model.analyzer.MeasurementsListDataset;
+import model.analyzer.MeasurementsListDataset.FetchersX;
+import model.analyzer.MeasurementsListDataset.FetchersY;
+import model.measurement.Measurement;
 
 public class MeasurementViewer extends JPanel {
     private static final long serialVersionUID = 3555290921726804677L;

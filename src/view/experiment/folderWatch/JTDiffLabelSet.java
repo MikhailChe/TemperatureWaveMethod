@@ -7,7 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
-import model.experiment.measurement.Diffusivity;
+import model.measurement.Diffusivity;
 
 public class JTDiffLabelSet extends JPanel {
 

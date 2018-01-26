@@ -21,16 +21,16 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 import debug.JExceptionHandler;
-import model.experiment.signalID.BaseSignalID;
-import model.experiment.zeroCrossing.ZeroCrossing;
-import model.experiment.zeroCrossing.ZeroCrossingFactory;
+import model.phaseAdjust.PhaseAdjust;
+import model.phaseAdjust.PhaseAdjustFactory;
+import model.signalID.BaseSignalID;
 import view.MemorableDirectoryChooser;
-import view.experiment.zeroCrossing.ZeroCrossingViewerPanel;
+import view.experiment.phaseAdjust.PhaseAdjustViewerPanel;
 
 public class BaseSignalIDPanel extends SignalIDPanel {
 	private static final long serialVersionUID = 7193781950090874574L;
 
-	ZeroCrossingViewerPanel zcPanel;
+	PhaseAdjustViewerPanel zcPanel;
 
 	public BaseSignalIDPanel(BaseSignalID id) {
 		super();
@@ -46,19 +46,19 @@ public class BaseSignalIDPanel extends SignalIDPanel {
 			chooser.setMultiSelectionEnabled(false);
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			chooser.resetChoosableFileFilters();
-			chooser.addChoosableFileFilter(ZeroCrossing.extensionFilter);
-			chooser.setFileFilter(ZeroCrossing.extensionFilter);
+			chooser.addChoosableFileFilter(PhaseAdjust.extensionFilter);
+			chooser.setFileFilter(PhaseAdjust.extensionFilter);
 			if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 				chooser.saveCurrentSelection();
 				File file = chooser.getSelectedFile();
-				ZeroCrossing newzc = ZeroCrossingFactory.forFile(file);
+				PhaseAdjust newzc = PhaseAdjustFactory.forFile(file);
 				id.zc = newzc;
 				zcPanel.setZeroCrossing(id.zc);
 				this.fileNameField.setText(id.zc.forFile.toString());
 			}
 		});
 
-		zcPanel = new ZeroCrossingViewerPanel(id.zc);
+		zcPanel = new PhaseAdjustViewerPanel(id.zc);
 		zcPanel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -67,7 +67,7 @@ public class BaseSignalIDPanel extends SignalIDPanel {
 					JDialog zcDialog = new JDialog((JDialog) SwingUtilities.getWindowAncestor(BaseSignalIDPanel.this),
 							id.zc.forFile.toString(), true);
 					zcDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-					zcDialog.getContentPane().add(new ZeroCrossingViewerPanel(id.zc));
+					zcDialog.getContentPane().add(new PhaseAdjustViewerPanel(id.zc));
 					zcDialog.pack();
 					zcDialog.setSize(640, 480);
 					zcDialog.setVisible(true);

@@ -35,10 +35,10 @@ import javax.swing.UIManager;
 import javax.swing.event.InternalFrameAdapter;
 import javax.swing.event.InternalFrameEvent;
 
-import controller.experiment.Analyzer.TWMComputer;
-import model.experiment.measurement.Diffusivity;
-import model.experiment.measurement.Measurement;
-import model.experiment.workspace.Workspace;
+import controller.experiment.analyzer.TWMComputer;
+import model.measurement.Diffusivity;
+import model.measurement.Measurement;
+import model.workspace.Workspace;
 import view.MemorableDirectoryChooser;
 import view.measurements.MeasurementViewer;
 

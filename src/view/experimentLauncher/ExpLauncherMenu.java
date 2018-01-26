@@ -5,7 +5,7 @@ package view.experimentLauncher;
 
 import static java.lang.Thread.currentThread;
 import static javax.swing.JFileChooser.FILES_ONLY;
-import static model.experiment.sample.SampleFactory.saveSampleXML;
+import static model.sample.SampleFactory.saveSampleXML;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -16,17 +16,17 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
-import controller.experiment.Analyzer.AdjustFileCreator;
-import controller.experiment.Analyzer.TWMFoldersSelector;
-import controller.thermocouple.graduate.GraduateConverter;
-import controller.thermocouple.graduate.GraduateFileCreator;
+import controller.experiment.analyzer.TWMFoldersSelector;
+import controller.experiment.phaseAdjust.AdjustFileCreator;
+import controller.experiment.thermocouple.GraduateConverter;
+import controller.experiment.thermocouple.GraduateFileCreator;
 import debug.Debug;
 import debug.JExceptionHandler;
-import model.experiment.sample.Sample;
-import model.experiment.sample.SampleFactory;
-import model.experiment.signalID.SignalIdentifier;
-import model.experiment.workspace.Workspace;
-import model.experiment.zeroCrossing.ZeroCrossing;
+import model.phaseAdjust.PhaseAdjust;
+import model.sample.Sample;
+import model.sample.SampleFactory;
+import model.signalID.SignalIdentifier;
+import model.workspace.Workspace;
 import view.MemorableDirectoryChooser;
 import view.experiment.Analyzer.Angstrem.AngstremAnalyzer;
 import view.experiment.folderWatch.FolderWatch;
@@ -140,8 +140,8 @@ public class ExpLauncherMenu extends JMenuBar {
 	    chooser.setMultiSelectionEnabled(false);
 	    chooser.resetChoosableFileFilters();
 	    chooser.setFileSelectionMode(FILES_ONLY);
-	    chooser.addChoosableFileFilter(ZeroCrossing.extensionFilter);
-	    chooser.setFileFilter(ZeroCrossing.extensionFilter);
+	    chooser.addChoosableFileFilter(PhaseAdjust.extensionFilter);
+	    chooser.setFileFilter(PhaseAdjust.extensionFilter);
 
 	    int status = chooser.showOpenDialog(parent);
 
