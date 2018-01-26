@@ -3,19 +3,25 @@ package view.experiment.sample;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.math.RoundingMode;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.text.NumberFormatter;
 
 import model.sample.Sample;
 
@@ -28,6 +34,7 @@ public class SampleSettingsDialog extends JDialog {
 	JTextField name = new JTextField();
 	JTextField comment = new JTextField();
 	JFormattedTextField length = null;
+	NumberFormatter lengthFormatter = null;
 	JFormattedTextField density = null;
 
 	JButton okButton = new JButton("OK");
@@ -42,10 +49,16 @@ public class SampleSettingsDialog extends JDialog {
 		NumberFormat format = NumberFormat.getInstance(Locale.getDefault());
 		format.setGroupingUsed(true);
 		format.setMaximumFractionDigits(6);
+
 		format.setRoundingMode(RoundingMode.HALF_EVEN);
 		format.setParseIntegerOnly(false);
 
-		length = new JFormattedTextField(format);
+		lengthFormatter = new NumberFormatter(format);
+		lengthFormatter.setAllowsInvalid(true);
+		lengthFormatter.setCommitsOnValidEdit(false);
+
+		length = new JFormattedTextField(lengthFormatter);
+		length.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
 
 		density = new JFormattedTextField(NumberFormat.getNumberInstance());
 		density.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
@@ -94,25 +107,47 @@ public class SampleSettingsDialog extends JDialog {
 			sample.setName(name.getText());
 			sample.setComment(comment.getText());
 			try {
+				System.out.println("ALlow invalid?" + lengthFormatter.getAllowsInvalid());
+				System.out.println(lengthFormatter.stringToValue(length.getText()));
 				length.commitEdit();
 				Object o = length.getValue();
-				if (o instanceof Double) {
-					Double val = (Double) o;
-					sample.setLength(val.doubleValue());
-				}
-				density.commitEdit();
-				o = density.getValue();
 				if (o instanceof Number) {
-					Number val = (Number) o;
-					sample.setDensity(val.doubleValue());
+					sample.setLength(((Number) o).doubleValue());
 				}
 			} catch (ParseException e1) {
 				e1.printStackTrace();
+				return;
 			}
+			try {
+				density.commitEdit();
+				Object o = density.getValue();
+				if (o instanceof Number) {
+					sample.setDensity(((Number) o).doubleValue());
+				}
+			} catch (ParseException e1) {
+				e1.printStackTrace();
+				return;
+			}
+
 			status = OK_BUTTON;
 			setVisible(false);
 			dispose();
 		});
+		getRootPane().setDefaultButton(okButton);
+
+		KeyStroke stroke = KeyStroke.getKeyStroke("ESCAPE");
+
+		Action actionListener = new AbstractAction("ESCAPE") {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+				dispose();
+			}
+		};
+		getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(stroke, "ESCAPE");
+		getRootPane().getActionMap().put("ESCAPE", actionListener);
+
 	}
 
 	private int status = CANCEL_BUTTON;
