@@ -377,10 +377,10 @@ public class TWMComputer implements Callable<Measurement> {
 
 				if (SHIFTS[currentChannel] instanceof BaseSignalID) {
 					BaseSignalID id = (BaseSignalID) SHIFTS[currentChannel];
-					PhaseAdjust zc = id.zc;
-					if (zc == null)
+					PhaseAdjust adjust = id.phaseAdjust;
+					if (adjust == null)
 						continue;
-					double currentShift = zc.getCurrentShift(EXPERIMENT_FREQUENCY);
+					double currentShift = adjust.getCurrentShift(EXPERIMENT_FREQUENCY);
 
 					if (id.inverse) {
 						param = new SignalParameters(param.phase + Math.toRadians(180), param.amplitude,

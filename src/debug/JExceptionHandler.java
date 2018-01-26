@@ -125,11 +125,13 @@ public class JExceptionHandler extends JFrame implements UncaughtExceptionHandle
 												// we'll say that vertically, it should scroll.
 		}
 
+		@SuppressWarnings("unused")
 		@Override
 		public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
 			return 16;// set to 16 because that's what you had in your code.
 		}
 
+		@SuppressWarnings("unused")
 		@Override
 		public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
 			return 16;// set to 16 because that's what you had set in your code.

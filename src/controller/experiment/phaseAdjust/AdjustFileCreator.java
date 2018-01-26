@@ -128,11 +128,11 @@ public class AdjustFileCreator implements Runnable {
 	}
 
 	public static void createZCdigalog(Path f, Frame parent) {
-		PhaseAdjust zc = PhaseAdjustFactory.forFile(f.toFile());
-		PhaseAdjustViewerPanel zcvp = new PhaseAdjustViewerPanel(zc);
+		PhaseAdjust phaseAdjust = PhaseAdjustFactory.forFile(f.toFile());
+		PhaseAdjustViewerPanel adjustViewerPanel = new PhaseAdjustViewerPanel(phaseAdjust);
 
 		JDialog dialog = new JDialog(parent, "Файл юстировки");
-		dialog.getContentPane().add(zcvp);
+		dialog.getContentPane().add(adjustViewerPanel);
 		dialog.pack();
 		dialog.setModal(true);
 		dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

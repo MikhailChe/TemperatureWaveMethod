@@ -31,7 +31,7 @@ public class MeasurementsTest {
 
 		march.initSignalParams = new SignalParameters(18, 32, .12);
 		march.signalID = new BaseSignalID();
-		march.signalID.zc = new PhaseAdjust(new File("Hello.zc"));
+		march.signalID.phaseAdjust = new PhaseAdjust(new File("Hello.zc"));
 
 		Path path = Files.createTempFile(null, null);
 		System.out.println("Created temp file: " + path);

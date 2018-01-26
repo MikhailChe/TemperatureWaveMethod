@@ -30,7 +30,7 @@ import view.experiment.phaseAdjust.PhaseAdjustViewerPanel;
 public class BaseSignalIDPanel extends SignalIDPanel {
 	private static final long serialVersionUID = 7193781950090874574L;
 
-	PhaseAdjustViewerPanel zcPanel;
+	PhaseAdjustViewerPanel phaseAdjustPanel;
 
 	public BaseSignalIDPanel(BaseSignalID id) {
 		super();
@@ -38,8 +38,8 @@ public class BaseSignalIDPanel extends SignalIDPanel {
 				new TitledBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null),
 						"Канал переменного сигнала", TitledBorder.LEADING, TitledBorder.TOP, null,
 						new Color(0, 0, 0))));
-		if (id.zc != null)
-			this.fileNameField.setText(id.zc.forFile.toString());
+		if (id.phaseAdjust != null)
+			this.fileNameField.setText(id.phaseAdjust.forFile.toString());
 		this.fileOpenButtton.addActionListener(e -> {
 			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(DCSignalIDPanel.class);
 			chooser.setDialogTitle("Выберите файл юстировки");
@@ -52,22 +52,22 @@ public class BaseSignalIDPanel extends SignalIDPanel {
 				chooser.saveCurrentSelection();
 				File file = chooser.getSelectedFile();
 				PhaseAdjust newzc = PhaseAdjustFactory.forFile(file);
-				id.zc = newzc;
-				zcPanel.setZeroCrossing(id.zc);
-				this.fileNameField.setText(id.zc.forFile.toString());
+				id.phaseAdjust = newzc;
+				phaseAdjustPanel.setZeroCrossing(id.phaseAdjust);
+				this.fileNameField.setText(id.phaseAdjust.forFile.toString());
 			}
 		});
 
-		zcPanel = new PhaseAdjustViewerPanel(id.zc);
-		zcPanel.addMouseListener(new MouseAdapter() {
+		phaseAdjustPanel = new PhaseAdjustViewerPanel(id.phaseAdjust);
+		phaseAdjustPanel.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				println(e);
 				try {
 					JDialog zcDialog = new JDialog((JDialog) SwingUtilities.getWindowAncestor(BaseSignalIDPanel.this),
-							id.zc.forFile.toString(), true);
+							id.phaseAdjust.forFile.toString(), true);
 					zcDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-					zcDialog.getContentPane().add(new PhaseAdjustViewerPanel(id.zc));
+					zcDialog.getContentPane().add(new PhaseAdjustViewerPanel(id.phaseAdjust));
 					zcDialog.pack();
 					zcDialog.setSize(640, 480);
 					zcDialog.setVisible(true);
@@ -76,7 +76,7 @@ public class BaseSignalIDPanel extends SignalIDPanel {
 				}
 			}
 		});
-		this.channelInfoPanel.add(zcPanel);
+		this.channelInfoPanel.add(phaseAdjustPanel);
 
 		final JCheckBox checkbox = new JCheckBox(new AbstractAction("Инверсия") {
 			private static final long serialVersionUID = 7907647301140283578L;

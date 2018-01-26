@@ -21,12 +21,11 @@ import model.phaseAdjust.PhaseAdjustFactory;
 @XmlAccessorType(XmlAccessType.NONE)
 public class BaseSignalID extends SignalIdentifier {
 	@XmlElement
-	public PhaseAdjust zc;
-	
+	public PhaseAdjust phaseAdjust;
+
 	@XmlElement
 	public boolean inverse = false;
-	
-	
+
 	public BaseSignalID() {
 		super();
 	}
@@ -39,19 +38,17 @@ public class BaseSignalID extends SignalIdentifier {
 	 */
 	public BaseSignalID(File file) {
 		this();
-		zc = PhaseAdjustFactory.forFile(file);
+		phaseAdjust = PhaseAdjustFactory.forFile(file);
 	}
 
 	@Override
 	public boolean equals(Object o) {
-		return Predicates.areEqual(BaseSignalID.class, this,
-		        o,
-		        Arrays.asList(a -> a.zc));
+		return Predicates.areEqual(BaseSignalID.class, this, o, Arrays.asList(a -> a.phaseAdjust));
 	}
 
 	@Override
 	public int hashCode() {
-		return HashCoder.hashCode(zc);
+		return HashCoder.hashCode(phaseAdjust);
 	}
 
 	@Override
