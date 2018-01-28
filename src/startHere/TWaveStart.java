@@ -1,4 +1,4 @@
-package controller.startHere;
+package startHere;
 
 import javax.swing.SwingUtilities;
 
