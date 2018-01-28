@@ -1,12 +1,12 @@
 package model.signalID;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 
-import controller.lambda.HashCoder;
 import controller.lambda.Predicates;
 import controller.lambda.Utils;
 import model.thermocouple.graduate.Graduate;
@@ -24,42 +24,38 @@ public class DCsignalID extends SignalIdentifier {
 
 	public DCsignalID(Graduate grad) {
 		if (grad == null)
-		    throw new NullPointerException();
+			throw new NullPointerException();
 		graduate = grad;
 	}
 
 	@XmlElement
-	double			zeroTemperature		= 273 + 22;
+	double zeroTemperature = 273 + 22;
 
 	// gain for 1100 = 682
 	// gain for 0100 = 271
 
 	@XmlElement
-	double			amplifierGain		= 270;
+	double amplifierGain = 270;
 
 	@XmlElement
-	final double	adcMaxVoltageCode	= 32767.5;
+	final double adcMaxVoltageCode = 32767.5;
 
 	@XmlElement
-	final double	adcMaxVoltage		= 10;
+	final double adcMaxVoltage = 10;
 
 	public double getVoltage(double ADCvalue) {
-		return ((ADCvalue / adcMaxVoltageCode)
-		        * adcMaxVoltage)
-		        / amplifierGain;
+		return ((ADCvalue / adcMaxVoltageCode) * adcMaxVoltage) / amplifierGain;
 	}
 
 	public double getTemperature(double voltage) {
 		if (graduate == null)
-		    throw new NullPointerException(
-		            "Cannot convert voltage to temperature. No graduate information found.");
-		return graduate.getTemperature(voltage,
-		        zeroTemperature);
+			throw new NullPointerException("Cannot convert voltage to temperature. No graduate information found.");
+		return graduate.getTemperature(voltage, zeroTemperature);
 	}
 
 	public void setGain(double gain) {
 		if (gain != 0)
-		    this.amplifierGain = gain;
+			this.amplifierGain = gain;
 	}
 
 	public Graduate getGraduate() {
@@ -73,24 +69,17 @@ public class DCsignalID extends SignalIdentifier {
 
 	@Override
 	public boolean equals(Object o) {
-		return Predicates.areEqual(DCsignalID.class, this,
-		        o, Arrays.asList(DCsignalID::getGraduate,
-		                a -> a.amplifierGain,
-		                a -> a.zeroTemperature,
-		                a -> a.adcMaxVoltageCode,
-		                a -> a.adcMaxVoltage));
+		return Predicates.areEqual(DCsignalID.class, this, o, Arrays.asList(DCsignalID::getGraduate,
+				a -> a.amplifierGain, a -> a.zeroTemperature, a -> a.adcMaxVoltageCode, a -> a.adcMaxVoltage));
 	}
 
 	@Override
 	public int hashCode() {
-		return HashCoder.hashCode(graduate, amplifierGain,
-		        zeroTemperature);
+		return Objects.hash(graduate, amplifierGain, zeroTemperature);
 	}
 
 	@Override
 	public String toString() {
-		return Utils.stringOfObject(adcMaxVoltage,
-		        adcMaxVoltageCode, amplifierGain,
-		        zeroTemperature, graduate);
+		return Utils.stringOfObject(adcMaxVoltage, adcMaxVoltageCode, amplifierGain, zeroTemperature, graduate);
 	}
 }

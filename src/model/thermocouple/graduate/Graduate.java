@@ -6,12 +6,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.annotation.XmlElement;
 
-import controller.lambda.HashCoder;
 import controller.lambda.Predicates;
 
 /**
@@ -122,7 +122,7 @@ public class Graduate implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return HashCoder.hashCode(name);
+		return Objects.hash(name);
 	}
 
 	@Override

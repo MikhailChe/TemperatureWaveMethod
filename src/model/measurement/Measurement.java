@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -13,7 +14,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
-import controller.lambda.HashCoder;
 import controller.lambda.Predicates;
 
 /**
@@ -26,115 +26,115 @@ import controller.lambda.Predicates;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class Measurement {
-    /**
-     * Время измерения
-     */
-    @XmlElement
-    public long time;
-    /**
-     * Частота эксперимента
-     */
-    @XmlAttribute
-    public double frequency;
-    /**
-     * Массив температур
-     * 
-     * @see Temperature
-     */
-    @XmlElement
-    public List<Temperature> temperature;
-    /**
-     * Массив значений температуропроводности
-     * 
-     * @see Diffusivity
-     */
-    @XmlElement
-    public List<Diffusivity> diffusivity;
+	/**
+	 * Время измерения
+	 */
+	@XmlElement
+	public long time;
+	/**
+	 * Частота эксперимента
+	 */
+	@XmlAttribute
+	public double frequency;
+	/**
+	 * Массив температур
+	 * 
+	 * @see Temperature
+	 */
+	@XmlElement
+	public List<Temperature> temperature;
+	/**
+	 * Массив значений температуропроводности
+	 * 
+	 * @see Diffusivity
+	 */
+	@XmlElement
+	public List<Diffusivity> diffusivity;
 
-    public Measurement() {
-	time = System.currentTimeMillis();
-	temperature = new ArrayList<>();
-	diffusivity = new ArrayList<>();
-    }
-
-    public String getHeader() {
-	StringBuilder sb = new StringBuilder();
-	sb.append("ν;");
-	for (Temperature t : temperature) {
-	    if (t != null)
-		sb.append(Temperature.getHeader() + ";");
+	public Measurement() {
+		time = System.currentTimeMillis();
+		temperature = new ArrayList<>();
+		diffusivity = new ArrayList<>();
 	}
-	for (Diffusivity t : diffusivity) {
-	    if (t != null)
-		sb.append(t.getHeader() + ";");
+
+	public String getHeader() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("ν;");
+		for (Temperature t : temperature) {
+			if (t != null)
+				sb.append(Temperature.getHeader() + ";");
+		}
+		for (Diffusivity t : diffusivity) {
+			if (t != null)
+				sb.append(t.getHeader() + ";");
+		}
+		return sb.toString();
 	}
-	return sb.toString();
-    }
 
-    @Override
-    public String toString() {
-	StringBuilder sb = new StringBuilder();
-	sb.append(String.format("%4.1f;", frequency));
-	for (Temperature t : temperature) {
-	    if (t != null)
-		sb.append(t.toString() + ";");
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(String.format("%4.1f;", frequency));
+		for (Temperature t : temperature) {
+			if (t != null)
+				sb.append(t.toString() + ";");
+		}
+		for (Diffusivity t : diffusivity) {
+			if (t != null)
+				sb.append(t.toString() + ";");
+		}
+		return sb.toString();
 	}
-	for (Diffusivity t : diffusivity) {
-	    if (t != null)
-		sb.append(t.toString() + ";");
+
+	/**
+	 * Считывает измерение из файла
+	 * 
+	 * @param filename
+	 *            Строка с полным или относительным путём к файлу с измерением
+	 * @return объект измерений из файла или <b>null</b> если файла не существует
+	 *         или он не содержит измерение
+	 */
+	public static Measurement forBinary(String filename) {
+
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
+			Object o = ois.readObject();
+			if (o instanceof Measurement) {
+				return (Measurement) o;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
-	return sb.toString();
-    }
 
-    /**
-     * Считывает измерение из файла
-     * 
-     * @param filename
-     *            Строка с полным или относительным путём к файлу с измерением
-     * @return объект измерений из файла или <b>null</b> если файла не существует
-     *         или он не содержит измерение
-     */
-    public static Measurement forBinary(String filename) {
+	/**
+	 * Создаёт новый оъект измерений
+	 * 
+	 * @return новый пустой объект измерений
+	 * @see Measurement
+	 */
 
-	try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
-	    Object o = ois.readObject();
-	    if (o instanceof Measurement) {
-		return (Measurement) o;
-	    }
-	} catch (IOException e) {
-	    e.printStackTrace();
-	} catch (ClassNotFoundException e) {
-	    e.printStackTrace();
+	public static Measurement getMeasurement() {
+		return new Measurement();
 	}
-	return null;
-    }
 
-    /**
-     * Создаёт новый оъект измерений
-     * 
-     * @return новый пустой объект измерений
-     * @see Measurement
-     */
+	@Override
+	public boolean equals(Object o) {
+		if (o == null)
+			return false;
+		if (o == this)
+			return true;
+		if (!(o instanceof Measurement))
+			return false;
+		Predicate<Function<Measurement, Object>> eq = Predicates.equalizer(this, (Measurement) o);
+		return eq.test(a -> a.frequency) && eq.test(a -> a.diffusivity) && eq.test(a -> a.temperature)
+				&& eq.test(a -> a.time);
+	}
 
-    public static Measurement getMeasurement() {
-	return new Measurement();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-	if (o == null)
-	    return false;
-	if (o == this)
-	    return true;
-	if (!(o instanceof Measurement))
-	    return false;
-	Predicate<Function<Measurement, Object>> eq = Predicates.equalizer(this, (Measurement) o);
-	return eq.test(a -> a.frequency) && eq.test(a -> a.diffusivity) && eq.test(a -> a.temperature)
-		&& eq.test(a -> a.time);
-    }
-
-    @Override
-    public int hashCode() {
-	return HashCoder.hashCode(frequency, diffusivity, temperature, time);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(frequency, diffusivity, temperature, time);
+	}
 }

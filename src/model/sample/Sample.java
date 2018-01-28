@@ -5,6 +5,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -12,7 +13,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
-import controller.lambda.HashCoder;
 import controller.lambda.Predicates;
 import model.measurement.Measurement;
 
@@ -27,8 +27,7 @@ public class Sample {
 	private double density = 0;
 	private String comment = "Default_comment";
 
-	private PropertyChangeSupport mPcs = new PropertyChangeSupport(
-			this);
+	private PropertyChangeSupport mPcs = new PropertyChangeSupport(this);
 
 	private transient final static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
 			"Файл образца (*.smpl)", "smpl");
@@ -95,13 +94,12 @@ public class Sample {
 	@Override
 	public boolean equals(Object o) {
 		return Predicates.areEqual(Sample.class, this, (Sample) o,
-				Arrays.asList(Sample::getLength, Sample::getName,
-						Sample::getComment));
+				Arrays.asList(Sample::getLength, Sample::getName, Sample::getComment));
 	}
 
 	@Override
 	public int hashCode() {
-		return HashCoder.hashCode(this.name, this.comment, this.length);
+		return Objects.hash(this.name, this.comment, this.length);
 	}
 
 	@Override

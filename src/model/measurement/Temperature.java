@@ -1,6 +1,7 @@
 package model.measurement;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import javax.xml.bind.JAXB;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -8,7 +9,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 
-import controller.lambda.HashCoder;
 import controller.lambda.Predicates;
 import model.signalID.DCsignalID;
 import model.signalID.SignalIdentifier;
@@ -70,16 +70,13 @@ public class Temperature {
 
 	@Override
 	public boolean equals(Object o) {
-		return Predicates.areEqual(Temperature.class, this,
-				o,
-				Arrays.asList(a -> a.signalID,
-						a -> a.signalLevel, a -> a.value));
+		return Predicates.areEqual(Temperature.class, this, o,
+				Arrays.asList(a -> a.signalID, a -> a.signalLevel, a -> a.value));
 	}
 
 	@Override
 	public int hashCode() {
-		return HashCoder.hashCode(signalID, signalLevel,
-				value);
+		return Objects.hash(signalID, signalLevel, value);
 	}
 
 }

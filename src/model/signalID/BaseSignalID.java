@@ -2,12 +2,12 @@ package model.signalID;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 
-import controller.lambda.HashCoder;
 import controller.lambda.Predicates;
 import model.phaseAdjust.PhaseAdjust;
 import model.phaseAdjust.PhaseAdjustFactory;
@@ -48,7 +48,7 @@ public class BaseSignalID extends SignalIdentifier {
 
 	@Override
 	public int hashCode() {
-		return HashCoder.hashCode(phaseAdjust);
+		return Objects.hash(phaseAdjust);
 	}
 
 	@Override
