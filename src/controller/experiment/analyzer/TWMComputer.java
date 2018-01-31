@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -160,11 +161,12 @@ public class TWMComputer implements Callable<Measurement> {
 	return saveToFile(measurements, folder, false);
     }
 
-    public static File saveToFile(final List<Measurement> measurements, final File folder,
+    public static File saveToFile(final List<Measurement> inputMeasurements, final File folder,
 	    final boolean appendToSample) {
 	// Создаём выходной файл
 	Objects.requireNonNull(folder, "Папка не должна быть null");
-	Objects.requireNonNull(measurements, "Список измерения не может быть null");
+	Objects.requireNonNull(inputMeasurements, "Список измерения не может быть null");
+	List<Measurement> measurements = new ArrayList<>(inputMeasurements);
 	Collections.sort(measurements, Comparator.comparingLong(Measurement::getTime));
 
 	File resultFile = tryToCreateResultFile(folder);
@@ -291,14 +293,13 @@ public class TWMComputer implements Callable<Measurement> {
 		    try {
 			Files.delete(resultFile.toPath());
 		    } catch (FileSystemException e) {
-
+			System.out.println(Locale.getDefault());
+			JOptionPane.setDefaultLocale(Locale.getDefault());
 			exception = true;
-			int clicked = JOptionPane.showConfirmDialog(null,
-				"Пожалуйста, закройте файл с результатами.\n"
-					+ "Иначе я не смогу записать туда новые результаты.\n"
-					+ "При необходимости Вы можете сохранить копию файла вручную\n"
-					+ "Я подожду и не буду трогать этот файл, пока Вы не закроете это окно\n"
-					+ e.getOtherFile(),
+			int clicked = JOptionPane.showConfirmDialog(null, "Пожалуйста, закройте файл с результатами.\n"
+				+ "Иначе я не смогу записать туда новые результаты.\n"
+				+ "При необходимости Вы можете сохранить копию файла вручную\n"
+				+ "Я подожду и не буду трогать этот файл, пока Вы не закроете это окно\n" + e.getFile(),
 				resultFile.toString(), JOptionPane.OK_CANCEL_OPTION);
 			if (JOptionPane.OK_OPTION != clicked) {
 			    return null;
