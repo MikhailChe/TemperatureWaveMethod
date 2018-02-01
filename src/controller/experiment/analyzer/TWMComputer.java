@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,6 +31,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -86,6 +90,15 @@ public class TWMComputer implements Callable<Measurement> {
 	    }
 	    // Запускаем параллельные вычисления для каждого файла
 	    files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f))));
+
+	    Function<Path, ExperimentFileReader> fn = t -> {
+		try {
+		    return new ExperimentFileReader(t);
+		} catch (IOException e1) {
+		    e1.printStackTrace();
+		}
+		return null;
+	    };
 
 	    int currentProgress = 0;
 	    boolean header = true;
@@ -227,11 +240,11 @@ public class TWMComputer implements Callable<Measurement> {
     }
 
     // Выдаём параметры всех сигналов
-    public static SignalParameters[] getAllSignalParameters(double[][] signals, int frequency) {
-	SignalParameters[] params = new SignalParameters[signals.length];
+    public static List<SignalParameters> getAllSignalParameters(double[][] signals, int freq_index, double frequency) {
+	List<SignalParameters> params = new ArrayList<>(signals.length);
 	for (int i = 0; i < signals.length; i++) {
 	    double[] signal = signals[i];
-	    params[i] = getSignalParameters(signal, frequency);
+	    params.add(getSignalParameters(signal, freq_index, frequency));
 	}
 	return params;
     }
@@ -258,11 +271,11 @@ public class TWMComputer implements Callable<Measurement> {
      * Записываем это всё в параметры и отправляем вызывавшему
      * 
      * @param signal
-     * @param frequency
+     * @param freq_index
      * @return
      */
-    public static SignalParameters getSignalParameters(double[] signal, int frequency) {
-	double[] fourierForFreq = FFT.getFourierForIndex(signal, frequency);
+    public static SignalParameters getSignalParameters(double[] signal, int freq_index, double frequency) {
+	double[] fourierForFreq = FFT.getFourierForIndex(signal, freq_index);
 
 	double phase = FFT.getArgument(fourierForFreq, 0) + Math.PI / 2.0;
 	truncateNegative(phase);
@@ -270,7 +283,7 @@ public class TWMComputer implements Callable<Measurement> {
 	double amplitude = 2.0 * FFT.getAbs(fourierForFreq, 0) / signal.length;
 	double nullOffset = Arrays.stream(signal).parallel().average().orElse(Double.NaN);
 
-	SignalParameters params = new SignalParameters(phase, amplitude, nullOffset);
+	SignalParameters params = new SignalParameters(phase, amplitude, nullOffset, frequency);
 
 	return params;
     }
@@ -327,7 +340,8 @@ public class TWMComputer implements Callable<Measurement> {
     final private Workspace workspace;
 
     public Measurement result;
-    SignalIdentifier[] SHIFTS;
+    AtomicBoolean computing = new AtomicBoolean(false);
+    List<SignalIdentifier> SHIFTS;
 
     private Predicate<Diffusivity> diffFilter;
 
@@ -342,16 +356,102 @@ public class TWMComputer implements Callable<Measurement> {
 	List<SignalIdentifier> signalIDs;
 	if ((signalIDs = workspace.getSignalIDs()) != null) {
 	    if (signalIDs.size() > 0) {
-		this.SHIFTS = signalIDs.toArray(new SignalIdentifier[signalIDs.size()]);
+		this.SHIFTS = Collections.unmodifiableList(signalIDs);
 	    }
 	}
 
     }
 
     @Override
-    public Measurement call() {
+    public synchronized Measurement call() {
+	if (result != null) {
+	    return result;
+	}
+	ExperimentFileReader reader = getFileReader();
+	if (reader == null)
+	    return null;
+
+	Measurement res = new Measurement();
+	res.time = reader.getTime();
+	int numCol = reader.getColumnCount();
+	if (numCol > 1) {
+	    final double EXPERIMENT_FREQUENCY = reader.getExperimentFrequency();
+	    double[][] croppedData = reader.getCroppedData();
+	    final int FREQ_INDEX = reader.getCroppedDataPeriodsCount();
+	    res.frequency = EXPERIMENT_FREQUENCY;
+	    List<SignalParameters> params = getAllSignalParameters(croppedData, FREQ_INDEX, EXPERIMENT_FREQUENCY);
+	    for (int currentChannel = 1; currentChannel < Math.min(numCol, SHIFTS.size()); currentChannel++) {
+		if (SHIFTS.get(currentChannel) == null) {
+		    continue;
+		}
+		SignalParameters param = params.get(currentChannel);
+		selectConsumer(SHIFTS.get(currentChannel), res).accept(currentChannel, param);
+	    }
+	    reader = null;
+	}
+	result = res;
+	return result;
+    }
+
+    private BiConsumer<Integer, SignalParameters> selectConsumer(final SignalIdentifier ident, Measurement m) {
+	if (ident instanceof BaseSignalID) {
+	    return (chan, param) -> baseSignalConsumer(chan, param, (BaseSignalID) ident, m);
+
+	} else if (ident instanceof DCsignalID) {
+	    return (chan, param) -> dcSignalConsumer(chan, param, (DCsignalID) ident, m);
+
+	} else if (ident instanceof AdjustmentSignalID) {
+	    return (chan, param) -> adjustmentSignalConsumer(chan, param, (AdjustmentSignalID) ident, m);
+
+	}
+	return (a, b) -> {
+	};
+    }
+
+    private void baseSignalConsumer(int currentChannel, SignalParameters param, BaseSignalID id, Measurement result) {
+
+	PhaseAdjust adjust = id.phaseAdjust;
+	if (adjust == null)
+	    return;
+	double currentShift = adjust.getCurrentShift(param.frequency);
+
+	// Если случилось так, что неправильно установили фазу - переворачиваем
+	currentShift = PhaseUtils.truncateNegative(id.inverse ? currentShift + Math.toRadians(180) : currentShift);
+
+	Diffusivity tCond = getPhysicalProperties(param, currentShift, param.frequency);
+	tCond.signalID = id;
+	tCond.channelNumber = currentChannel;
+
+	if (diffFilter != null) {
+	    if (!diffFilter.test(tCond))
+		return;
+	}
+
+	result.diffusivity.add(tCond);
+    }
+
+    private void dcSignalConsumer(int currentChannel, SignalParameters param, DCsignalID signID, Measurement result) {
+	Temperature t = new Temperature();
+
+	// t.value = params.nullOffset;
+	t.signalLevel = signID.getVoltage(param.nullOffset);
+	t.value = signID.getTemperature(signID.getVoltage(param.nullOffset) * 1000.0);
+	result.temperature.add(t);
+    }
+
+    private void adjustmentSignalConsumer(int currentChannel, SignalParameters param, AdjustmentSignalID id,
+	    Measurement result) {
+	Diffusivity tCond = new Diffusivity();
+
+	tCond.amplitude = param.amplitude;
+	tCond.phase = -param.phase;
+	tCond.frequency = param.frequency;
+	tCond.channelNumber = currentChannel;
+	result.diffusivity.add(tCond);
+    }
+
+    private ExperimentFileReader getFileReader() {
 	ExperimentFileReader reader = null;
-	result = new Measurement();
 	// Set high priority to read the file
 	Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 	try {
@@ -359,73 +459,12 @@ public class TWMComputer implements Callable<Measurement> {
 	} catch (Exception e) {
 	    // showException(currentThread(), e);
 	    Debug.println("Не удалось прочитать файл с измерениями. " + e.getLocalizedMessage());
-	    return result;
+
 	}
 	// Set low priority, so that other threads could easily read the file
-	result.time = reader.getTime();
 	Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 	// ===========
-
-	int numCol = reader.getColumnCount();
-	if (numCol > 1) {
-
-	    final double EXPERIMENT_FREQUENCY = reader.getExperimentFrequency();
-	    double[][] croppedData = reader.getCroppedData();
-	    final int FREQ_INDEX = reader.getCroppedDataPeriodsCount();
-	    result.frequency = EXPERIMENT_FREQUENCY;
-	    SignalParameters[] params = getAllSignalParameters(croppedData, FREQ_INDEX);
-	    for (int currentChannel = 1; currentChannel < Math.min(numCol, SHIFTS.length); currentChannel++) {
-		if (SHIFTS[currentChannel] == null) {
-		    continue;
-		}
-		SignalParameters param = params[currentChannel];
-
-		if (SHIFTS[currentChannel] instanceof BaseSignalID) {
-		    BaseSignalID id = (BaseSignalID) SHIFTS[currentChannel];
-		    PhaseAdjust adjust = id.phaseAdjust;
-		    if (adjust == null)
-			continue;
-		    double currentShift = adjust.getCurrentShift(EXPERIMENT_FREQUENCY);
-
-		    if (id.inverse) {
-			param = new SignalParameters(param.phase + Math.toRadians(180), param.amplitude,
-				param.nullOffset);
-		    }
-
-		    Diffusivity tCond = getPhysicalProperties(param, currentShift, EXPERIMENT_FREQUENCY);
-		    tCond.signalID = id;
-		    tCond.channelNumber = currentChannel;
-
-		    if (diffFilter != null) {
-			if (!diffFilter.test(tCond))
-			    continue;
-		    }
-
-		    result.diffusivity.add(tCond);
-
-		} else if (SHIFTS[currentChannel] instanceof DCsignalID) {
-		    DCsignalID signID = (DCsignalID) SHIFTS[currentChannel];
-
-		    Temperature t = new Temperature();
-
-		    // t.value = params.nullOffset;
-		    t.signalLevel = signID.getVoltage(param.nullOffset);
-		    t.value = signID.getTemperature(signID.getVoltage(param.nullOffset) * 1000.0);
-		    result.temperature.add(t);
-		} else if (SHIFTS[currentChannel] instanceof AdjustmentSignalID) {
-		    Diffusivity tCond = new Diffusivity();
-
-		    tCond.amplitude = param.amplitude;
-		    tCond.phase = -param.phase;
-		    tCond.frequency = EXPERIMENT_FREQUENCY;
-		    tCond.channelNumber = currentChannel;
-		    result.diffusivity.add(tCond);
-		}
-	    }
-	    reader = null;
-	    System.gc();
-	}
-	return result;
+	return reader;
     }
 
     public Diffusivity getPhysicalProperties(final SignalParameters PARAM, final double CURRENT_SHIFT,
