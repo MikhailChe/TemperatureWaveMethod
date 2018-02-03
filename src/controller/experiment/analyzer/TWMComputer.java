@@ -8,6 +8,8 @@ import static java.lang.Thread.currentThread;
 import static java.nio.file.Files.newBufferedWriter;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.WRITE;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 
 import java.awt.Desktop;
 import java.awt.Window;
@@ -90,16 +92,6 @@ public class TWMComputer implements Callable<Measurement> {
 	    }
 	    // Запускаем параллельные вычисления для каждого файла
 	    files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f))));
-
-	    Function<Path, ExperimentFileReader> fn = t -> {
-		try {
-		    return new ExperimentFileReader(t);
-		} catch (IOException e1) {
-		    e1.printStackTrace();
-		}
-		return null;
-	    };
-
 	    int currentProgress = 0;
 	    boolean header = true;
 	    List<Measurement> measurements = new ArrayList<>();
@@ -341,7 +333,7 @@ public class TWMComputer implements Callable<Measurement> {
 
     public Measurement result;
     AtomicBoolean computing = new AtomicBoolean(false);
-    List<SignalIdentifier> SHIFTS;
+    final List<SignalIdentifier> signalIDs;
 
     private Predicate<Diffusivity> diffFilter;
 
@@ -356,8 +348,12 @@ public class TWMComputer implements Callable<Measurement> {
 	List<SignalIdentifier> signalIDs;
 	if ((signalIDs = workspace.getSignalIDs()) != null) {
 	    if (signalIDs.size() > 0) {
-		this.SHIFTS = Collections.unmodifiableList(signalIDs);
+		this.signalIDs = unmodifiableList(signalIDs);
+	    } else {
+		this.signalIDs = emptyList();
 	    }
+	} else {
+	    this.signalIDs = emptyList();
 	}
 
     }
@@ -373,21 +369,19 @@ public class TWMComputer implements Callable<Measurement> {
 
 	Measurement res = new Measurement();
 	res.time = reader.getTime();
-	int numCol = reader.getColumnCount();
-	if (numCol > 1) {
-	    final double EXPERIMENT_FREQUENCY = reader.getExperimentFrequency();
+	int colCount = reader.getColumnCount();
+	if (colCount > 1) {
+	    res.frequency = reader.getExperimentFrequency();
 	    double[][] croppedData = reader.getCroppedData();
 	    final int FREQ_INDEX = reader.getCroppedDataPeriodsCount();
-	    res.frequency = EXPERIMENT_FREQUENCY;
-	    List<SignalParameters> params = getAllSignalParameters(croppedData, FREQ_INDEX, EXPERIMENT_FREQUENCY);
-	    for (int currentChannel = 1; currentChannel < Math.min(numCol, SHIFTS.size()); currentChannel++) {
-		if (SHIFTS.get(currentChannel) == null) {
+	    List<SignalParameters> params = getAllSignalParameters(croppedData, FREQ_INDEX, res.frequency);
+	    for (int channel = 1; channel < Math.min(colCount, signalIDs.size()); channel++) {
+		if (signalIDs.get(channel) == null) {
 		    continue;
 		}
-		SignalParameters param = params.get(currentChannel);
-		selectConsumer(SHIFTS.get(currentChannel), res).accept(currentChannel, param);
+		SignalParameters param = params.get(channel);
+		selectConsumer(signalIDs.get(channel), res).accept(channel, param);
 	    }
-	    reader = null;
 	}
 	result = res;
 	return result;
@@ -459,7 +453,6 @@ public class TWMComputer implements Callable<Measurement> {
 	} catch (Exception e) {
 	    // showException(currentThread(), e);
 	    Debug.println("Не удалось прочитать файл с измерениями. " + e.getLocalizedMessage());
-
 	}
 	// Set low priority, so that other threads could easily read the file
 	Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
