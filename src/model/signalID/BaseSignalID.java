@@ -20,39 +20,39 @@ import model.phaseAdjust.PhaseAdjustFactory;
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public class BaseSignalID extends SignalIdentifier {
-	@XmlElement
-	public PhaseAdjust phaseAdjust;
+    @XmlElement
+    public PhaseAdjust phaseAdjust;
 
-	@XmlElement
-	public boolean inverse = false;
+    @XmlElement
+    public boolean inverse = false;
 
-	public BaseSignalID() {
-		super();
-	}
+    public BaseSignalID() {
+	super();
+    }
 
-	/**
-	 * Конструктор для идентфикатора канала базового сигнала.
-	 * 
-	 * @param file
-	 *            файл с юстировкой
-	 */
-	public BaseSignalID(File file) {
-		this();
-		phaseAdjust = PhaseAdjustFactory.forFile(file);
-	}
+    /**
+     * Конструктор для идентфикатора канала базового сигнала.
+     * 
+     * @param file
+     *            файл с юстировкой
+     */
+    public BaseSignalID(File file) {
+	this();
+	phaseAdjust = PhaseAdjustFactory.forFile(file);
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		return Predicates.areEqual(BaseSignalID.class, this, o, Arrays.asList(a -> a.phaseAdjust));
-	}
+    @Override
+    public boolean equals(Object o) {
+	return Predicates.areEqual(BaseSignalID.class, this, o, Arrays.asList(a -> a.phaseAdjust));
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(phaseAdjust);
-	}
+    @Override
+    public int hashCode() {
+	return Objects.hash(phaseAdjust);
+    }
 
-	@Override
-	public String toString() {
-		return "Base signal";
-	}
+    @Override
+    public String toString() {
+	return "Base signal." + (inverse ? " inversed" : "");
+    }
 }

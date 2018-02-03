@@ -4,6 +4,8 @@ import static controller.experiment.analyzer.PhaseUtils.truncateNegative;
 import static controller.experiment.analyzer.PhaseUtils.truncatePositive;
 import static debug.Debug.println;
 import static debug.JExceptionHandler.showException;
+import static java.lang.Math.toDegrees;
+import static java.lang.Math.toRadians;
 import static java.lang.Thread.currentThread;
 import static java.nio.file.Files.newBufferedWriter;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
@@ -18,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,7 +36,6 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -210,9 +210,6 @@ public class TWMComputer implements Callable<Measurement> {
     }
 
     public void writeToDB(List<Future<Measurement>> futuresSet) {
-
-	// if (JOptionPane.showConfirmDialog(parent, "Загрузить данные в базу?") ==
-	// JOptionPane.OK_OPTION) {
 	try {
 	    ExperimentUploader eu = new ExperimentUploader();
 
@@ -228,7 +225,6 @@ public class TWMComputer implements Callable<Measurement> {
 		| IOException e) {
 	    e.printStackTrace();
 	}
-	// }
     }
 
     // Выдаём параметры всех сигналов
@@ -410,7 +406,8 @@ public class TWMComputer implements Callable<Measurement> {
 	double currentShift = adjust.getCurrentShift(param.frequency);
 
 	// Если случилось так, что неправильно установили фазу - переворачиваем
-	currentShift = PhaseUtils.truncateNegative(id.inverse ? currentShift + Math.toRadians(180) : currentShift);
+	currentShift = toDegrees(
+		truncateNegative(id.inverse ? toRadians(currentShift + 180) : toRadians(currentShift)));
 
 	Diffusivity tCond = getPhysicalProperties(param, currentShift, param.frequency);
 	tCond.signalID = id;

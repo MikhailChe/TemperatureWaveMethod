@@ -9,7 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Scanner;
@@ -30,165 +30,157 @@ import controller.lambda.Predicates;
  */
 @XmlAccessorType(NONE)
 public class PhaseAdjust {
-	final public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
-			"Файл юстировки текстовый (*.zc)", "zc");
+    final public static FileNameExtensionFilter extensionFilter = new FileNameExtensionFilter(
+	    "Файл юстировки текстовый (*.zc)", "zc");
 
-	@XmlAttribute
-	final public File forFile;
-	@XmlElement
-	final private NavigableMap<Double, Double> shifts;
+    @XmlAttribute
+    final public File forFile;
+    @XmlElement
+    final private NavigableMap<Double, Double> shifts;
 
-	final private Map<Double, Double> answerMap;
+    final private Map<Double, Double> answerMap;
 
-	/**
-	 * Защищенный конструктор для создания юстировки из файла
-	 * 
-	 * @param filename
-	 *            текстовый файл с юстировкой
-	 * @throws IllegalArgumentException
-	 */
-	public PhaseAdjust() {
-		this(new File(""));
-	}
+    /**
+     * Защищенный конструктор для создания юстировки из файла
+     * 
+     * @param filename
+     *            текстовый файл с юстировкой
+     * @throws IllegalArgumentException
+     */
+    public PhaseAdjust() {
+	this(new File(""));
+    }
 
-	public PhaseAdjust(File filename) throws IllegalArgumentException {
-		this.forFile = filename;
-		shifts = synchronizedNavigableMap(new TreeMap<Double, Double>());
-		answerMap = new HashMap<>();
+    public PhaseAdjust(File filename) throws IllegalArgumentException {
+	this.forFile = filename;
+	shifts = synchronizedNavigableMap(new TreeMap<Double, Double>());
+	answerMap = new Hashtable<>();
 
-	}
+    }
 
-	private void initialize() {
-		if (!shifts.isEmpty())
-			return;
+    private void initialize() {
+	if (!shifts.isEmpty())
+	    return;
 
-		try (Scanner s = new Scanner(new BufferedInputStream(new FileInputStream(forFile)))) {
+	try (Scanner s = new Scanner(new BufferedInputStream(new FileInputStream(forFile)))) {
 
-			while (s.hasNext()) {
-				double key = 0;
-				if (s.hasNextDouble()) {
-					key = s.nextDouble();
-				} else {
-					key = s.nextInt();
-				}
-				double value = 0;
-
-				if (s.hasNextDouble()) {
-					value = s.nextDouble();
-				} else {
-					value = s.nextInt();
-				}
-				shifts.put(key, value);
-			}
-			s.close();
-		} catch (FileNotFoundException e) {
-			println(e.getLocalizedMessage());
-			System.err.println(this.getClass().getName() + " : file not found " + forFile);
-		}
-	}
-
-	/**
-	 * Функиця вычисляет сдвиг фазы основываясь на существующих данных и
-	 * интерполируя их
-	 * 
-	 * @param frequency
-	 *            частота в Гц
-	 * @return значение текущего сдвига фаз для выбранной частоты
-	 */
-	public synchronized double getCurrentShift(double frequency) {
-
-		if (answerMap.containsKey(frequency)) {
-			Double answer = answerMap.get(frequency);
-			if (answer != null) {
-				return answer;
-			}
-		}
-		if (shifts.isEmpty())
-			initialize();
-		if (shifts.containsKey(frequency)) {
-			Double value = shifts.get(frequency);
-			if (value == null) {
-				throw new NullPointerException();
-			}
-			answerMap.put(frequency, ((double) (value)));
-			return value;
-		}
-		Double nearestHigherKey = shifts.higherKey(frequency);
-		Double nearsetLowerKey = shifts.lowerKey(frequency);
-		Double nearestHigherValue = null;
-		Double nearestLowerValue = null;
-		if (nearsetLowerKey == null && nearestHigherKey == null) {
-			throw new NullPointerException();
-		} else if (nearsetLowerKey == null) {
-			nearestHigherValue = shifts.get(nearestHigherKey);
-			if (nearestHigherValue == null) {
-				throw new NullPointerException();
-			}
-			answerMap.put(frequency, nearestHigherValue);
-			return nearestHigherValue;
-		} else if (nearestHigherKey == null) {
-			nearestLowerValue = shifts.get(nearsetLowerKey);
-			if (nearestLowerValue == null) {
-				throw new NullPointerException();
-			}
-			answerMap.put(frequency, nearestLowerValue);
-			return nearestLowerValue;
+	    while (s.hasNext()) {
+		double key = 0;
+		if (s.hasNextDouble()) {
+		    key = s.nextDouble();
 		} else {
-			nearestHigherValue = shifts.get(nearestHigherKey);
-			nearestLowerValue = shifts.get(nearsetLowerKey);
-			if (nearestHigherValue == null || nearestLowerValue == null) {
-				throw new NullPointerException();
-			}
-			double diff = nearestHigherKey - nearsetLowerKey;
-			if (diff == 0) {
-				throw new NullPointerException();
-			}
-			double lowerDiff = frequency - nearsetLowerKey;
-			double higherDiff = nearestHigherKey - frequency;
-			double lowerK = 1 - (lowerDiff / diff);
-			double higherK = 1 - (higherDiff / diff);
-			double value = nearestLowerValue * lowerK + nearestHigherValue * higherK;
-			answerMap.put(frequency, value);
-			return value;
+		    key = s.nextInt();
 		}
-	}
+		double value = 0;
 
-	public double maxShift() {
-		if (shifts.isEmpty())
-			initialize();
-		return shifts.values().stream().mapToDouble(a -> a).max().orElse(Double.NaN);
+		if (s.hasNextDouble()) {
+		    value = s.nextDouble();
+		} else {
+		    value = s.nextInt();
+		}
+		shifts.put(key, value);
+	    }
+	    s.close();
+	} catch (FileNotFoundException e) {
+	    println(e.getLocalizedMessage());
+	    System.err.println(this.getClass().getName() + " : file not found " + forFile);
 	}
+    }
 
-	public double minShift() {
-		if (shifts.isEmpty())
-			initialize();
-		return shifts.values().stream().mapToDouble(a -> a).min().orElse(Double.NaN);
-	}
+    /**
+     * Функиця вычисляет сдвиг фазы основываясь на существующих данных и
+     * интерполируя их
+     * 
+     * @param frequency
+     *            частота в Гц
+     * @return значение текущего сдвига фаз для выбранной частоты
+     */
+    public synchronized double getCurrentShift(double freq) {
+	return answerMap.computeIfAbsent(freq, frequency -> {
+	    if (shifts.isEmpty())
+		initialize();
+	    if (shifts.containsKey(frequency)) {
+		Double value = shifts.get(frequency);
+		if (value == null) {
+		    throw new NullPointerException();
+		}
+		return value;
+	    }
+	    Double nearestHigherKey = shifts.higherKey(frequency);
+	    Double nearsetLowerKey = shifts.lowerKey(frequency);
+	    Double nearestHigherValue = null;
+	    Double nearestLowerValue = null;
+	    if (nearsetLowerKey == null && nearestHigherKey == null) {
+		throw new NullPointerException();
+	    } else if (nearsetLowerKey == null) {
+		nearestHigherValue = shifts.get(nearestHigherKey);
+		if (nearestHigherValue == null) {
+		    throw new NullPointerException();
+		}
+		return nearestHigherValue;
+	    } else if (nearestHigherKey == null) {
+		nearestLowerValue = shifts.get(nearsetLowerKey);
+		if (nearestLowerValue == null) {
+		    throw new NullPointerException();
+		}
+		return nearestLowerValue;
+	    } else {
+		nearestHigherValue = shifts.get(nearestHigherKey);
+		nearestLowerValue = shifts.get(nearsetLowerKey);
+		if (nearestHigherValue == null || nearestLowerValue == null) {
+		    throw new NullPointerException();
+		}
+		double diff = nearestHigherKey - nearsetLowerKey;
+		if (diff == 0) {
+		    throw new NullPointerException();
+		}
+		double lowerDiff = frequency - nearsetLowerKey;
+		double higherDiff = nearestHigherKey - frequency;
+		double lowerK = 1 - (lowerDiff / diff);
+		double higherK = 1 - (higherDiff / diff);
+		double value = nearestLowerValue * lowerK + nearestHigherValue * higherK;
 
-	public double minFrequency() {
-		if (shifts.isEmpty())
-			initialize();
-		return shifts.firstKey();
-	}
+		return value;
+	    }
+	});
+    }
 
-	public double maxFrequency() {
-		if (shifts.isEmpty())
-			initialize();
-		return shifts.lastKey();
-	}
+    public double maxShift() {
+	if (shifts.isEmpty())
+	    initialize();
+	return shifts.values().stream().mapToDouble(a -> a).max().orElse(Double.NaN);
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		return Predicates.areEqual(PhaseAdjust.class, this, o, Arrays.asList(a -> a.forFile));
-	}
+    public double minShift() {
+	if (shifts.isEmpty())
+	    initialize();
+	return shifts.values().stream().mapToDouble(a -> a).min().orElse(Double.NaN);
+    }
 
-	@Override
-	public int hashCode() {
-		return forFile.hashCode();
-	}
+    public double minFrequency() {
+	if (shifts.isEmpty())
+	    initialize();
+	return shifts.firstKey();
+    }
 
-	@Override
-	public String toString() {
-		return "AdjustmentFile: " + forFile;
-	}
+    public double maxFrequency() {
+	if (shifts.isEmpty())
+	    initialize();
+	return shifts.lastKey();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+	return Predicates.areEqual(PhaseAdjust.class, this, o, Arrays.asList(a -> a.forFile));
+    }
+
+    @Override
+    public int hashCode() {
+	return forFile.hashCode();
+    }
+
+    @Override
+    public String toString() {
+	return "AdjustmentFile: " + forFile;
+    }
 }
