@@ -1,5 +1,7 @@
 package controller.experiment.analyzer;
 
+import static java.lang.Math.round;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,17 +45,13 @@ public class FFT {
     }
 
     public static double[] getFourierForIndexAlt(final double[] realData, final int index) {
-	double real = 0, imag = 0;
 	final int N = realData.length;
-	final double twoPiIndexDivN = (2.0 * Math.PI * index) / N;
-	if (realData.length % index != 0)
-	    throw new IllegalArgumentException("Надо чтобы данные были кратны частоте");
 
-	final int batchSize = realData.length / index;
+	final double batchSize = N / index;
 
 	List<double[]> indFourier = IntStream.range(0, index).parallel().mapToObj(ind -> {
-	    int start = index * batchSize;
-	    int stop = (index + 1) * batchSize;
+	    int start = (int) round(ind * batchSize);
+	    int stop = (int) round((ind + 1) * batchSize);
 	    return Arrays.copyOfRange(realData, start, stop);
 	}).map(arr -> getFourierForIndex(arr, 1)).collect(Collectors.toList());
 
