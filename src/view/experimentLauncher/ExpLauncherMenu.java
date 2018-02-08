@@ -92,17 +92,31 @@ public class ExpLauncherMenu extends JMenuBar {
 		fileOpenProject.addActionListener(e -> {
 			Sample sample;
 			if ((sample = workspace.getSample()) != null) {
-				int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
-						"Хотите сохранить изменения в образце перед открытием нового?", "Не забудь сохраниться",
-						JOptionPane.YES_NO_CANCEL_OPTION);
-				if (shouldSaveOption == JOptionPane.NO_OPTION) {
-					sample = null;
-					System.gc();
+
+				boolean shouldAskToSave = false;
+				File samplefile;
+				if ((samplefile = workspace.getSampleFile()) != null) {
+					Sample sampleFromFile = SampleFactory.forXML(samplefile.getAbsolutePath());
+					if (sampleFromFile != null) {
+						if (!sample.equals(sampleFromFile)) {
+							shouldAskToSave = true;
+						}
+					}
 				}
-				if (shouldSaveOption == JOptionPane.YES_OPTION) {
-					saveSampleXML(workspace.getSampleFile().toString(), sample);
+
+				if (shouldAskToSave) {
+					int shouldSaveOption = JOptionPane.showConfirmDialog(parent,
+							"Хотите сохранить изменения в образце перед открытием нового?", "Не забудь сохраниться",
+							JOptionPane.YES_NO_CANCEL_OPTION);
+					if (shouldSaveOption == JOptionPane.NO_OPTION) {
+						sample = null;
+					}
+					if (shouldSaveOption == JOptionPane.YES_OPTION) {
+						saveSampleXML(workspace.getSampleFile().toString(), sample);
+						sample = null;
+					}
+				} else {
 					sample = null;
-					System.gc();
 				}
 			}
 			if (sample == null) {
