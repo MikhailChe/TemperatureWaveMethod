@@ -11,6 +11,7 @@ import java.sql.Statement;
 
 import debug.Debug;
 import model.sample.Sample;
+import model.sample.SampleFactory;
 
 public class Mysql {
 	final Connection conn_id;
@@ -106,7 +107,7 @@ public class Mysql {
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException, IOException {
 
 		ExperimentUploader eu = new ExperimentUploader();
-		Sample s = new Sample();
+		Sample s = SampleFactory.getSample();
 		s.setName("Михаил");
 		s.setComment("Черноскутов");
 		s.setLength(0.001515);

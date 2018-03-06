@@ -22,10 +22,15 @@ import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -163,12 +168,12 @@ public class TWMComputer implements Callable<Measurement> {
 		return null;
 	}
 
-	public static File saveToFile(List<Measurement> measurements, File folder) {
+	public static File saveToFile(List<Measurement> measurements, File folder) throws IOException {
 		return saveToFile(measurements, folder, false);
 	}
 
 	public static File saveToFile(final List<Measurement> inputMeasurements, final File folder,
-			final boolean appendToSample) {
+			final boolean appendToSample) throws IOException {
 		// Создаём выходной файл
 		Objects.requireNonNull(folder, "Папка не должна быть null");
 		Objects.requireNonNull(inputMeasurements, "Список измерения не может быть null");
@@ -206,6 +211,7 @@ public class TWMComputer implements Callable<Measurement> {
 
 		} catch (IOException e) {
 			e.printStackTrace();
+			throw e;
 		}
 		return resultFile;
 	}
@@ -285,9 +291,11 @@ public class TWMComputer implements Callable<Measurement> {
 	 */
 	public static File tryToCreateResultFile(File folder) {
 		File resultFile;
-		final String formatStringOfReulstFile = "result-%s.tsv";
+		LocalDateTime ldt = LocalDateTime.now();
+		Date date = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+		final String formatStringOfReulstFile = "result-%1$tY%1$tm%1$td%1$tH%1$tM%1$tS-%2$s.tsv";
 		try {
-			resultFile = new File(folder, String.format(formatStringOfReulstFile, folder.getName()));
+			resultFile = new File(folder, String.format(formatStringOfReulstFile, date, folder.getName()));
 			if (resultFile.exists()) {
 				boolean exception = false;
 				do {

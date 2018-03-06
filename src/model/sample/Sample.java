@@ -35,7 +35,7 @@ public class Sample {
 	@XmlElement
 	public List<Measurement> measurements = new ArrayList<>();
 
-	public Sample() {
+	Sample() {
 		super();
 		setComment("Default_comment");
 		setName("Default_name");
