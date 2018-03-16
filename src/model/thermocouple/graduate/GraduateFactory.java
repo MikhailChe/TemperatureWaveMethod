@@ -47,7 +47,7 @@ public class GraduateFactory {
 		}
 	}
 
-	public static Graduate parseTextFile(Path path) {
+	private static Graduate parseTextFile(Path path) {
 		Graduate g = new Graduate();
 		g.name = path.getFileName().toString();
 		try {

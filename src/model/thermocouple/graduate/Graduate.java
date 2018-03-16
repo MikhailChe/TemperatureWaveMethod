@@ -54,8 +54,7 @@ public class Graduate implements Serializable {
 	 * @param zeroTemp
 	 *            Температура холодных концов
 	 * 
-	 * @return Разница температуры между горячими и холодными концами в
-	 *         кельвинах
+	 * @return Разница температуры между горячими и холодными концами в кельвинах
 	 */
 	public double getTemperature(double voltage, double zeroTemp) {
 

@@ -14,13 +14,13 @@ import java.awt.GridLayout;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystemException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -191,7 +191,7 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 		this.setJMenuBar(menubar);
 	}
 
-	public void checkNewFile() {
+	public void checkNewFilesAndUpdate() {
 
 		List<File> files;
 		try {
@@ -202,6 +202,11 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 		files.removeAll(filesInFolder);
 
 		if (!files.isEmpty()) {
+			try {
+				TimeUnit.SECONDS.sleep(2);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			files.parallelStream().forEach(f -> {
 				if (!isClosing)
 					updateValuesForFile(f);
@@ -230,13 +235,13 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 			for (int i = 0; i < tDiffuss.size(); i++) {
 				Diffusivity tDiffus = tDiffuss.get(i);
 
-				JTDiffLabelSet set = tDiffusPanels.computeIfAbsent(tDiffus.channelNumber, key -> {
+				JTDiffLabelSet labelsSet = tDiffusPanels.computeIfAbsent(tDiffus.channelNumber, key -> {
 					JTDiffLabelSet ls = new JTDiffLabelSet(key);
 					labelSetContainer.add(ls);
 					return ls;
 				});
-				set.updateValues(tDiffus);
-				updatedLabels.add(set);
+				labelsSet.updateValues(tDiffus);
+				updatedLabels.add(labelsSet);
 			}
 			tDiffusPanels.values().stream().filter(val -> !updatedLabels.contains(val))
 					.forEach(panel -> panel.updateValues(null));
@@ -258,7 +263,7 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 			if (Thread.interrupted())
 				return;
 
-			checkNewFile();
+			checkNewFilesAndUpdate();
 			try {
 				java.util.concurrent.TimeUnit.SECONDS.sleep(3);
 			} catch (InterruptedException e) {
