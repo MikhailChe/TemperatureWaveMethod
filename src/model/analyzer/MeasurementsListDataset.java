@@ -119,14 +119,14 @@ public class MeasurementsListDataset implements XYDataset {
 	}
 
 	static class YFetchers {
-		public final static Function<Measurement, List<Number>> DIFFUSIVITY = (m) -> m.diffusivity.stream()
-				.map(d -> d.diffusivity).collect(Collectors.toList());
-		public final static Function<Measurement, List<Number>> PHASE = (m) -> m.diffusivity.stream().map(d -> d.phase)
-				.collect(Collectors.toList());
-		public final static Function<Measurement, List<Number>> AMPLITUDE = (m) -> m.diffusivity.stream()
-				.map(d -> d.amplitude).collect(Collectors.toList());
-		public final static Function<Measurement, List<Number>> CAPACITANCE = (m) -> m.diffusivity.stream()
-				.map(d -> d.capacitance).collect(Collectors.toList());
+		public final static Function<Measurement, List<Number>> DIFFUSIVITY = (
+				m) -> m.diffusivity.stream().map(d -> d.diffusivity).collect(Collectors.toList());
+		public final static Function<Measurement, List<Number>> PHASE = (
+				m) -> m.diffusivity.stream().map(d -> d.phase).collect(Collectors.toList());
+		public final static Function<Measurement, List<Number>> AMPLITUDE = (
+				m) -> m.diffusivity.stream().map(d -> d.amplitude).collect(Collectors.toList());
+		public final static Function<Measurement, List<Number>> CAPACITANCE = (
+				m) -> m.diffusivity.stream().map(d -> d.capacitance).collect(Collectors.toList());
 		public final static Function<Measurement, List<Number>> TEMPERATURE = m -> Collections
 				.singletonList(XFetchers.TEMPERATURE.apply(m));
 		public final static Function<Measurement, List<Number>> FREQUENCY = m -> Collections
@@ -274,7 +274,6 @@ public class MeasurementsListDataset implements XYDataset {
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
 	public int indexOf(Comparable seriesKey) {
 		return seriesByNames.get(seriesKey);
 	}
