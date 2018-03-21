@@ -29,7 +29,7 @@ public class DCsignalID extends SignalIdentifier {
 	}
 
 	@XmlElement
-	double zeroTemperature = 273 + 22;
+	double zeroTemperature = 273 + 18;
 
 	// gain for 1100 = 682
 	// gain for 0100 = 271
