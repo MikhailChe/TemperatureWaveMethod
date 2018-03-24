@@ -348,10 +348,10 @@ public class TWMComputer implements Callable<Measurement> {
 	public TWMComputer(File filename) {
 		this.file = filename;
 		this.workspace = Workspace.getInstance();
-		List<SignalIdentifier> signalIDs;
-		if ((signalIDs = workspace.getSignalIDs()) != null) {
-			if (signalIDs.size() > 0) {
-				this.signalIDs = unmodifiableList(signalIDs);
+		List<SignalIdentifier> signalIDs1;
+		if ((signalIDs1 = workspace.getSignalIDs()) != null) {
+			if (signalIDs1.size() > 0) {
+				this.signalIDs = unmodifiableList(signalIDs1);
 			} else {
 				this.signalIDs = emptyList();
 			}
@@ -402,6 +402,7 @@ public class TWMComputer implements Callable<Measurement> {
 
 		}
 		return (a, b) -> {
+			// DO nothing.
 		};
 	}
 
@@ -428,7 +429,11 @@ public class TWMComputer implements Callable<Measurement> {
 		result.diffusivity.add(tCond);
 	}
 
-	private void dcSignalConsumer(int currentChannel, SignalParameters param, DCsignalID signID, Measurement result) {
+	/**
+	 * @param currentChannel
+	 */
+	private static void dcSignalConsumer(int currentChannel, SignalParameters param, DCsignalID signID,
+			Measurement result) {
 		Temperature t = new Temperature();
 
 		// t.value = params.nullOffset;
@@ -437,7 +442,11 @@ public class TWMComputer implements Callable<Measurement> {
 		result.temperature.add(t);
 	}
 
-	private void adjustmentSignalConsumer(int currentChannel, SignalParameters param, AdjustmentSignalID id,
+	/**
+	 * @param id
+	 *            adjustment id. May contain additional info. unused for now
+	 */
+	private static void adjustmentSignalConsumer(int currentChannel, SignalParameters param, AdjustmentSignalID id,
 			Measurement result) {
 		Diffusivity tCond = new Diffusivity();
 
