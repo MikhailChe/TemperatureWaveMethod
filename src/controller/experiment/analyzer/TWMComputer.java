@@ -15,9 +15,11 @@ import static java.util.Collections.unmodifiableList;
 
 import java.awt.Desktop;
 import java.awt.Window;
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
@@ -63,6 +65,7 @@ import model.signalID.SignalIdentifier;
 import model.workspace.Workspace;
 
 public class TWMComputer implements Callable<Measurement> {
+	final static Charset UTF8_CHARSET = Charset.forName("UTF-8");
 
 	public static List<Measurement> computeFolder(File folder, Window parent, ProgressMonitor opm) {
 		// Начальные проверки
@@ -82,8 +85,9 @@ public class TWMComputer implements Callable<Measurement> {
 		File resultFile = tryToCreateResultFile(folder);
 		if (resultFile == null)
 			return null;
-		try (BufferedWriter bw = Files.newBufferedWriter(resultFile.toPath(), StandardOpenOption.CREATE_NEW,
-				StandardOpenOption.WRITE)) {
+
+		try (BufferedOutputStream bos = new BufferedOutputStream(
+				Files.newOutputStream(resultFile.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE));) {
 
 			// Создаём пул потоков для параллельного вычисления
 			ExecutorService pool = ForkJoinPool.commonPool();
@@ -126,13 +130,15 @@ public class TWMComputer implements Callable<Measurement> {
 								sample.measurements.add(answer);
 							}
 						}
+
 						if (header) {
 							header = false;
 							// Add magic UTF-8 BOM
-							bw.write(new String(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF }));
-							bw.write(String.format("%s%n", answer.getHeader()));
+
+							bos.write(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF });
+							bos.write(String.format("%s%n", answer.getHeader()).getBytes(UTF8_CHARSET));
 						}
-						bw.write(String.format("%s%n", answer));
+						bos.write(String.format("%s%n", answer).getBytes(UTF8_CHARSET));
 					}
 					pm.setProgress(++currentProgress);
 				} catch (InterruptedException | ExecutionException | IOException e) {
@@ -142,8 +148,8 @@ public class TWMComputer implements Callable<Measurement> {
 			}
 			pm.close();
 			try {
-				bw.flush();
-				bw.close();
+				bos.flush();
+				bos.close();
 			} catch (IOException e) {
 				showException(currentThread(), e);
 				println("Ошибка при записи в выходной файл. " + e.getLocalizedMessage());
