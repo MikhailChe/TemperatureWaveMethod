@@ -81,7 +81,9 @@ public class Diffusivity {
 
 	return String.format("%.0f;%.3f;%.3f;%.3f;%.3f;%.4e;%.3f", amplitude,
 		initSignalParams == null ? 0 : Math.toDegrees(initSignalParams.phase),
-		signalID == null ? 0 : signalID.phaseAdjust.getCurrentShift(frequency), Math.toDegrees(phase), kappa,
+		signalID == null ? 0 : signalID.phaseAdjust.getCurrentShift(frequency),
+				Math.toDegrees(phase),
+				kappa,
 		diffusivity, capacitance);
     }
 

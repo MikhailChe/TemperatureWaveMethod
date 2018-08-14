@@ -112,7 +112,12 @@ public class Sample {
 
 		sb.append("Измерения\n");
 		for (Measurement m : measurements) {
-			sb.append(m.toString() + "\n");
+			try {
+				sb.append(m.toString() + "\n");
+			} catch (Exception e) {
+				e.printStackTrace();
+				break;
+			}
 		}
 		return sb.toString();
 	}
