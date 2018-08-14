@@ -25,6 +25,7 @@ public class Sample {
 	private double length = 0;
 	@XmlAttribute
 	private double density = 0;
+	@XmlAttribute
 	private String comment = "Default_comment";
 
 	private PropertyChangeSupport mPcs = new PropertyChangeSupport(this);
