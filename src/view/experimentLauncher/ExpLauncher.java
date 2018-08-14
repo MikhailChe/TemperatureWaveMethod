@@ -7,8 +7,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
@@ -21,7 +19,6 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
 import debug.Debug;
-import javafx.application.Platform;
 import model.sample.Sample;
 import model.workspace.Workspace;
 
@@ -118,14 +115,6 @@ public class ExpLauncher extends JFrame {
 		}
 		SwingUtilities.invokeLater(this::createAndShowGUI);
 		setName("Главный экран");
-		addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {
-				Debug.println(e);
-				Platform.exit();
-			}
-
-		});
 	}
 
 }
