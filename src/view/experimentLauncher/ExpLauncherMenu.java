@@ -45,7 +45,7 @@ public class ExpLauncherMenu extends JMenuBar {
 
 	/**
 	 * @param e
-	 *            функция должна реагировать на нажатие кнопки открытия
+	 *              функция должна реагировать на нажатие кнопки открытия
 	 */
 	public void newSample(ActionEvent e) {
 		Sample sample = workspace.getSample();
@@ -196,7 +196,14 @@ public class ExpLauncherMenu extends JMenuBar {
 		JMenuItem fileSaveAs = new JMenuItem("Сохранить как...");
 		fileSaveAs.addActionListener(e -> {
 			workspace.save();
-			workspace.setSampleFile(saveSampleXML(null, workspace.getSample()));
+			MemorableDirectoryChooser mdc = new MemorableDirectoryChooser(ExpLauncher.class);
+			mdc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			mdc.setMultiSelectionEnabled(false);
+			int mode = mdc.showSaveDialog(parent);
+			File f = null;
+			if (JFileChooser.APPROVE_OPTION == mode && (f = mdc.getSelectedFile()) != null) {
+				workspace.setSampleFile(saveSampleXML(f.getAbsolutePath(), workspace.getSample()));
+			}
 		});
 		fileMenu.add(fileSaveAs);
 
