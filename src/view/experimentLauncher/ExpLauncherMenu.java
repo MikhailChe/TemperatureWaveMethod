@@ -8,6 +8,7 @@ import static javax.swing.JFileChooser.FILES_ONLY;
 import static model.sample.SampleFactory.saveSampleXML;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.JFileChooser;
@@ -171,7 +172,7 @@ public class ExpLauncherMenu extends JMenuBar {
 		fileOpen.add(fileOpenAdjust);
 
 		JMenuItem fileSave = new JMenuItem("Сохранить...");
-		fileSave.addActionListener(a -> {
+		ActionListener saveAction = (a) -> {
 			workspace.save();
 
 			if (workspace.getSampleFile() != null) {
@@ -185,24 +186,23 @@ public class ExpLauncherMenu extends JMenuBar {
 				chooser.setFileFilter(Sample.getExtensionfilter());
 
 				int status = chooser.showSaveDialog(parent);
-				if (status == JFileChooser.APPROVE_OPTION) {
+				if (status == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
 					File f = chooser.getSelectedFile();
 					workspace.setSampleFile(saveSampleXML(f.toString(), workspace.getSample()));
 				}
 			}
-		});
+		};
+		fileSave.addActionListener(saveAction);
 		fileMenu.add(fileSave);
 
 		JMenuItem fileSaveAs = new JMenuItem("Сохранить как...");
 		fileSaveAs.addActionListener(e -> {
 			workspace.save();
-			MemorableDirectoryChooser mdc = new MemorableDirectoryChooser(ExpLauncher.class);
-			mdc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			mdc.setMultiSelectionEnabled(false);
-			int mode = mdc.showSaveDialog(parent);
-			File f = null;
-			if (JFileChooser.APPROVE_OPTION == mode && (f = mdc.getSelectedFile()) != null) {
-				workspace.setSampleFile(saveSampleXML(f.getAbsolutePath(), workspace.getSample()));
+			File curFile = workspace.getSampleFile();
+			workspace.setSampleFile(null);
+			saveAction.actionPerformed(e);
+			if (workspace.getSampleFile() == null) {
+				workspace.setSampleFile(curFile);
 			}
 		});
 		fileMenu.add(fileSaveAs);

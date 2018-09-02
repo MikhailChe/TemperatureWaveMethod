@@ -1,8 +1,12 @@
 ﻿package controller.experiment.analyzer;
 
+import static debug.JExceptionHandler.showException;
+
+import java.awt.Desktop;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -12,6 +16,8 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 
+import debug.Debug;
+import model.measurement.Measurement;
 import model.workspace.Workspace;
 import view.MemorableDirectoryChooser;
 
@@ -54,7 +60,22 @@ public class TWMFoldersSelector implements Runnable {
 			pm.setProgress(progress.incrementAndGet());
 			folders.stream().parallel().forEach(folder -> {
 				pm.setNote(folder.getName());
-				TWMComputer.computeFolder(folder, parent, pm);
+				List<Measurement> measurements = TWMComputer.computeFolder(folder, parent, pm);
+				try {
+					File resultFile = TWMComputer.saveToDirectory(measurements, folder);
+					// Отркываем файл для просмотра на десктопе
+					if (Desktop.isDesktopSupported()) {
+						try {
+							Desktop.getDesktop().open(resultFile);
+						} catch (IOException e) {
+							showException(e);
+							Debug.println("Не удалось открыть файл с результатами. " + e.getLocalizedMessage());
+						}
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
 				pm.setProgress(progress.incrementAndGet());
 			});
 

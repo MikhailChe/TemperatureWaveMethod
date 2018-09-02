@@ -163,13 +163,6 @@ public class ExperimentFileReader {
 				}
 			}
 		}
-		// Integer[] inds = indicies.toArray(new Integer[indicies.size()]);
-		// int[] outinds = new int[inds.length];
-		// int i = 0;
-		// for (int value : inds) {
-		// outinds[i++] = value;
-		// }
-		// return outinds;
 		return indicies;
 	}
 

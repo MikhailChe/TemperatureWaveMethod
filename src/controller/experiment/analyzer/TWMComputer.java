@@ -13,16 +13,13 @@ import static java.nio.file.StandardOpenOption.WRITE;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
-import java.awt.Desktop;
 import java.awt.Window;
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -39,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
@@ -67,6 +65,16 @@ import model.workspace.Workspace;
 public class TWMComputer implements Callable<Measurement> {
 	final static Charset UTF8_CHARSET = Charset.forName("UTF-8");
 
+	public static String resultFileSampleID() {
+		String sampleName = "";
+		try {
+			sampleName = String.format("%s-%.3fмм", Workspace.getInstance().getSample().getName(),
+					Workspace.getInstance().getSample().getLength() * 1000);
+		} catch (NullPointerException e) {// IGNORE
+		}
+		return sampleName;
+	}
+
 	public static List<Measurement> computeFolder(File folder, Window parent, ProgressMonitor opm) {
 		// Начальные проверки
 		if (!folder.isDirectory())
@@ -81,102 +89,66 @@ public class TWMComputer implements Callable<Measurement> {
 		if (files.size() <= 0)
 			return null;
 
-		// Создаём выходной файл
-		File resultFile = tryToCreateResultFile(folder);
-		if (resultFile == null)
+		// Создаём пул потоков для параллельного вычисления
+		ExecutorService pool = ForkJoinPool.commonPool();
+		List<Future<Measurement>> futuresSet = new ArrayList<>();
+		ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
+		pm.setMillisToDecideToPopup(1000);
+		pm.setMaximum(files.size());
+		if (opm.isCanceled() || pm.isCanceled()) {
 			return null;
-
-		try (BufferedOutputStream bos = new BufferedOutputStream(
-				Files.newOutputStream(resultFile.toPath(), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE));) {
-
-			// Создаём пул потоков для параллельного вычисления
-			ExecutorService pool = ForkJoinPool.commonPool();
-			List<Future<Measurement>> futuresSet = new ArrayList<>();
-			ProgressMonitor pm = new ProgressMonitor(parent, "Папка обрабатывается слишком долго", "", 0, 1);
-			pm.setMillisToDecideToPopup(1000);
-			pm.setMaximum(files.size());
-			if (opm.isCanceled() || pm.isCanceled()) {
-				return null;
-			}
-			// Запускаем параллельные вычисления для каждого файла
-			files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f))));
-			int currentProgress = 0;
-			boolean header = true;
-			List<Measurement> measurements = new ArrayList<>();
-			// Ожидаем окончания измзерений
-			for (Future<Measurement> future : futuresSet) {
-				// Если в прогресс-монтиоре нажали отмену - отменяем всё
-				try {
-					// Ждёмс завершения текущего расчёта. Не забываем запрашивать
-					// состояние у графического интерфейса
-					while (!future.isDone()) {
-						if (opm.isCanceled() || pm.isCanceled()) {
-							// TODO: возможны сбои в работе
-							// Убиваем пул потоков, которые всё-ещё обрабатывают
-							// файлы
-							pool.shutdownNow();
-							return null;
-						}
-						Thread.yield();
-					}
-
-					Measurement answer = future.get();
-					if (answer != null) {
-						Workspace workspace = Workspace.getInstance();
-						Sample sample;
-						if ((sample = workspace.getSample()) != null) {
-							measurements.add(answer);
-							if (sample.measurements != null) {
-								sample.measurements.add(answer);
-							}
-						}
-
-						if (header) {
-							header = false;
-							// Add magic UTF-8 BOM
-
-							bos.write(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF });
-							bos.write(String.format("%s%n", answer.getHeader()).getBytes(UTF8_CHARSET));
-						}
-						bos.write(String.format("%s%n", answer).getBytes(UTF8_CHARSET));
-					}
-					pm.setProgress(++currentProgress);
-				} catch (InterruptedException | ExecutionException | IOException e) {
-					showException(currentThread(), e);
-					println("Возможная ошибка во время расчётов. " + e.getLocalizedMessage());
-				}
-			}
-			pm.close();
-			try {
-				bos.flush();
-				bos.close();
-			} catch (IOException e) {
-				showException(currentThread(), e);
-				println("Ошибка при записи в выходной файл. " + e.getLocalizedMessage());
-			}
-
-			// Отркываем файл для просмотра на десктопе
-			if (Desktop.isDesktopSupported()) {
-				try {
-					Desktop.getDesktop().open(resultFile);
-				} catch (IOException e) {
-					showException(e);
-					Debug.println("Не удалось открыть файл с результатами. " + e.getLocalizedMessage());
-				}
-			}
-			return measurements;
-		} catch (IOException e1) {
-			showException(currentThread(), e1);
-			println("Ошибка ввода-вывода. " + e1.getLocalizedMessage());
 		}
-		return null;
+		// Запускаем параллельные вычисления для каждого файла
+		files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f))));
+		int currentProgress = 0;
+
+		List<Measurement> measurements = new ArrayList<>();
+		// Ожидаем окончания измзерений
+		for (Future<Measurement> future : futuresSet) {
+			// Если в прогресс-монтиоре нажали отмену - отменяем всё
+			try {
+				// Ждёмс завершения текущего расчёта. Не забываем запрашивать
+				// состояние у графического интерфейса
+				while (!future.isDone()) {
+					if (opm.isCanceled() || pm.isCanceled()) {
+						// TODO: возможны сбои в работе
+						// Убиваем пул потоков, которые всё-ещё обрабатывают
+						// файлы
+						pool.shutdownNow();
+						return null;
+					}
+					Thread.yield();
+					TimeUnit.MILLISECONDS.sleep(100);
+				}
+
+				Measurement answer = future.get();
+				if (answer != null) {
+					Workspace workspace = Workspace.getInstance();
+					Sample sample;
+					if ((sample = workspace.getSample()) != null) {
+						measurements.add(answer);
+						if (sample.measurements != null) {
+							sample.measurements.add(answer);
+						}
+					}
+				}
+				pm.setProgress(++currentProgress);
+			} catch (InterruptedException | ExecutionException e) {
+				showException(currentThread(), e);
+				println("Возможная ошибка во время расчётов. " + e.getLocalizedMessage());
+			}
+		}
+		pm.close();
+
+		return measurements;
 	}
 
-	public static File saveToFile(List<Measurement> measurements, File folder) throws IOException {
-		return saveToFile(measurements, folder, false);
+	public static File saveToDirectory(List<Measurement> measurements, File folder) throws IOException {
+		String sampleName = resultFileSampleID();
+		return saveToDirectory(measurements, folder, sampleName, false);
 	}
 
-	public static File saveToFile(final List<Measurement> inputMeasurements, final File folder,
+	public static File saveToDirectory(final List<Measurement> inputMeasurements, final File folder, String sampleName,
 			final boolean appendToSample) throws IOException {
 		// Создаём выходной файл
 		Objects.requireNonNull(folder, "Папка не должна быть null");
@@ -184,7 +156,7 @@ public class TWMComputer implements Callable<Measurement> {
 		List<Measurement> measurements = new ArrayList<>(inputMeasurements);
 		Collections.sort(measurements, Comparator.comparingLong(Measurement::getTime));
 
-		File resultFile = tryToCreateResultFile(folder);
+		File resultFile = tryToCreateResultFile(folder, sampleName);
 		if (resultFile == null)
 			return null;
 		try (BufferedWriter bw = newBufferedWriter(resultFile.toPath(), CREATE_NEW, WRITE)) {
@@ -220,7 +192,7 @@ public class TWMComputer implements Callable<Measurement> {
 		return resultFile;
 	}
 
-	public void writeToDB(List<Future<Measurement>> futuresSet) {
+	public static void writeToDB(List<Future<Measurement>> futuresSet) {
 		try {
 			ExperimentUploader eu = new ExperimentUploader();
 
@@ -293,13 +265,13 @@ public class TWMComputer implements Callable<Measurement> {
 	 * @param folder
 	 * @return
 	 */
-	public static File tryToCreateResultFile(File folder) {
+	public static File tryToCreateResultFile(File folder, String sampleName) {
 		File resultFile;
 		LocalDateTime ldt = LocalDateTime.now();
 		Date date = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
-		final String formatStringOfReulstFile = "result-%1$tY%1$tm%1$td%1$tH%1$tM%1$tS-%2$s.tsv";
+		final String formatStringOfReulstFile = "result-%2$s-%1$tY%1$tm%1$td%1$tH%1$tM%1$tS.tsv";
 		try {
-			resultFile = new File(folder, String.format(formatStringOfReulstFile, date, folder.getName()));
+			resultFile = new File(folder, String.format(formatStringOfReulstFile, date, sampleName));
 			if (resultFile.exists()) {
 				boolean exception = false;
 				do {
@@ -450,7 +422,7 @@ public class TWMComputer implements Callable<Measurement> {
 
 	/**
 	 * @param id
-	 *            adjustment id. May contain additional info. unused for now
+	 *               adjustment id. May contain additional info. unused for now
 	 */
 	private static void adjustmentSignalConsumer(int currentChannel, SignalParameters param, AdjustmentSignalID id,
 			Measurement result) {

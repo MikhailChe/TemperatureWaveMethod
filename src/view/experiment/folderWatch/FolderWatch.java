@@ -158,7 +158,7 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 		save.setIcon(saveIcon);
 		save.addActionListener((event) -> {
 			try {
-				TWMComputer.saveToFile(measurementViewer.dataset.getMeasurements(), folder);
+				TWMComputer.saveToDirectory(measurementViewer.dataset.getMeasurements(), folder);
 			} catch (IOException e) {
 				int option = JOptionPane.showConfirmDialog(null, e.getLocalizedMessage() + "\r\nВыбрать новый путь?",
 						"Ошибка", JOptionPane.YES_NO_OPTION);
@@ -169,7 +169,7 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 
 					if (mdc.getSelectedFile() != null) {
 						try {
-							TWMComputer.saveToFile(measurementViewer.dataset.getMeasurements(), mdc.getSelectedFile());
+							TWMComputer.saveToDirectory(measurementViewer.dataset.getMeasurements(), mdc.getSelectedFile());
 						} catch (IOException e1) {
 							e1.printStackTrace();
 						}
@@ -209,7 +209,12 @@ public class FolderWatch extends JInternalFrame implements Runnable {
 			}
 			files.parallelStream().forEach(f -> {
 				if (!isClosing)
-					updateValuesForFile(f);
+					try {
+						updateValuesForFile(f);
+					} catch (Exception e) {
+						System.err.println(
+								"Faile to read diffusivity for file: " + f + "\r\n\t" + e.getLocalizedMessage());
+					}
 			});
 			filesInFolder.addAll(files);
 		}
