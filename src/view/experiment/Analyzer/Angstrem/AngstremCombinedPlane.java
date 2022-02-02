@@ -1,4 +1,4 @@
-﻿package view.experiment.Analyzer.Angstrem;
+package view.experiment.Analyzer.Angstrem;
 
 import static controller.experiment.analyzer.FFT.getAbs;
 import static controller.experiment.analyzer.PhaseUtils.truncatePositive;

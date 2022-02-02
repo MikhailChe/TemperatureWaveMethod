@@ -1,4 +1,4 @@
-﻿package view.experimentLauncher;
+package view.experimentLauncher;
 
 import static debug.JExceptionHandler.showException;
 import static java.lang.Thread.currentThread;
