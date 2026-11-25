@@ -1,0 +1,58 @@
+package controller.experiment.analyzer.test;
+
+import static controller.experiment.analyzer.PhaseUtils.truncateNegative;
+import static controller.experiment.analyzer.PhaseUtils.truncatePositive;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
+public class PhaseUtilsTest {
+
+	@Test
+	public void normalizesLargeFiniteAngles() {
+		double upper = truncatePositive(Double.MAX_VALUE);
+		double lower = truncateNegative(-Double.MAX_VALUE);
+		assertTrue(upper >= 0 && upper <= 2 * Math.PI);
+		assertEquals(-upper, lower, 0);
+		assertEquals(2 * Math.PI, truncatePositive(4 * Math.PI), 0);
+		assertEquals(-2 * Math.PI, truncateNegative(-4 * Math.PI), 0);
+	}
+
+	@SuppressWarnings("static-method")
+	@Test
+	public void testTruncatePositive() {
+		double test1 = Math.toRadians(-90);
+		double testOutput1 = truncatePositive(test1);
+
+		assertEquals(Math.toRadians(-90 + 360), testOutput1, 0.001);
+
+		double test2 = Math.toRadians(450);
+		double testOutput2 = truncatePositive(test2);
+
+		assertEquals(Math.toRadians(450 - 360), testOutput2, 0.001);
+
+		assertEquals(0, truncatePositive(0), 0.001);
+		assertEquals(1, truncatePositive(1), 0.001);
+
+	}
+
+	@SuppressWarnings("static-method")
+	@Test
+	public void testTruncateNegative() {
+		double test1 = Math.toRadians(+90);
+		double testOutput1 = truncateNegative(test1);
+
+		assertEquals(Math.toRadians(+90 - 360), testOutput1, 0.001);
+
+		double test2 = Math.toRadians(-450);
+		double testOutput2 = truncateNegative(test2);
+
+		assertEquals(Math.toRadians(-450 + 360), testOutput2, 0.001);
+
+		assertEquals(0, truncateNegative(0), 0.001);
+		assertEquals(-1, truncateNegative(-1), 0.001);
+
+	}
+
+}

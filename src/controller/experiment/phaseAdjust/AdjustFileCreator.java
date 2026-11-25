@@ -25,11 +25,13 @@ import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import controller.experiment.analyzer.MeasurementCalculator;
 import controller.experiment.analyzer.TWMComputer;
 import controller.experiment.reader.ExperimentFileReader;
 import model.analyzer.SignalParameters;
 import model.phaseAdjust.PhaseAdjust;
 import model.phaseAdjust.PhaseAdjustFactory;
+import view.CalibrationFileFilters;
 import view.MemorableDirectoryChooser;
 import view.experiment.phaseAdjust.PhaseAdjustViewerPanel;
 
@@ -72,7 +74,7 @@ public class AdjustFileCreator implements Runnable {
 	Path resultFolder = fileChooser.getSelectedFile().toPath();
 
 	Path resultFile = resultFolder.resolve(System.currentTimeMillis() + "ch" + channelNumber + "."
-		+ PhaseAdjust.extensionFilter.getExtensions()[0]);
+		+ CalibrationFileFilters.PHASE_ADJUST.getExtensions()[0]);
 
 	try (BufferedWriter bw = Files.newBufferedWriter(resultFile, StandardOpenOption.CREATE_NEW,
 		StandardOpenOption.WRITE)) {
@@ -102,11 +104,11 @@ public class AdjustFileCreator implements Runnable {
 		// сделать, чтобы в будущем можно было обрабатывать старые
 		// файлы...
 		final int FREQ_INDEX = reader.getCroppedDataPeriodsCount();
-		SignalParameters param = TWMComputer.getSignalParameters(croppedData[channelNumber], FREQ_INDEX,
+		SignalParameters param = MeasurementCalculator.getSignalParameters(croppedData[channelNumber], FREQ_INDEX,
 			reader.getExperimentFrequency());
 		try {
 		    bw.write(String.format("%.1f\t%.3f\r\n", reader.getExperimentFrequency(),
-			    Math.toDegrees(-param.phase)));
+			    Math.toDegrees(-param.getPhase())));
 		} catch (IOException e) {
 		    e.printStackTrace();
 		}

@@ -12,6 +12,7 @@ import javax.swing.border.TitledBorder;
 import model.signalID.DCsignalID;
 import model.thermocouple.graduate.Graduate;
 import model.thermocouple.graduate.GraduateFactory;
+import view.CalibrationFileFilters;
 import view.MemorableDirectoryChooser;
 
 public class DCSignalIDPanel extends SignalIDPanel {
@@ -33,8 +34,8 @@ public class DCSignalIDPanel extends SignalIDPanel {
 			chooser.setMultiSelectionEnabled(false);
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			chooser.resetChoosableFileFilters();
-			chooser.addChoosableFileFilter(Graduate.extensionFilter);
-			chooser.setFileFilter(Graduate.extensionFilter);
+			chooser.addChoosableFileFilter(CalibrationFileFilters.THERMOCOUPLE);
+			chooser.setFileFilter(CalibrationFileFilters.THERMOCOUPLE);
 			if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 				chooser.saveCurrentSelection();
 				File file = chooser.getSelectedFile();

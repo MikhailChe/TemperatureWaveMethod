@@ -2,8 +2,8 @@ package model.sample;
 
 import java.io.File;
 
-import javax.xml.bind.DataBindingException;
-import javax.xml.bind.JAXB;
+import jakarta.xml.bind.DataBindingException;
+import jakarta.xml.bind.JAXB;
 
 import debug.Debug;
 

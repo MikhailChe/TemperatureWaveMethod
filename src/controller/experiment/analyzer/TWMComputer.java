@@ -1,17 +1,11 @@
 package controller.experiment.analyzer;
 
-import static controller.experiment.analyzer.PhaseUtils.truncateNegative;
-import static controller.experiment.analyzer.PhaseUtils.truncatePositive;
 import static debug.Debug.println;
 import static debug.JExceptionHandler.showException;
-import static java.lang.Math.toDegrees;
-import static java.lang.Math.toRadians;
 import static java.lang.Thread.currentThread;
 import static java.nio.file.Files.newBufferedWriter;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 import static java.nio.file.StandardOpenOption.WRITE;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
 
 import java.awt.Window;
 import java.io.BufferedWriter;
@@ -37,8 +31,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -50,16 +42,9 @@ import controller.experiment.reader.ExperimentFileReader;
 import controller.mysql.ExperimentUploader;
 import debug.Debug;
 import debug.JExceptionHandler;
-import model.analyzer.SignalParameters;
 import model.measurement.Diffusivity;
 import model.measurement.Measurement;
-import model.measurement.Temperature;
-import model.phaseAdjust.PhaseAdjust;
 import model.sample.Sample;
-import model.signalID.AdjustmentSignalID;
-import model.signalID.BaseSignalID;
-import model.signalID.DCsignalID;
-import model.signalID.SignalIdentifier;
 import model.workspace.Workspace;
 
 public class TWMComputer implements Callable<Measurement> {
@@ -99,7 +84,8 @@ public class TWMComputer implements Callable<Measurement> {
 			return null;
 		}
 		// Запускаем параллельные вычисления для каждого файла
-		files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f))));
+		MeasurementCalculator calculator = calculatorFor(Workspace.getInstance());
+		files.forEach(f -> futuresSet.add(pool.submit(new TWMComputer(f, calculator, null))));
 		int currentProgress = 0;
 
 		List<Measurement> measurements = new ArrayList<>();
@@ -210,55 +196,6 @@ public class TWMComputer implements Callable<Measurement> {
 		}
 	}
 
-	// Выдаём параметры всех сигналов
-	public static List<SignalParameters> getAllSignalParameters(double[][] signals, int freq_index, double frequency) {
-		List<SignalParameters> params = new ArrayList<>(signals.length);
-		for (int i = 0; i < signals.length; i++) {
-			double[] signal = signals[i];
-			params.add(getSignalParameters(signal, freq_index, frequency));
-		}
-		return params;
-	}
-
-	/**
-	 * Выдаём параметры сигнала. Для этого вычисляем Фурье для частоты эксперимента
-	 * и среднее значение сигнала.
-	 * 
-	 * Во-первых достаём оттуда фазу. Фазу сдвигаем на 90 градусов, чтобы она была
-	 * по синусу, а не по косинусу. Роли в итоговых вычислениях это не играет, так
-	 * как мы используем разницу фаз, зато с человеческой точки зрения смотреть на
-	 * синусовую фазу приятнее.
-	 *
-	 * Затём привязываем фазу к диапазону -Pi..Pi
-	 * 
-	 * Амплитуда сигнала берётся из того же преобразования Фурье. Для нормализации
-	 * делим её на длину входных данных
-	 * 
-	 * Постоянная составляющая также берётся из Фурье сделанного для нулевой
-	 * частоты. По своей сути, фурье для нулевой частоты это такой дикий способ
-	 * попросить взять среднее арифметическое от данных. Однако для поддержания
-	 * целостности кода в ущерб производительности берём Фурье.
-	 * 
-	 * Записываем это всё в параметры и отправляем вызывавшему
-	 * 
-	 * @param signal
-	 * @param freq_index
-	 * @return
-	 */
-	public static SignalParameters getSignalParameters(double[] signal, int freq_index, double frequency) {
-		double[] fourierForFreq = FFT.getFourierForIndex(signal, freq_index);
-
-		double phase = FFT.getArgument(fourierForFreq, 0) + Math.PI / 2.0;
-		truncateNegative(phase);
-
-		double amplitude = 2.0 * FFT.getAbs(fourierForFreq, 0) / signal.length;
-		double nullOffset = Arrays.stream(signal).parallel().average().orElse(Double.NaN);
-
-		SignalParameters params = new SignalParameters(phase, amplitude, nullOffset, frequency);
-
-		return params;
-	}
-
 	/**
 	 * Создаём файл. Если файл открыт пользователем, то ждём пока он его закроет
 	 * 
@@ -307,209 +244,48 @@ public class TWMComputer implements Callable<Measurement> {
 		return resultFile;
 	}
 
-	// Non-static functions
-	final private File file;
+	private final File file;
+	private final MeasurementCalculator calculator;
+	private final Predicate<Diffusivity> diffFilter;
+	private Measurement result;
 
-	final private Workspace workspace;
+	public TWMComputer(File file, Predicate<Diffusivity> diffFilter) {
+		this(file, calculatorFor(Workspace.getInstance()), diffFilter);
+	}
 
-	public Measurement result;
-	AtomicBoolean computing = new AtomicBoolean(false);
-	final List<SignalIdentifier> signalIDs;
+	public TWMComputer(File file) {
+		this(file, null);
+	}
 
-	private Predicate<Diffusivity> diffFilter;
-
-	public TWMComputer(File filename, Predicate<Diffusivity> diffFilter) {
-		this(filename);
+	private TWMComputer(File file, MeasurementCalculator calculator, Predicate<Diffusivity> diffFilter) {
+		this.file = file;
+		this.calculator = calculator;
 		this.diffFilter = diffFilter;
 	}
 
-	public TWMComputer(File filename) {
-		this.file = filename;
-		this.workspace = Workspace.getInstance();
-		List<SignalIdentifier> signalIDs1;
-		if ((signalIDs1 = workspace.getSignalIDs()) != null) {
-			if (signalIDs1.size() > 0) {
-				this.signalIDs = unmodifiableList(signalIDs1);
-			} else {
-				this.signalIDs = emptyList();
-			}
-		} else {
-			this.signalIDs = emptyList();
-		}
-
+	private static MeasurementCalculator calculatorFor(Workspace workspace) {
+		Sample sample = workspace.getSample();
+		var properties = sample == null ? null
+				: new MeasurementCalculator.SampleProperties(sample.getLength(), sample.getDensity());
+		return new MeasurementCalculator(properties, workspace.getSignalIDs());
 	}
 
 	@Override
 	public synchronized Measurement call() {
-		if (result != null) {
-			return result;
-		}
-		ExperimentFileReader reader = getFileReader();
-		if (reader == null)
-			return null;
-
-		Measurement res = new Measurement();
-		res.time = reader.getTime();
-		int colCount = reader.getColumnCount();
-		if (colCount > 1) {
-			res.frequency = reader.getExperimentFrequency();
-			double[][] croppedData = reader.getCroppedData();
-			final int FREQ_INDEX = reader.getCroppedDataPeriodsCount();
-			List<SignalParameters> params = getAllSignalParameters(croppedData, FREQ_INDEX, res.frequency);
-			for (int channel = 1; channel < Math.min(colCount, signalIDs.size()); channel++) {
-				if (signalIDs.get(channel) == null) {
-					continue;
-				}
-				SignalParameters param = params.get(channel);
-				selectConsumer(signalIDs.get(channel), res).accept(channel, param);
+		if (result == null) {
+			ExperimentFileReader reader;
+			try {
+				reader = new ExperimentFileReader(file.toPath());
+			} catch (IOException | RuntimeException e) {
+				Debug.println("Не удалось прочитать файл с измерениями. " + e.getLocalizedMessage());
+				return null;
 			}
+			Measurement calculated = calculator.calculate(reader);
+			if (diffFilter != null) {
+				calculated.diffusivity.removeIf(diff -> diff.signalID != null && !diffFilter.test(diff));
+			}
+			result = calculated;
 		}
-		result = res;
 		return result;
 	}
-
-	private BiConsumer<Integer, SignalParameters> selectConsumer(final SignalIdentifier ident, Measurement m) {
-		if (ident instanceof BaseSignalID) {
-			return (chan, param) -> baseSignalConsumer(chan, param, (BaseSignalID) ident, m);
-
-		} else if (ident instanceof DCsignalID) {
-			return (chan, param) -> dcSignalConsumer(chan, param, (DCsignalID) ident, m);
-
-		} else if (ident instanceof AdjustmentSignalID) {
-			return (chan, param) -> adjustmentSignalConsumer(chan, param, (AdjustmentSignalID) ident, m);
-
-		}
-		return (a, b) -> {
-			// DO nothing.
-		};
-	}
-
-	private void baseSignalConsumer(int currentChannel, SignalParameters param, BaseSignalID id, Measurement result) {
-
-		PhaseAdjust adjust = id.phaseAdjust;
-		if (adjust == null)
-			return;
-		double currentShift = adjust.getCurrentShift(param.frequency);
-
-		// Если случилось так, что неправильно установили фазу - переворачиваем
-		currentShift = toDegrees(
-				truncateNegative(id.inverse ? toRadians(currentShift + 180) : toRadians(currentShift)));
-
-		Diffusivity tCond = getPhysicalProperties(param, currentShift, param.frequency);
-		tCond.signalID = id;
-		tCond.channelNumber = currentChannel;
-
-		if (diffFilter != null) {
-			if (!diffFilter.test(tCond))
-				return;
-		}
-
-		result.diffusivity.add(tCond);
-	}
-
-	/**
-	 * @param currentChannel
-	 */
-	private static void dcSignalConsumer(int currentChannel, SignalParameters param, DCsignalID signID,
-			Measurement result) {
-		Temperature t = new Temperature();
-
-		// t.value = params.nullOffset;
-		t.signalLevel = signID.getVoltage(param.nullOffset);
-		t.value = signID.getTemperature(signID.getVoltage(param.nullOffset) * 1000.0);
-		result.temperature.add(t);
-	}
-
-	/**
-	 * @param id
-	 *               adjustment id. May contain additional info. unused for now
-	 */
-	private static void adjustmentSignalConsumer(int currentChannel, SignalParameters param, AdjustmentSignalID id,
-			Measurement result) {
-		Diffusivity tCond = new Diffusivity();
-
-		tCond.amplitude = param.amplitude;
-		tCond.phase = -param.phase;
-		tCond.frequency = param.frequency;
-		tCond.channelNumber = currentChannel;
-		result.diffusivity.add(tCond);
-	}
-
-	private ExperimentFileReader getFileReader() {
-		ExperimentFileReader reader = null;
-		// Set high priority to read the file
-		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-		try {
-			reader = new ExperimentFileReader(file.toPath());
-		} catch (Exception e) {
-			// showException(currentThread(), e);
-			Debug.println("Не удалось прочитать файл с измерениями. " + e.getLocalizedMessage());
-		}
-		// Set low priority, so that other threads could easily read the file
-		Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-		// ===========
-		return reader;
-	}
-
-	public Diffusivity getPhysicalProperties(final SignalParameters PARAM, final double CURRENT_SHIFT,
-			final double EXPERIMENT_FREQUENCY) {
-
-		// Берём начальный сигнал. По идее он может быть как положительным, так
-		// и отрицательным, но он представляет собой отставание, а отставание обычно
-		// отрицательное
-		final double signalAngle = truncateNegative(PARAM.phase);
-
-		// Но мы его всё-равно разворачиваем, чтобы сделать положительным
-		double targetAngle = -signalAngle;
-		// То есть получается сигнал, который отстаёт на targetAngle градусов
-
-		// Вычитаем из него сдвиг по фазе. Сдвиг уже также был повёрнут в положительную
-		// сторону
-		// то есть сдвиг так же представляет собой отставание на CURRENT_SHIFT градусов.
-		double adjustedAngle = truncatePositive(targetAngle - Math.toRadians(CURRENT_SHIFT));
-
-		// подгатавливаем угол для вычисления капы для этого вычитаем из него 45
-		// градусов
-		// и принуждаем к тому чтобы оставаться позитивным.
-		// Это вряд ли может случиться. Обычно это значит, что всё плохо
-		final double preKappaAngle = truncatePositive(adjustedAngle - Math.PI / 4.0);
-
-		// Теперь умножаем на корень из двух и получаем капу
-		final double kappa = Math.sqrt(2) * (preKappaAngle);
-
-		// выравниваем углы в положительную сторону
-		adjustedAngle = truncatePositive(adjustedAngle);
-		targetAngle = truncatePositive(targetAngle);
-
-		// Здесь мы могли бы использовать физическую модель для определения
-		// каппы, но она, как оказалось, не даёт большого прироста в точности,
-		// но сильно влияет на производительность
-		// kappa = PhysicsModel.searchKappaFor(-adjustAngle, 0.001);
-
-		final double omega = 2.0d * Math.PI * EXPERIMENT_FREQUENCY;
-		final double length = workspace.getSample().getLength();
-		// каноническая формула
-		double A = (omega * length * length) / (kappa * kappa);
-
-		// final double DENSITY = 8079;
-		final double DENSITY = workspace.getSample().getDensity();
-
-		final double HEAT_FLUX = 1E8;
-
-		// вычисляем теплоёмкость
-		double capacitance = HEAT_FLUX * kappa / (PARAM.amplitude * DENSITY * workspace.getSample().getLength() * omega
-				* Math.sqrt(Math.pow(Math.sinh(preKappaAngle), 2) + Math.pow(Math.sin(preKappaAngle), 2)));
-
-		Diffusivity tCond = new Diffusivity();
-
-		tCond.amplitude = PARAM.amplitude;
-		tCond.kappa = kappa;
-		tCond.phase = adjustedAngle;
-		tCond.diffusivity = A;
-		tCond.initSignalParams = PARAM;
-		tCond.frequency = EXPERIMENT_FREQUENCY;
-		tCond.capacitance = capacitance;
-		return tCond;
-	}
-
 }

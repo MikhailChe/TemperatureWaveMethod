@@ -24,6 +24,7 @@ import debug.JExceptionHandler;
 import model.phaseAdjust.PhaseAdjust;
 import model.phaseAdjust.PhaseAdjustFactory;
 import model.signalID.BaseSignalID;
+import view.CalibrationFileFilters;
 import view.MemorableDirectoryChooser;
 import view.experiment.phaseAdjust.PhaseAdjustViewerPanel;
 
@@ -39,22 +40,22 @@ public class BaseSignalIDPanel extends SignalIDPanel {
 						"Канал переменного сигнала", TitledBorder.LEADING, TitledBorder.TOP, null,
 						new Color(0, 0, 0))));
 		if (id.phaseAdjust != null)
-			this.fileNameField.setText(id.phaseAdjust.forFile.toString());
+			this.fileNameField.setText(id.phaseAdjust.getFile().toString());
 		this.fileOpenButtton.addActionListener(e -> {
 			MemorableDirectoryChooser chooser = new MemorableDirectoryChooser(DCSignalIDPanel.class);
 			chooser.setDialogTitle("Выберите файл юстировки");
 			chooser.setMultiSelectionEnabled(false);
 			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			chooser.resetChoosableFileFilters();
-			chooser.addChoosableFileFilter(PhaseAdjust.extensionFilter);
-			chooser.setFileFilter(PhaseAdjust.extensionFilter);
+			chooser.addChoosableFileFilter(CalibrationFileFilters.PHASE_ADJUST);
+			chooser.setFileFilter(CalibrationFileFilters.PHASE_ADJUST);
 			if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 				chooser.saveCurrentSelection();
 				File file = chooser.getSelectedFile();
 				PhaseAdjust newzc = PhaseAdjustFactory.forFile(file);
 				id.phaseAdjust = newzc;
 				phaseAdjustPanel.setZeroCrossing(id.phaseAdjust);
-				this.fileNameField.setText(id.phaseAdjust.forFile.toString());
+				this.fileNameField.setText(id.phaseAdjust.getFile().toString());
 			}
 		});
 
@@ -65,7 +66,7 @@ public class BaseSignalIDPanel extends SignalIDPanel {
 				println(e);
 				try {
 					JDialog zcDialog = new JDialog((JDialog) SwingUtilities.getWindowAncestor(BaseSignalIDPanel.this),
-							id.phaseAdjust.forFile.toString(), true);
+							id.phaseAdjust.getFile().toString(), true);
 					zcDialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 					zcDialog.getContentPane().add(new PhaseAdjustViewerPanel(id.phaseAdjust));
 					zcDialog.pack();

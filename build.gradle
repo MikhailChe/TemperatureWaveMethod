@@ -1,0 +1,53 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(27)
+    }
+}
+
+application {
+    mainClass = 'startHere.TWaveStart'
+}
+
+dependencies {
+    implementation project(':core')
+    implementation 'org.jfree:jfreechart:1.0.19'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.5'
+    runtimeOnly 'mysql:mysql-connector-java:5.1.39'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src']
+            exclude '**/*Test.java'
+        }
+        resources {
+            srcDirs = ['src']
+            exclude '**/*.java'
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src']
+            include '**/*Test.java'
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('test', Test) {
+    useJUnit()
+    workingDir = temporaryDir
+}

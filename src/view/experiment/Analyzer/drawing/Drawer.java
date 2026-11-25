@@ -21,7 +21,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
-import controller.experiment.analyzer.TWMComputer;
+import controller.experiment.analyzer.MeasurementCalculator;
 import controller.experiment.reader.ExperimentFileReader;
 import model.analyzer.SignalParameters;
 import view.MemorableDirectoryChooser;
@@ -63,12 +63,12 @@ public class Drawer {
 
 	    final int FREQ_INDEX = reader.getCroppedDataPeriodsCount();
 
-	    SignalParameters params = TWMComputer.getSignalParameters(data, FREQ_INDEX,
+	    SignalParameters params = MeasurementCalculator.getSignalParameters(data, FREQ_INDEX,
 		    reader.getExperimentFrequency());
 
-	    double angle = params.phase;
-	    double amplitude = params.amplitude;
-	    double zeroAmplitudeShift = params.nullOffset;
+	    double angle = params.getPhase();
+	    double amplitude = params.getAmplitude();
+	    double zeroAmplitudeShift = params.getNullOffset();
 
 	    double[] accordingWave = new double[data.length];
 	    for (int i = 0; i < data.length; i++) {

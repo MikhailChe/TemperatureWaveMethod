@@ -6,3 +6,8 @@
 
 /workspace.xml
 /twave.jar
+/.gradle/
+/build/
+/core/build/
+/backend/build/
+/backend/data/

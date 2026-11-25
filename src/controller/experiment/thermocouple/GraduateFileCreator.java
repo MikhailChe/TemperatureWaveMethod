@@ -7,6 +7,7 @@ import javax.swing.JFileChooser;
 
 import model.thermocouple.graduate.Graduate;
 import model.thermocouple.graduate.GraduateFactory;
+import view.CalibrationFileFilters;
 import view.MemorableDirectoryChooser;
 
 public class GraduateFileCreator implements Runnable {
@@ -29,15 +30,15 @@ public class GraduateFileCreator implements Runnable {
 			File inputFile = chooser.getSelectedFile();
 
 			chooser.resetChoosableFileFilters();
-			chooser.addChoosableFileFilter(Graduate.extensionFilter);
-			chooser.setFileFilter(Graduate.extensionFilter);
+			chooser.addChoosableFileFilter(CalibrationFileFilters.THERMOCOUPLE);
+			chooser.setFileFilter(CalibrationFileFilters.THERMOCOUPLE);
 
 			if (chooser.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION) {
 				chooser.saveCurrentSelection();
 				File outputFile = chooser.getSelectedFile();
 				
-				if (!outputFile.toString().toLowerCase().endsWith("." + Graduate.extensionFilter.getExtensions()[0])) {
-					outputFile = new File(outputFile.toString() + "." + Graduate.extensionFilter.getExtensions()[0]);
+				if (!outputFile.toString().toLowerCase().endsWith("." + CalibrationFileFilters.THERMOCOUPLE.getExtensions()[0])) {
+					outputFile = new File(outputFile.toString() + "." + CalibrationFileFilters.THERMOCOUPLE.getExtensions()[0]);
 				}
 				GraduateFactory.saveBinary(outputFile, GraduateFactory.forTextFile(inputFile.toPath()));
 			}

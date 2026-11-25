@@ -23,11 +23,11 @@ import controller.experiment.thermocouple.GraduateConverter;
 import controller.experiment.thermocouple.GraduateFileCreator;
 import debug.Debug;
 import debug.JExceptionHandler;
-import model.phaseAdjust.PhaseAdjust;
 import model.sample.Sample;
 import model.sample.SampleFactory;
 import model.signalID.SignalIdentifier;
 import model.workspace.Workspace;
+import view.CalibrationFileFilters;
 import view.MemorableDirectoryChooser;
 import view.experiment.Analyzer.Angstrem.AngstremAnalyzer;
 import view.experiment.folderWatch.FolderWatch;
@@ -155,8 +155,8 @@ public class ExpLauncherMenu extends JMenuBar {
 			chooser.setMultiSelectionEnabled(false);
 			chooser.resetChoosableFileFilters();
 			chooser.setFileSelectionMode(FILES_ONLY);
-			chooser.addChoosableFileFilter(PhaseAdjust.extensionFilter);
-			chooser.setFileFilter(PhaseAdjust.extensionFilter);
+			chooser.addChoosableFileFilter(CalibrationFileFilters.PHASE_ADJUST);
+			chooser.setFileFilter(CalibrationFileFilters.PHASE_ADJUST);
 
 			int status = chooser.showOpenDialog(parent);
 

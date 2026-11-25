@@ -1,4 +1,4 @@
-﻿package controller.experiment.analyzer;
+package controller.experiment.analyzer;
 
 import static debug.JExceptionHandler.showException;
 
